@@ -1,0 +1,21 @@
+{
+  "name": "venture-accounts",
+  "version": "0.0.1",
+  "description": "A simple Bank Account management web-based tool",
+  "main": "index.js",
+  "scripts": {
+    "dev:import": "pnpm --filter @app/bank-statement-importer read-pdf -- \"D:\\Projects\\Venture Church\\venture-accounts\\data\\current\\12 Feb 2024 to 12 Mar 2024.pdf\" "
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "12.5.1",
+      "onFail": "download"
+    }
+  },
+  "packageManager": "pnpm@12.5.1",
+  "type": "module"
+}

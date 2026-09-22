@@ -3,7 +3,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
-import { findAccountByBankAccountNumber } from "./db-import.js";
+import { findAccountByBankAccountNumber, importTransactions } from "./db-import.js";
 import { extractAccountNumber, extractStatementDate, extractTableRows } from "./extractor.js";
 import type { ImportRow } from "./import-row.js";
 import { toJson } from "./json.js";
@@ -44,14 +44,14 @@ export async function readPdfStream(data: Uint8Array): Promise<Transaction[]> {
 
    // Find the Bank Account
    const accountDetails = await findAccountByBankAccountNumber(accountNumber);
-   // console.log(accountDetails);
-   if (!accountDetails.found) {
+   if (!accountDetails.found || !accountDetails.account) {
       throw new Error(`Could not fund the Bank-Account or Account for '${accountNumber}'`);
    }
 
-   // Convert the 
+   // Convert the
    const transactions = toTransactions(rows, statementDate);
-   // console.log(`Parsed ${transactions.length} transactions`);
+
+   await importTransactions(transactions, accountDetails.account);
 
    return transactions;
 }

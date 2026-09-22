@@ -20,4 +20,5 @@ export const journalLine = pgTable("journal_line", {
     .notNull()
     .references(() => account.id),
   amount: numeric("amount", { precision: 14, scale: 2, mode: "number" }).notNull(),
+  hash: text("import_hash")
 });

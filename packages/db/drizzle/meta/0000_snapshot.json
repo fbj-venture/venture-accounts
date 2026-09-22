@@ -1,11 +1,11 @@
 {
-  "id": "d06c3910-ece1-479a-94e8-494ef1176c58",
+  "id": "a4f73815-3fa3-4f76-a07a-d3e38a924bef",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.transactions": {
-      "name": "transactions",
+    "public.account_type": {
+      "name": "account_type",
       "schema": "",
       "columns": {
         "id": {
@@ -14,58 +14,81 @@
           "primaryKey": true,
           "notNull": true
         },
-        "details": {
-          "name": "details",
+        "name": {
+          "name": "name",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "service_fee": {
-          "name": "service_fee",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "debits": {
-          "name": "debits",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "credits": {
-          "name": "credits",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "date": {
-          "name": "date",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "balance": {
-          "name": "balance",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "hash": {
-          "name": "hash",
+        "description": {
+          "name": "description",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         }
       },
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "transactions_hash_unique": {
-          "name": "transactions_hash_unique",
+        "account_type_name_unique": {
+          "name": "account_type_name_unique",
           "nullsNotDistinct": false,
           "columns": [
-            "hash"
+            "name"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.account": {
+      "name": "account",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "account_type": {
+          "name": "account_type",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "account_account_type_account_type_id_fk": {
+          "name": "account_account_type_account_type_id_fk",
+          "tableFrom": "account",
+          "tableTo": "account_type",
+          "columnsFrom": [
+            "account_type"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "account_name_unique": {
+          "name": "account_name_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "name"
           ]
         }
       },

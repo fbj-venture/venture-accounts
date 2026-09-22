@@ -1,14 +1,25 @@
+import { defineConfig } from "drizzle-kit";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { defineConfig } from "drizzle-kit";
 
 // Loaded by path (rather than the default cwd-relative lookup) so this
 // works regardless of which directory drizzle-kit was invoked from.
-const rootEnvPath = path.resolve(
-  path.dirname(fileURLToPath(import.meta.url)),
-  "../../.env",
-);
-process.loadEnvFile(rootEnvPath);
+const currentDir = path.dirname(fileURLToPath(import.meta.url));
+
+// .env.local (this package only, gitignored) overrides the workspace root
+// .env. Node's loadEnvFile() doesn't overwrite already-set variables, so
+// it must be loaded first; it's optional, so a missing file is ignored.
+try {
+  const localEnvFile = path.resolve(currentDir, ".env.local")
+  // console.log(localEnvFile);
+  process.loadEnvFile(localEnvFile);
+} catch (error) {
+  if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+    throw error;
+  }
+}
+
+process.loadEnvFile(path.resolve(currentDir, "../../.env"));
 
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) {

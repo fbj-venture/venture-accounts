@@ -12,8 +12,10 @@
   "intent": true,
   "routerOnly": false,
   "version": 1,
+  "addOns": true,
   "framework": "react",
   "chosenAddOns": [
-    "nitro"
+    "nitro",
+    "form"
   ]
 }

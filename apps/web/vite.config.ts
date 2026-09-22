@@ -3,19 +3,19 @@ import { defineConfig } from 'vite';
 
 import { tanstackStart } from '@tanstack/react-start/plugin/vite';
 
+import { nitroV2Plugin } from '@tanstack/nitro-v2-vite-plugin';
 import tailwindcss from '@tailwindcss/vite';
 import viteReact from '@vitejs/plugin-react';
-import { nitro } from 'nitro/vite';
 
 const config = defineConfig({
   resolve: { tsconfigPaths: true },
   plugins: [
     devtools({ eventBusConfig: { port: 6206 } }),
-    nitro({ rollupConfig: { external: [/^@sentry\//] } }),
+    nitroV2Plugin({ rollupConfig: { external: [/^@sentry\//] } }),
     tailwindcss(),
     tanstackStart(),
     viteReact(),
   ],
-});
+})
 
-export default config;
+export default config

@@ -10,33 +10,50 @@ import {
   FieldSeparator,
 } from "#/components/ui/field.tsx";
 import { Input } from "#/components/ui/input.tsx";
-import { GalleryVerticalEndIcon } from "lucide-react";
+import { Wallet2Icon } from "lucide-react";
 
 export function LoginForm({
   className,
+  onLogin,
+  error,
+  pending,
   ...props
-}: React.ComponentProps<"div">) {
+}: React.ComponentProps<"div"> & {
+  onLogin?: (values: { email: string; password: string; }) => void;
+  error?: string | null;
+  pending?: boolean;
+}) {
+  function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    onLogin?.({
+      email: String(formData.get("email") ?? ""),
+      password: String(formData.get("password") ?? ""),
+    });
+  }
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="overflow-hidden p-0">
         <CardContent className="grid p-0 md:grid-cols-2">
-          <form className="p-6 md:p-8">
+          <form className="p-6 md:p-8" onSubmit={handleSubmit}>
             <FieldGroup>
               <div className="flex flex-col items-center gap-2 text-center">
-                <h1 className="text-2xl font-bold flex gap-1 items-center">
-                  <div className="flex size-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
-                    <GalleryVerticalEndIcon className="size-4" />
+                <h1 className="text-3xl font-bold flex gap-1 items-center">
+                  <div className="flex size-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
+                    <Wallet2Icon className="size-5" />
                   </div>
                   Venture Accounts
                 </h1>
                 <p className="text-balance text-muted-foreground">
-                  Login to Venture Accounts
+                  Enter your login credentials to enter
                 </p>
               </div>
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
                 <Input
                   id="email"
+                  name="email"
                   type="email"
                   placeholder="m@example.com"
                   required
@@ -52,10 +69,17 @@ export function LoginForm({
                     Forgot your password?
                   </a>
                 </div>
-                <Input id="password" type="password" required />
+                <Input id="password" name="password" type="password" required />
               </Field>
+              {error ? (
+                <p className="text-sm text-destructive text-center" role="alert">
+                  {error}
+                </p>
+              ) : null}
               <Field>
-                <Button type="submit">Login</Button>
+                <Button type="submit" disabled={pending}>
+                  {pending ? "Logging in..." : "Login"}
+                </Button>
               </Field>
               <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
                 Or continue with

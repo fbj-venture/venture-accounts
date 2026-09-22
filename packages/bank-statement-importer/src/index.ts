@@ -61,7 +61,7 @@ async function extractTextFromPdf(
          accountNumber = extractAccountNumber(content.items);
       }
 
-      rows.push(...extractTableRows(content.items));
+      rows.push(...extractTableRows(content.items, rows.length));
    }
 
    await loadingTask.destroy();

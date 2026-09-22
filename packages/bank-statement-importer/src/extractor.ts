@@ -45,7 +45,7 @@ const STATEMENT_DATE_PATTERN = new RegExp(
 // the source and get joined back together.
 const ACCOUNT_NUMBER_PATTERN = /Account Number\s+([\d ]+\d)/;
 
-type ParsedTransactionLine = Omit<ImportRow, "hash">;
+type ParsedTransactionLine = Omit<ImportRow, "hash" | "rowIndex">;
 
 function buildLines(items: TextContentItem[]): string[] {
   const lines: string[] = [];
@@ -188,8 +188,12 @@ function parseTransactionLine(line: string): ParsedTransactionLine | null {
   return { details, serviceFee, debits, credits, date, balance };
 }
 
-function hashRow(row: ParsedTransactionLine): string {
+// A cryptographic (SHA-256) fingerprint of the row, including its index -
+// this disambiguates otherwise-identical transactions (same details/amounts
+// occurring more than once on a statement) so each gets its own hash.
+function hashRow(row: ParsedTransactionLine, rowIndex: number): string {
   const canonical = [
+    rowIndex.toString(),
     row.details,
     row.serviceFee,
     row.debits,
@@ -201,11 +205,20 @@ function hashRow(row: ParsedTransactionLine): string {
   return createHash("sha256").update(canonical).digest("hex");
 }
 
-function toImportRow(transaction: ParsedTransactionLine): ImportRow {
-  return { ...transaction, hash: hashRow(transaction) };
+function toImportRow(
+  transaction: ParsedTransactionLine,
+  rowIndex: number,
+): ImportRow {
+  return { ...transaction, rowIndex, hash: hashRow(transaction, rowIndex) };
 }
 
-export function extractTableRows(items: TextContentItem[]): ImportRow[] {
+// `startIndex` lets callers assign a globally unique row-index across
+// multiple pages (each page is parsed independently, so this function has
+// no visibility into rows found on other pages).
+export function extractTableRows(
+  items: TextContentItem[],
+  startIndex = 0,
+): ImportRow[] {
   const lines = buildLines(items);
 
   const header = locateHeader(lines);
@@ -252,7 +265,7 @@ export function extractTableRows(items: TextContentItem[]): ImportRow[] {
       i += 1;
     }
 
-    rows.push(toImportRow(transaction));
+    rows.push(toImportRow(transaction, startIndex + rows.length));
   }
 
   return rows;

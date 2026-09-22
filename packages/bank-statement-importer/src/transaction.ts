@@ -15,16 +15,16 @@ const SOUTH_AFRICA_UTC_OFFSET_MS = SOUTH_AFRICA_UTC_OFFSET_HOURS * 60 * 60 * 100
 // magnitudes - the debit/credit column already conveys direction, and
 // there's no such thing as a negative debit - but a negative balance is a
 // genuinely overdrawn balance, so it keeps its sign via `signed`.
-function parseAmountToCents(value: string, options?: { signed?: boolean }): number {
+function parseAmount(value: string, options?: { signed?: boolean }): number {
   if (value.length === 0) {
     return 0;
   }
 
   const isNegative = (options?.signed ?? false) && value.endsWith("-");
   const cleaned = value.replace(/,/g, "").replace(/-$/, "");
-  const cents = Math.round(Number(cleaned) * 100);
+  const amount = Number(cleaned);
 
-  return isNegative ? -cents : cents;
+  return isNegative ? -amount : amount;
 }
 
 function parseStatementDate(statementDate: string): {
@@ -76,13 +76,17 @@ export function toTransaction(
     Date.UTC(year, month - 1, day) - SOUTH_AFRICA_UTC_OFFSET_MS,
   );
 
+  // Debits/credits are already mutually exclusive non-negative magnitudes
+  // (see parseAmount above), so subtracting gives a single signed amount:
+  // positive for a credit, negative for a debit.
+  const amount = parseAmount(row.credits) - parseAmount(row.debits);
+
   return {
     details: row.details,
-    serviceFee: parseAmountToCents(row.serviceFee),
-    debits: parseAmountToCents(row.debits),
-    credits: parseAmountToCents(row.credits),
+    serviceFee: parseAmount(row.serviceFee),
+    amount,
     date,
-    balance: parseAmountToCents(row.balance, { signed: true }),
+    balance: parseAmount(row.balance, { signed: true }),
     hash: row.hash,
   };
 }

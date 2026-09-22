@@ -1,4 +1,5 @@
 export type ImportRow = {
+  rowIndex: number;
   details: string;
   serviceFee: string;
   debits: string;

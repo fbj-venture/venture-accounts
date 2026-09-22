@@ -1,36 +1,18 @@
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { loadEnv, requireEnv } from "./env.js";
 import * as schema from "./schema.js";
 
-// Loaded by path (rather than the default cwd-relative lookup) so this
-// works regardless of which package's directory the process was started
-// from, e.g. `pnpm --filter @app/bank-statement-importer ...`.
-// const rootEnvPath = path.resolve(
-//   path.dirname(fileURLToPath(import.meta.url)),
-//   "../../../.env",
-// );
-// process.loadEnvFile(rootEnvPath);
+loadEnv();
 
-const currentDir = path.dirname(fileURLToPath(import.meta.url));
-
-try {
-  process.loadEnvFile(path.resolve(currentDir, "../.env.local"));
-} catch (error) {
-  if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
-    throw error;
-  }
-}
-
-process.loadEnvFile(path.resolve(currentDir, "../../../.env"));
-
-const databaseUrl = process.env.DATABASE_URL;
-if (!databaseUrl) {
-  throw new Error("DATABASE_URL is not set. Add it to .env.");
-}
-
-const sql = neon(databaseUrl);
+// The HTTP driver - stateless per-request, so it's safe anywhere that can
+// only make HTTP calls (edge/other restricted runtimes), not just a
+// traditional Node server. Uses DATABASE_URL, Neon's *pooled* connection
+// string (via PgBouncer) - each call here is a short-lived logical
+// connection, so pooling on Neon's side is what keeps that cheap.
+// For a long-running Node server that wants real sessions/transactions and
+// its own connection pool, use "@app/db/direct" instead.
+const sql = neon(requireEnv("DATABASE_URL"));
 
 export const db = drizzle(sql, { schema });
 

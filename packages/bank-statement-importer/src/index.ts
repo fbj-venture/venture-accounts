@@ -1,12 +1,11 @@
 import type { Transaction } from "@app/models";
-import { readFile, writeFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
 import { findAccountByBankAccountNumber, importTransactions } from "./db-import.js";
 import { extractAccountNumber, extractStatementDate, extractTableRows } from "./extractor.js";
 import type { ImportRow } from "./import-row.js";
-import { toJson } from "./json.js";
 import { toTransactions } from "./transaction.js";
 
 // Loaded by path (rather than the default cwd-relative lookup) so this
@@ -21,11 +20,12 @@ export async function readPdfFileFromFile(filePath: string): Promise<void> {
    console.log(filePath);
 
    const data = await readFile(filePath);
-   const transactions = await readPdfStream(data);
+   await readPdfStream(data);
 
-   const jsonPath = filePath.replace(/\.pdf$/i, ".json");
-   await writeFile(jsonPath, toJson(transactions));
-   console.log(`Wrote ${transactions.length} transactions to ${jsonPath}`);
+   // const transactions = await readPdfStream(data);
+   // const jsonPath = filePath.replace(/\.pdf$/i, ".json");
+   // await writeFile(jsonPath, toJson(transactions));
+   // console.log(`Wrote ${transactions.length} transactions to ${jsonPath}`);
 }
 
 export async function readPdfStream(data: Uint8Array): Promise<Transaction[]> {

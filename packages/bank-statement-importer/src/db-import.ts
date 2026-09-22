@@ -1,4 +1,7 @@
-import { account, bankAccount, db, journal, journalLine } from "@app/db";
+// Uses the unpooled/direct connection (not the default pooled "@app/db")
+// since this imports many rows in a loop - a real connection/pool suits
+// that better than a fresh HTTP request per query.
+import { account, bankAccount, db, journal, journalLine } from "@app/db/direct";
 import type { Transaction } from "@app/models";
 import { eq } from "drizzle-orm";
 

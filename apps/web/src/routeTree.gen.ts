@@ -13,6 +13,9 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as BooksRouteRouteImport } from './routes/books/route'
 import { Route as BooksIndexRouteImport } from './routes/books/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as BooksTransactionsIndexRouteImport } from './routes/books/transactions/index'
+import { Route as BooksAdminUsersIndexRouteImport } from './routes/books/admin/users/index'
+import { Route as BooksBankingImportIndexRouteImport } from './routes/books/banking/import/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,17 +37,38 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BooksTransactionsIndexRoute = BooksTransactionsIndexRouteImport.update({
+  id: '/transactions/',
+  path: '/transactions/',
+  getParentRoute: () => BooksRouteRoute,
+} as any)
+const BooksAdminUsersIndexRoute = BooksAdminUsersIndexRouteImport.update({
+  id: '/admin/users/',
+  path: '/admin/users/',
+  getParentRoute: () => BooksRouteRoute,
+} as any)
+const BooksBankingImportIndexRoute = BooksBankingImportIndexRouteImport.update({
+  id: '/banking/import/',
+  path: '/banking/import/',
+  getParentRoute: () => BooksRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/books': typeof BooksRouteRouteWithChildren
   '/books/': typeof BooksIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/books/transactions/': typeof BooksTransactionsIndexRoute
+  '/books/admin/users/': typeof BooksAdminUsersIndexRoute
+  '/books/banking/import/': typeof BooksBankingImportIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/books': typeof BooksIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/books/transactions': typeof BooksTransactionsIndexRoute
+  '/books/admin/users': typeof BooksAdminUsersIndexRoute
+  '/books/banking/import': typeof BooksBankingImportIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -52,13 +76,37 @@ export interface FileRoutesById {
   '/books': typeof BooksRouteRouteWithChildren
   '/books/': typeof BooksIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/books/transactions/': typeof BooksTransactionsIndexRoute
+  '/books/admin/users/': typeof BooksAdminUsersIndexRoute
+  '/books/banking/import/': typeof BooksBankingImportIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/books' | '/books/' | '/api/auth/$'
+  fullPaths:
+    | '/'
+    | '/books'
+    | '/books/'
+    | '/api/auth/$'
+    | '/books/transactions/'
+    | '/books/admin/users/'
+    | '/books/banking/import/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/books' | '/api/auth/$'
-  id: '__root__' | '/' | '/books' | '/books/' | '/api/auth/$'
+  to:
+    | '/'
+    | '/books'
+    | '/api/auth/$'
+    | '/books/transactions'
+    | '/books/admin/users'
+    | '/books/banking/import'
+  id:
+    | '__root__'
+    | '/'
+    | '/books'
+    | '/books/'
+    | '/api/auth/$'
+    | '/books/transactions/'
+    | '/books/admin/users/'
+    | '/books/banking/import/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -97,15 +145,42 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/books/transactions/': {
+      id: '/books/transactions/'
+      path: '/transactions'
+      fullPath: '/books/transactions/'
+      preLoaderRoute: typeof BooksTransactionsIndexRouteImport
+      parentRoute: typeof BooksRouteRoute
+    }
+    '/books/admin/users/': {
+      id: '/books/admin/users/'
+      path: '/admin/users'
+      fullPath: '/books/admin/users/'
+      preLoaderRoute: typeof BooksAdminUsersIndexRouteImport
+      parentRoute: typeof BooksRouteRoute
+    }
+    '/books/banking/import/': {
+      id: '/books/banking/import/'
+      path: '/banking/import'
+      fullPath: '/books/banking/import/'
+      preLoaderRoute: typeof BooksBankingImportIndexRouteImport
+      parentRoute: typeof BooksRouteRoute
+    }
   }
 }
 
 interface BooksRouteRouteChildren {
   BooksIndexRoute: typeof BooksIndexRoute
+  BooksTransactionsIndexRoute: typeof BooksTransactionsIndexRoute
+  BooksAdminUsersIndexRoute: typeof BooksAdminUsersIndexRoute
+  BooksBankingImportIndexRoute: typeof BooksBankingImportIndexRoute
 }
 
 const BooksRouteRouteChildren: BooksRouteRouteChildren = {
   BooksIndexRoute: BooksIndexRoute,
+  BooksTransactionsIndexRoute: BooksTransactionsIndexRoute,
+  BooksAdminUsersIndexRoute: BooksAdminUsersIndexRoute,
+  BooksBankingImportIndexRoute: BooksBankingImportIndexRoute,
 }
 
 const BooksRouteRouteWithChildren = BooksRouteRoute._addFileChildren(

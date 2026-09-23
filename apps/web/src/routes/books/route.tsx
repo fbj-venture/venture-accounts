@@ -1,6 +1,5 @@
-import { authClient } from '#/lib/auth-client.ts';
 import { auth } from '#/lib/auth.ts';
-import { AppSidebar } from "@/components/app-sidebar";
+import { AppSidebar } from "#/routes/books/-components/app-sidebar";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -15,7 +14,8 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { createFileRoute, Outlet, redirect, useNavigate } from '@tanstack/react-router';
+import type { SessionUser } from '@app/models';
+import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/react-start';
 import { getRequest } from '@tanstack/react-start/server';
 
@@ -29,23 +29,20 @@ export const Route = createFileRoute('/books')({
     if (!authSession) {
       throw redirect({ to: '/' });
     }
-    return { user: authSession.user };
+    // Explicit annotation so this fails to typecheck if better-auth's
+    // inferred user shape ever drifts from @app/models' User.
+    const user: SessionUser = authSession.user;
+    return { user };
   },
   component: BooksLayout,
 });
 
 function BooksLayout() {
   const { user } = Route.useRouteContext();
-  const navigate = useNavigate();
-
-  const signout = async () => {
-    await authClient.signOut();
-    await navigate({ to: "/" });
-  };
 
   return (
     <SidebarProvider>
-      <AppSidebar />
+      <AppSidebar sessionUser={user} />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
           <div className="flex items-center gap-2 px-4">

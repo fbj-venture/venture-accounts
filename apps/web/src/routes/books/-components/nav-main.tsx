@@ -16,7 +16,7 @@ import {
   SidebarMenuSubItem,
 } from "#/components/ui/sidebar.tsx";
 
-export function NavPlatform({
+export function NavAccounts({
   items,
 }: {
   items: {

@@ -11,10 +11,6 @@ import {
 } from "lucide-react";
 import * as React from "react";
 
-import { NavPlatform } from "#/components/nav-main.tsx";
-import { NavUsers } from "#/components/nav-projects.tsx";
-import { NavUser } from "#/components/nav-user.tsx";
-import { TeamSwitcher } from "#/components/team-switcher.tsx";
 import {
   Sidebar,
   SidebarContent,
@@ -22,22 +18,14 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "#/components/ui/sidebar.tsx";
+import type { SessionUser } from "@app/models";
+import { NavAccounts } from "./nav-main.tsx";
+import { NavUsers } from "./nav-projects.tsx";
+import { NavUser } from "./nav-user.tsx";
 
 // This is sample data.
 const data = {
-  user: {
-    name: "Francis",
-    email: "francis@venturechurch.co.za",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  teams: [
-    {
-      name: "Venture Church",
-      logo: Wallet2Icon,
-      plan: "Accounts",
-    },
-  ],
-  platform: [
+  accounts: [
     {
       title: "Accounts",
       url: "#",
@@ -50,9 +38,9 @@ const data = {
           url: "/books"
         },
         {
-          title: "Unassigned Transactions",
+          title: "Transactions",
           icon: ListPlusIcon,
-          url: "#"
+          url: "/books/transactions"
         },
       ],
     },
@@ -65,7 +53,7 @@ const data = {
         {
           title: "Import",
           icon: ImportIcon,
-          url: "#",
+          url: "/books/banking/import/",
         },
       ],
     }
@@ -73,26 +61,38 @@ const data = {
   admin: [
     {
       name: "List Users",
-      url: "#",
+      url: "/books/admin/users/",
       icon: UsersRoundIcon
     }
   ]
 };
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({
+  sessionUser,
+  ...props
+}: React.ComponentProps<typeof Sidebar> & { sessionUser: SessionUser; }) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <h1 className='flex items-center'>
+          <Wallet2Icon className="size-7 text-primary" />
+          <span className="font-semibold text-muted-foreground pl-2">Venture</span>
+          &nbsp;
+          <span className="font-semibold text-primary">Accounts</span>
+        </h1>
       </SidebarHeader>
       <SidebarContent>
-        <NavPlatform items={data.platform} />
+        <NavAccounts items={data.accounts} />
         <NavUsers users={data.admin} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={sessionUser} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   );
 }
+
+/*
+        <TeamSwitcher teams={data.teams} />
+ */

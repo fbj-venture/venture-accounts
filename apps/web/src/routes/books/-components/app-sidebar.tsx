@@ -69,16 +69,19 @@ const data = {
 
 export function AppSidebar({
   sessionUser,
+  appCompany,
   ...props
-}: React.ComponentProps<typeof Sidebar> & { sessionUser: SessionUser; }) {
+}: React.ComponentProps<typeof Sidebar> & { sessionUser: SessionUser; appCompany: string; }) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <h1 className='flex items-center'>
           <Wallet2Icon className="size-7 text-primary" />
-          <span className="font-semibold text-muted-foreground pl-2">Venture</span>
-          &nbsp;
-          <span className="font-semibold text-primary">Accounts</span>
+          <span className="pl-2 group-data-[collapsible=icon]:hidden">
+            <span className="font-semibold text-muted-foreground">{appCompany}</span>
+            &nbsp;
+            <span className="font-semibold text-primary">Accounts</span>
+          </span>
         </h1>
       </SidebarHeader>
       <SidebarContent>

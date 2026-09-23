@@ -25,6 +25,12 @@ const getAuthSession = createServerFn({ method: 'GET' }).handler(async () => {
   return await auth.api.getSession({ headers: getRequest().headers });
 });
 
+// process.env.APP_COMPANY is only readable server-side, so it's fetched
+// here rather than via a VITE_-prefixed client env var.
+const getAppCompany = createServerFn({ method: 'GET' }).handler(async () => {
+  return process.env.APP_COMPANY ?? 'Venture';
+});
+
 export const Route = createFileRoute('/books')({
   beforeLoad: async () => {
     const authSession = await getAuthSession();
@@ -34,18 +40,19 @@ export const Route = createFileRoute('/books')({
     // Explicit annotation so this fails to typecheck if better-auth's
     // inferred user shape ever drifts from @app/models' User.
     const user: SessionUser = authSession.user;
-    return { user };
+    const appCompany = await getAppCompany();
+    return { user, appCompany };
   },
   component: BooksLayout,
 });
 
 function BooksLayout() {
-  const { user } = Route.useRouteContext();
+  const { user, appCompany } = Route.useRouteContext();
   const crumbs = useBreadcrumbs();
 
   return (
     <SidebarProvider>
-      <AppSidebar sessionUser={user} />
+      <AppSidebar sessionUser={user} appCompany={appCompany} />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
           <div className="flex items-center gap-2 px-4">
@@ -87,31 +94,3 @@ function BooksLayout() {
 
   );
 }
-
-/*
-    <div className="flex min-h-svh flex-col">
-      <header className="flex items-center justify-between border-b bg-muted-foreground px-6 py-3">
-        <h1 className='flex gap-2 items-center text-2xl text-accent'>
-          <Wallet2Icon className="size-7 text-primary" />
-          <p>
-            <span className="font-semibold">Venture</span>
-            &nbsp;
-            <span className="font-semibold text-primary">Accounts</span>
-          </p>
-        </h1>
-        <div className="flex items-center gap-3">
-          <span className="text-sm text-accent" >{user.name}</span>
-          <Button
-            variant="link"
-            size="sm"
-            onClick={signout}
-          >
-            Sign out
-          </Button>
-        </div>
-      </header>
-      <main className="flex-1 p-6">
-        <Outlet />
-      </main>
-    </div>
-*/

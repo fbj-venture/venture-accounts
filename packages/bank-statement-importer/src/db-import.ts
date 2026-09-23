@@ -20,6 +20,10 @@ export async function findAccountByBankAccountNumber(accountNumber: string) {
   return { found: Boolean(row), account: row?.account, bankAccount: row?.bankAccount };
 }
 
+export type ImportRowProgress =
+  | { status: "imported"; index: number; total: number; transaction: Transaction }
+  | { status: "skipped"; index: number; total: number; transaction: Transaction };
+
 // Imports each Transaction as a Journal Entry (one per row) with a single
 // Journal Line against `ledgerAccount`. NOTE: this is not yet real
 // double-entry - each Journal Entry's one line won't sum to zero, since
@@ -29,8 +33,13 @@ export async function findAccountByBankAccountNumber(accountNumber: string) {
 export async function importTransactions(
   transactions: Transaction[],
   ledgerAccount: typeof account.$inferSelect,
+  onProgress?: (progress: ImportRowProgress) => void,
 ): Promise<void> {
-  for (const transaction of transactions) {
+  const total = transactions.length;
+
+  for (let index = 0; index < transactions.length; index++) {
+    const transaction = transactions[index]!;
+
     const [existingLine] = await db
       .select({ id: journalLine.id })
       .from(journalLine)
@@ -38,7 +47,7 @@ export async function importTransactions(
       .limit(1);
 
     if (existingLine) {
-      console.log(`Row already imported, skipping`);
+      onProgress?.({ status: "skipped", index, total, transaction });
       continue;
     }
 
@@ -70,6 +79,9 @@ export async function importTransactions(
 
     if (!createdLine) {
       await db.delete(journal).where(eq(journal.id, createdJournal.id));
+      continue;
     }
+
+    onProgress?.({ status: "imported", index, total, transaction });
   }
 }

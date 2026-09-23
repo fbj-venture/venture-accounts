@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as BooksRouteRouteImport } from './routes/books/route'
 import { Route as BooksIndexRouteImport } from './routes/books/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiBooksImportRouteImport } from './routes/api/books/import'
 import { Route as BooksTransactionsIndexRouteImport } from './routes/books/transactions/index'
 import { Route as BooksAdminUsersIndexRouteImport } from './routes/books/admin/users/index'
 import { Route as BooksBankingImportIndexRouteImport } from './routes/books/banking/import/index'
@@ -37,6 +38,11 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiBooksImportRoute = ApiBooksImportRouteImport.update({
+  id: '/api/books/import',
+  path: '/api/books/import',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BooksTransactionsIndexRoute = BooksTransactionsIndexRouteImport.update({
   id: '/transactions/',
   path: '/transactions/',
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/books': typeof BooksRouteRouteWithChildren
   '/books/': typeof BooksIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/books/import': typeof ApiBooksImportRoute
   '/books/transactions/': typeof BooksTransactionsIndexRoute
   '/books/admin/users/': typeof BooksAdminUsersIndexRoute
   '/books/banking/import/': typeof BooksBankingImportIndexRoute
@@ -66,6 +73,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/books': typeof BooksIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/books/import': typeof ApiBooksImportRoute
   '/books/transactions': typeof BooksTransactionsIndexRoute
   '/books/admin/users': typeof BooksAdminUsersIndexRoute
   '/books/banking/import': typeof BooksBankingImportIndexRoute
@@ -76,6 +84,7 @@ export interface FileRoutesById {
   '/books': typeof BooksRouteRouteWithChildren
   '/books/': typeof BooksIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/books/import': typeof ApiBooksImportRoute
   '/books/transactions/': typeof BooksTransactionsIndexRoute
   '/books/admin/users/': typeof BooksAdminUsersIndexRoute
   '/books/banking/import/': typeof BooksBankingImportIndexRoute
@@ -87,6 +96,7 @@ export interface FileRouteTypes {
     | '/books'
     | '/books/'
     | '/api/auth/$'
+    | '/api/books/import'
     | '/books/transactions/'
     | '/books/admin/users/'
     | '/books/banking/import/'
@@ -95,6 +105,7 @@ export interface FileRouteTypes {
     | '/'
     | '/books'
     | '/api/auth/$'
+    | '/api/books/import'
     | '/books/transactions'
     | '/books/admin/users'
     | '/books/banking/import'
@@ -104,6 +115,7 @@ export interface FileRouteTypes {
     | '/books'
     | '/books/'
     | '/api/auth/$'
+    | '/api/books/import'
     | '/books/transactions/'
     | '/books/admin/users/'
     | '/books/banking/import/'
@@ -113,6 +125,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BooksRouteRoute: typeof BooksRouteRouteWithChildren
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiBooksImportRoute: typeof ApiBooksImportRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -143,6 +156,13 @@ declare module '@tanstack/react-router' {
       path: '/api/auth/$'
       fullPath: '/api/auth/$'
       preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/books/import': {
+      id: '/api/books/import'
+      path: '/api/books/import'
+      fullPath: '/api/books/import'
+      preLoaderRoute: typeof ApiBooksImportRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/books/transactions/': {
@@ -191,6 +211,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BooksRouteRoute: BooksRouteRouteWithChildren,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiBooksImportRoute: ApiBooksImportRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

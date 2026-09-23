@@ -3,7 +3,11 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
-import { findAccountByBankAccountNumber, importTransactions } from "./db-import.js";
+import {
+   findAccountByBankAccountNumber,
+   importTransactions,
+   type ImportRowProgress,
+} from "./db-import.js";
 import { extractAccountNumber, extractStatementDate, extractTableRows } from "./extractor.js";
 import type { ImportRow } from "./import-row.js";
 import { toTransactions } from "./transaction.js";
@@ -21,14 +25,27 @@ export async function readPdfFileFromFile(filePath: string): Promise<void> {
 
    const data = await readFile(filePath);
    await readPdfStream(data);
-
-   // const transactions = await readPdfStream(data);
-   // const jsonPath = filePath.replace(/\.pdf$/i, ".json");
-   // await writeFile(jsonPath, toJson(transactions));
-   // console.log(`Wrote ${transactions.length} transactions to ${jsonPath}`);
 }
 
+// One event per phase of readPdfStreamWithProgress's pipeline, so a caller
+// (e.g. a streaming HTTP handler) can report progress as it happens rather
+// than waiting for the whole import to finish.
+export type ImportEvent =
+   | { phase: "extracting" }
+   | { phase: "extracted"; statementDate: string; accountNumber: string; rowCount: number }
+   | ({ phase: "importing" } & ImportRowProgress)
+   | { phase: "done"; imported: number; skipped: number; total: number };
+
 export async function readPdfStream(data: Uint8Array): Promise<Transaction[]> {
+   return readPdfStreamWithProgress(data, () => { });
+}
+
+export async function readPdfStreamWithProgress(
+   data: Uint8Array,
+   onEvent: (event: ImportEvent) => void,
+): Promise<Transaction[]> {
+   onEvent({ phase: "extracting" });
+
    const { rows, statementDate, accountNumber } = await extractTextFromPdf(
       new Uint8Array(data),
    );
@@ -40,18 +57,34 @@ export async function readPdfStream(data: Uint8Array): Promise<Transaction[]> {
       throw new Error("Could not find the account number on the first page.");
    }
 
-   // console.log(`Statement for account number: ${accountNumber}, on ${statementDate}`);
-
    // Find the Bank Account
    const accountDetails = await findAccountByBankAccountNumber(accountNumber);
    if (!accountDetails.found || !accountDetails.account) {
       throw new Error(`Could not fund the Bank-Account or Account for '${accountNumber}'`);
    }
 
-   // Convert the
    const transactions = toTransactions(rows, statementDate);
 
-   await importTransactions(transactions, accountDetails.account);
+   onEvent({
+      phase: "extracted",
+      statementDate,
+      accountNumber,
+      rowCount: transactions.length,
+   });
+
+   let imported = 0;
+   let skipped = 0;
+
+   await importTransactions(transactions, accountDetails.account, (progress) => {
+      if (progress.status === "imported") {
+         imported++;
+      } else {
+         skipped++;
+      }
+      onEvent({ phase: "importing", ...progress });
+   });
+
+   onEvent({ phase: "done", imported, skipped, total: transactions.length });
 
    return transactions;
 }

@@ -1,8 +1,3 @@
-import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
-import { createServerFn } from "@tanstack/react-start";
-import { readPdfStream } from "@app/bank-statement-importer";
-import { AlertCircleIcon, CheckCircle2Icon } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "#/components/ui/alert.tsx";
 import { Button } from "#/components/ui/button.tsx";
 import {
@@ -12,57 +7,141 @@ import {
   FieldLabel,
 } from "#/components/ui/field.tsx";
 import { Input } from "#/components/ui/input.tsx";
-
-const uploadStatementFn = createServerFn({ method: "POST" })
-  .validator((data: FormData) => data)
-  .handler(async ({ data }) => {
-    const file = data.get("file");
-
-    if (!(file instanceof File)) {
-      return { success: false as const, error: "No file was uploaded." };
-    }
-
-    if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
-      return { success: false as const, error: "Only PDF documents are supported." };
-    }
-
-    try {
-      const bytes = new Uint8Array(await file.arrayBuffer());
-      const transactions = await readPdfStream(bytes);
-      return { success: true as const, count: transactions.length };
-    } catch (error) {
-      return {
-        success: false as const,
-        error: error instanceof Error ? error.message : "Failed to import the statement.",
-      };
-    }
-  });
+import { Progress } from "#/components/ui/progress";
+import type { UploadEvent } from "#/routes/api/books/import.ts";
+import { createFileRoute } from "@tanstack/react-router";
+import { AlertCircleIcon, CheckCircle2Icon } from "lucide-react";
+import { useState } from "react";
 
 export const Route = createFileRoute("/books/banking/import/")({
   component: RouteComponent,
 });
 
-type UploadResult =
-  | { success: true; count: number }
-  | { success: false; error: string };
+// Collapses a stream of UploadEvents into human-readable lines. Per-row
+// "importing" events update the same trailing line in place (there can be
+// 50-100+ of them per statement) instead of appending one DOM node each.
+function toDisplayLines(events: UploadEvent[]): string[] {
+  const lines: string[] = [];
+
+  for (const event of events) {
+    switch (event.phase) {
+      case "uploaded":
+        lines.push(
+          `Uploaded ${event.fileName} (${Math.round(event.size / 1024)} KB).`,
+        );
+        break;
+      case "extracting":
+        lines.push("Extracting transactions from the PDF...");
+        break;
+      case "extracted":
+        lines.push(
+          `Found ${event.rowCount} transaction${event.rowCount === 1 ? "" : "s"} ` +
+          `for account ${event.accountNumber}, statement dated ${event.statementDate}.`,
+        );
+        break;
+      case "importing": {
+        const text =
+          `Importing ${event.index + 1}/${event.total}: ` +
+          `${event.status === "skipped" ? "skipped (already imported)" : "imported"} - ` +
+          event.transaction.details;
+        if (lines.at(-1)?.startsWith("Importing ")) {
+          lines[lines.length - 1] = text;
+        } else {
+          lines.push(text);
+        }
+        break;
+      }
+      case "done":
+        lines.push(
+          `Done - ${event.imported} imported, ${event.skipped} skipped, ${event.total} total.`,
+        );
+        break;
+      case "error":
+        lines.push(`Error: ${event.message}`);
+        break;
+    }
+  }
+
+  return lines;
+}
+
+// Phases before per-row importing starts don't have a natural 0-100 value
+// (there's nothing to count yet), so they get fixed checkpoints; importing
+// then scales smoothly across the rest of the bar.
+function toProgressValue(events: UploadEvent[]): number {
+  const lastEvent = events.at(-1);
+  if (!lastEvent) return 0;
+
+  switch (lastEvent.phase) {
+    case "uploaded":
+      return 5;
+    case "extracting":
+      return 10;
+    case "extracted":
+      return 15;
+    case "importing":
+      return 15 + ((lastEvent.index + 1) / lastEvent.total) * 85;
+    case "done":
+    case "error":
+      return 100;
+  }
+}
 
 function RouteComponent() {
-  const [result, setResult] = useState<UploadResult | null>(null);
+  const [events, setEvents] = useState<UploadEvent[]>([]);
   const [pending, setPending] = useState(false);
+
+  const finalEvent = events.at(-1);
+  const outcome =
+    finalEvent?.phase === "done" || finalEvent?.phase === "error"
+      ? finalEvent
+      : null;
+  // Hidden until the upload starts; once it's started, stays visible even
+  // after it finishes (pending goes back to false at the end).
+  const hasStarted = pending || events.length > 0;
 
   async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
+    const form = event.currentTarget;
+    setEvents([]);
     setPending(true);
-    setResult(null);
 
-    const formData = new FormData(event.currentTarget);
-    const uploaded = await uploadStatementFn({ data: formData });
+    const formData = new FormData(form);
+    const response = await fetch("/api/books/import", {
+      method: "POST",
+      body: formData,
+    });
 
-    setResult(uploaded);
+    if (!response.ok || !response.body) {
+      setEvents([{ phase: "error", message: await response.text() }]);
+      setPending(false);
+      return;
+    }
+
+    const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
+    let buffer = "";
+    let lastEvent: UploadEvent | undefined;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += value;
+      const parts = buffer.split("\n\n");
+      buffer = parts.pop() ?? "";
+
+      for (const part of parts) {
+        const line = part.trim();
+        if (!line.startsWith("data: ")) continue;
+        const parsedEvent: UploadEvent = JSON.parse(line.slice("data: ".length));
+        lastEvent = parsedEvent;
+        setEvents((previous) => [...previous, parsedEvent]);
+      }
+    }
+
     setPending(false);
-
-    if (uploaded.success) {
-      event.currentTarget.reset();
+    if (lastEvent?.phase === "done") {
+      form.reset();
     }
   }
 
@@ -88,29 +167,40 @@ function RouteComponent() {
             <FieldDescription>PDF documents only.</FieldDescription>
           </Field>
 
-          {result ? (
-            <Alert variant={result.success ? "default" : "destructive"}>
-              {result.success ? (
-                <CheckCircle2Icon className="size-4" />
-              ) : (
-                <AlertCircleIcon className="size-4" />
-              )}
-              <AlertTitle>
-                {result.success ? "Import complete" : "Import failed"}
-              </AlertTitle>
-              <AlertDescription>
-                {result.success
-                  ? `Imported ${result.count} transaction${result.count === 1 ? "" : "s"}.`
-                  : result.error}
-              </AlertDescription>
-            </Alert>
-          ) : null}
-
           <Field>
             <Button type="submit" disabled={pending}>
               {pending ? "Uploading..." : "Upload statement"}
             </Button>
           </Field>
+
+          {hasStarted ? <Progress value={toProgressValue(events)} /> : null}
+
+          {events.length > 0 ? (
+            <ul className="space-y-1 text-sm text-muted-foreground">
+              {toDisplayLines(events).map((line, index) => (
+                // eslint-disable-next-line react/no-array-index-key
+                <li key={index}>{line}</li>
+              ))}
+            </ul>
+          ) : null}
+
+          {outcome ? (
+            <Alert variant={outcome.phase === "done" ? "default" : "destructive"}>
+              {outcome.phase === "done" ? (
+                <CheckCircle2Icon className="size-4" />
+              ) : (
+                <AlertCircleIcon className="size-4" />
+              )}
+              <AlertTitle>
+                {outcome.phase === "done" ? "Import complete" : "Import failed"}
+              </AlertTitle>
+              <AlertDescription>
+                {outcome.phase === "done"
+                  ? `Imported ${outcome.imported} of ${outcome.total} transactions (${outcome.skipped} already imported).`
+                  : outcome.message}
+              </AlertDescription>
+            </Alert>
+          ) : null}
         </FieldGroup>
       </form>
     </>

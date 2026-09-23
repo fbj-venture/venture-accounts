@@ -1,0 +1,1 @@
+ALTER TABLE "journal" ADD COLUMN "is_reconciled" boolean DEFAULT false NOT NULL;

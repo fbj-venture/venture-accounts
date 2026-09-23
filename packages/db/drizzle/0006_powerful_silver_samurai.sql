@@ -1,0 +1,1 @@
+ALTER TABLE "journal" ADD COLUMN "is_posted" boolean DEFAULT false NOT NULL;

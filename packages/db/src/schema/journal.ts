@@ -1,4 +1,4 @@
-import { date, pgTable, serial, text } from "drizzle-orm/pg-core";
+import { boolean, date, pgTable, serial, text } from "drizzle-orm/pg-core";
 
 /**
  * Journal entry
@@ -12,4 +12,6 @@ export const journal = pgTable("journal", {
   id: serial("id").primaryKey(),
   date: date("date", { mode: "date" }).notNull(),
   note: text("note").notNull(),
+  isPosted: boolean("is_posted").notNull().default(false),
+  isReconciled: boolean("is_reconciled").notNull().default(false),
 });

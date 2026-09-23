@@ -15,9 +15,11 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import type { SessionUser } from '@app/models';
-import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
+import { createFileRoute, Link, Outlet, redirect } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/react-start';
 import { getRequest } from '@tanstack/react-start/server';
+import { Fragment } from 'react';
+import { useBreadcrumbs } from './-breadcrumbs.ts';
 
 const getAuthSession = createServerFn({ method: 'GET' }).handler(async () => {
   return await auth.api.getSession({ headers: getRequest().headers });
@@ -39,6 +41,7 @@ export const Route = createFileRoute('/books')({
 
 function BooksLayout() {
   const { user } = Route.useRouteContext();
+  const crumbs = useBreadcrumbs();
 
   return (
     <SidebarProvider>
@@ -53,15 +56,24 @@ function BooksLayout() {
             />
             <Breadcrumb>
               <BreadcrumbList>
-                <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="#">
-                    Build Your Application
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>Data Fetching</BreadcrumbPage>
-                </BreadcrumbItem>
+                {crumbs.map((crumb, index) => (
+                  <Fragment key={crumb.title}>
+                    {index > 0 ? (
+                      <BreadcrumbSeparator className="hidden md:block" />
+                    ) : null}
+                    <BreadcrumbItem
+                      className={index < crumbs.length - 1 ? "hidden md:block" : undefined}
+                    >
+                      {index === crumbs.length - 1 || !crumb.url ? (
+                        <BreadcrumbPage>{crumb.title}</BreadcrumbPage>
+                      ) : (
+                        <BreadcrumbLink asChild>
+                          <Link to={crumb.url}>{crumb.title}</Link>
+                        </BreadcrumbLink>
+                      )}
+                    </BreadcrumbItem>
+                  </Fragment>
+                ))}
               </BreadcrumbList>
             </Breadcrumb>
           </div>

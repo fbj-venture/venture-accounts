@@ -40,7 +40,7 @@ const data = {
         {
           title: "Transactions",
           icon: ListPlusIcon,
-          url: "/books/transactions"
+          url: "/books/banking/transactions/"
         },
       ],
     },

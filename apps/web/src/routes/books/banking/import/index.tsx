@@ -13,12 +13,15 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AlertCircleIcon, CheckCircle2Icon } from "lucide-react";
 import { useState } from "react";
 import { toDisplayLines, toProgressValue } from "./-import-events.ts";
+import { useSetBreadcrumbs } from "#/routes/books/-breadcrumbs.ts";
 
 export const Route = createFileRoute("/books/banking/import/")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
+  useSetBreadcrumbs([{ title: "Import" }]);
+
   const [events, setEvents] = useState<UploadEvent[]>([]);
   const [pending, setPending] = useState(false);
 

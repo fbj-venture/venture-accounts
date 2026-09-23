@@ -211,6 +211,6 @@ body {
   }
 
   h2 {
-    @apply p-2 text-xl font-semibold;
+    @apply p-2 text-3xl font-semibold;
   }
 }

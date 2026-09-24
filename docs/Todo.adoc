@@ -1,0 +1,16 @@
+Venture Accounts Todo
+=====================
+Francis Judge <fjudge7@gmail.com>
+v1.0, 2026-09: Initial release
+:nofooter:
+
+[%interactive]
+* [ ] Take-on amount (Equity)
+[%interactive]
+** [ ] Bank Account balances
+* [ ] Transfers to bank account
+[%interactive]
+** [ ] Find matching account journal-line
+** [ ] Work-out how to link the two
+** [*] NB that transfers have no other Account
+* [ ] Bank statement reconciliations

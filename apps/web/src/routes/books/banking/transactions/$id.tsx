@@ -1,7 +1,7 @@
 import { TableFilterBar } from "#/components/table-filter-bar.tsx";
 import { parseAmountFilter } from "#/lib/amount-filter.ts";
 import { useSetBreadcrumbs } from "#/routes/books/-components/breadcrumbs.ts";
-import { createFileRoute, notFound } from '@tanstack/react-router';
+import { createFileRoute, getRouteApi, notFound } from '@tanstack/react-router';
 import { endOfDay, isWithinInterval, startOfDay } from "date-fns";
 import { useMemo, useState } from "react";
 import type { DateRange } from "react-day-picker";
@@ -24,9 +24,21 @@ export const Route = createFileRoute('/books/banking/transactions/$id')({
   component: RouteComponent,
 })
 
+// Loaded once by the parent layout route - see ./route.tsx.
+const transactionsLayout = getRouteApi('/books/banking/transactions');
+
 function RouteComponent() {
   const { bankAccount } = Route.useRouteContext();
   const { transactions } = Route.useLoaderData();
+  const { accountOptions: allAccountOptions } = transactionsLayout.useLoaderData();
+  // A transaction can't be a transfer from this bank account to itself.
+  const accountOptions = useMemo(
+    () => ({
+      ...allAccountOptions,
+      banks: allAccountOptions.banks.filter((bank) => bank.id !== bankAccount.id),
+    }),
+    [allAccountOptions, bankAccount.id],
+  );
   useSetBreadcrumbs([
     { title: "Bank Accounts", url: "/books/banking/transactions" },
     { title: `Un-posted transactions for ${bankAccount.name}` },
@@ -83,7 +95,12 @@ function RouteComponent() {
         />
       </div>
       <div className="mt-4">
-        <TransactionsTable data={filteredTransactions} />
+        <TransactionsTable
+          data={filteredTransactions}
+          accountOptions={accountOptions}
+          // New filters mean a new result set - start again from page 1.
+          pageResetKey={JSON.stringify([range?.from, range?.to, descriptionFilter, amountFilter])}
+        />
       </div>
     </>
   );

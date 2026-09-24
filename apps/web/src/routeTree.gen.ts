@@ -14,6 +14,7 @@ import { Route as BooksRouteRouteImport } from './routes/books/route'
 import { Route as BooksIndexRouteImport } from './routes/books/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiBooksImportRouteImport } from './routes/api/books/import'
+import { Route as BooksBankingTransactionsRouteRouteImport } from './routes/books/banking/transactions/route'
 import { Route as BooksAdminUsersIndexRouteImport } from './routes/books/admin/users/index'
 import { Route as BooksBankingImportIndexRouteImport } from './routes/books/banking/import/index'
 import { Route as BooksBankingTransactionsIndexRouteImport } from './routes/books/banking/transactions/index'
@@ -44,6 +45,12 @@ const ApiBooksImportRoute = ApiBooksImportRouteImport.update({
   path: '/api/books/import',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BooksBankingTransactionsRouteRoute =
+  BooksBankingTransactionsRouteRouteImport.update({
+    id: '/banking/transactions',
+    path: '/banking/transactions',
+    getParentRoute: () => BooksRouteRoute,
+  } as any)
 const BooksAdminUsersIndexRoute = BooksAdminUsersIndexRouteImport.update({
   id: '/admin/users/',
   path: '/admin/users/',
@@ -56,21 +63,22 @@ const BooksBankingImportIndexRoute = BooksBankingImportIndexRouteImport.update({
 } as any)
 const BooksBankingTransactionsIndexRoute =
   BooksBankingTransactionsIndexRouteImport.update({
-    id: '/banking/transactions/',
-    path: '/banking/transactions/',
-    getParentRoute: () => BooksRouteRoute,
+    id: '/',
+    path: '/',
+    getParentRoute: () => BooksBankingTransactionsRouteRoute,
   } as any)
 const BooksBankingTransactionsIdRoute =
   BooksBankingTransactionsIdRouteImport.update({
-    id: '/banking/transactions/$id',
-    path: '/banking/transactions/$id',
-    getParentRoute: () => BooksRouteRoute,
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => BooksBankingTransactionsRouteRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/books': typeof BooksRouteRouteWithChildren
   '/books/': typeof BooksIndexRoute
+  '/books/banking/transactions': typeof BooksBankingTransactionsRouteRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/books/import': typeof ApiBooksImportRoute
   '/books/banking/transactions/$id': typeof BooksBankingTransactionsIdRoute
@@ -93,6 +101,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/books': typeof BooksRouteRouteWithChildren
   '/books/': typeof BooksIndexRoute
+  '/books/banking/transactions': typeof BooksBankingTransactionsRouteRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/books/import': typeof ApiBooksImportRoute
   '/books/banking/transactions/$id': typeof BooksBankingTransactionsIdRoute
@@ -106,6 +115,7 @@ export interface FileRouteTypes {
     | '/'
     | '/books'
     | '/books/'
+    | '/books/banking/transactions'
     | '/api/auth/$'
     | '/api/books/import'
     | '/books/banking/transactions/$id'
@@ -127,6 +137,7 @@ export interface FileRouteTypes {
     | '/'
     | '/books'
     | '/books/'
+    | '/books/banking/transactions'
     | '/api/auth/$'
     | '/api/books/import'
     | '/books/banking/transactions/$id'
@@ -179,6 +190,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiBooksImportRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/books/banking/transactions': {
+      id: '/books/banking/transactions'
+      path: '/banking/transactions'
+      fullPath: '/books/banking/transactions'
+      preLoaderRoute: typeof BooksBankingTransactionsRouteRouteImport
+      parentRoute: typeof BooksRouteRoute
+    }
     '/books/admin/users/': {
       id: '/books/admin/users/'
       path: '/admin/users'
@@ -195,35 +213,50 @@ declare module '@tanstack/react-router' {
     }
     '/books/banking/transactions/': {
       id: '/books/banking/transactions/'
-      path: '/banking/transactions'
+      path: '/'
       fullPath: '/books/banking/transactions/'
       preLoaderRoute: typeof BooksBankingTransactionsIndexRouteImport
-      parentRoute: typeof BooksRouteRoute
+      parentRoute: typeof BooksBankingTransactionsRouteRoute
     }
     '/books/banking/transactions/$id': {
       id: '/books/banking/transactions/$id'
-      path: '/banking/transactions/$id'
+      path: '/$id'
       fullPath: '/books/banking/transactions/$id'
       preLoaderRoute: typeof BooksBankingTransactionsIdRouteImport
-      parentRoute: typeof BooksRouteRoute
+      parentRoute: typeof BooksBankingTransactionsRouteRoute
     }
   }
 }
 
+interface BooksBankingTransactionsRouteRouteChildren {
+  BooksBankingTransactionsIdRoute: typeof BooksBankingTransactionsIdRoute
+  BooksBankingTransactionsIndexRoute: typeof BooksBankingTransactionsIndexRoute
+}
+
+const BooksBankingTransactionsRouteRouteChildren: BooksBankingTransactionsRouteRouteChildren =
+  {
+    BooksBankingTransactionsIdRoute: BooksBankingTransactionsIdRoute,
+    BooksBankingTransactionsIndexRoute: BooksBankingTransactionsIndexRoute,
+  }
+
+const BooksBankingTransactionsRouteRouteWithChildren =
+  BooksBankingTransactionsRouteRoute._addFileChildren(
+    BooksBankingTransactionsRouteRouteChildren,
+  )
+
 interface BooksRouteRouteChildren {
   BooksIndexRoute: typeof BooksIndexRoute
-  BooksBankingTransactionsIdRoute: typeof BooksBankingTransactionsIdRoute
+  BooksBankingTransactionsRouteRoute: typeof BooksBankingTransactionsRouteRouteWithChildren
   BooksAdminUsersIndexRoute: typeof BooksAdminUsersIndexRoute
   BooksBankingImportIndexRoute: typeof BooksBankingImportIndexRoute
-  BooksBankingTransactionsIndexRoute: typeof BooksBankingTransactionsIndexRoute
 }
 
 const BooksRouteRouteChildren: BooksRouteRouteChildren = {
   BooksIndexRoute: BooksIndexRoute,
-  BooksBankingTransactionsIdRoute: BooksBankingTransactionsIdRoute,
+  BooksBankingTransactionsRouteRoute:
+    BooksBankingTransactionsRouteRouteWithChildren,
   BooksAdminUsersIndexRoute: BooksAdminUsersIndexRoute,
   BooksBankingImportIndexRoute: BooksBankingImportIndexRoute,
-  BooksBankingTransactionsIndexRoute: BooksBankingTransactionsIndexRoute,
 }
 
 const BooksRouteRouteWithChildren = BooksRouteRoute._addFileChildren(

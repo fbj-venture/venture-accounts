@@ -1,0 +1,128 @@
+[
+  { "name": "Auto", "description": "Auto", "accountType": "Expense" },
+  {
+    "name": "Bank charges",
+    "description": "Bank charges",
+    "accountType": "Expense"
+  },
+  {
+    "name": "Bank interest",
+    "description": "Bank interest",
+    "accountType": "Income"
+  },
+  { "name": "Event", "description": "Event", "accountType": "Expense" },
+  {
+    "name": "Event recovery",
+    "description": "Event recovery",
+    "accountType": "Income"
+  },
+  {
+    "name": "Cappuccino expenses",
+    "description": "Cappuccino expenses",
+    "accountType": "Expense"
+  },
+  {
+    "name": "Rental (property)",
+    "description": "Rental (property)",
+    "accountType": "Expense"
+  },
+  {
+    "name": "Staff welfare",
+    "description": "Staff welfare",
+    "accountType": "Expense"
+  },
+  {
+    "name": "Equipment rental",
+    "description": "Equipment rental",
+    "accountType": "Expense"
+  },
+  {
+    "name": "Charitable giving",
+    "description": "Charitable giving",
+    "accountType": "Expense"
+  },
+  {
+    "name": "Charitable gifts",
+    "description": "Charitable gifts",
+    "accountType": "Income"
+  },
+  {
+    "name": "Stationery and printing",
+    "description": "Stationery and printing",
+    "accountType": "Expense"
+  },
+  {
+    "name": "Repairs and maintenance",
+    "description": "Repairs and maintenance",
+    "accountType": "Expense"
+  },
+  {
+    "name": "Tithes, offerings, gifts",
+    "description": "Tithes, offerings, gifts",
+    "accountType": "Income"
+  },
+  {
+    "name": "Travel expenses",
+    "description": "Travel expenses",
+    "accountType": "Expense"
+  },
+  {
+    "name": "Dues and subscriptions",
+    "description": "Dues and subscriptions",
+    "accountType": "Expense"
+  },
+  {
+    "name": "Meals and entertainment ",
+    "description": "Meals and entertainment ",
+    "accountType": "Expense"
+  },
+  {
+    "name": "Other expenses (office)",
+    "description": "Other expenses (office)",
+    "accountType": "Expense"
+  },
+  { "name": "Utilities", "description": "Utilities", "accountType": "Expense" },
+  {
+    "name": "Cappuccino cost",
+    "description": "Cappuccino cost",
+    "accountType": "Expense",
+    "parent": "Staff welfare"
+  },
+
+  {
+    "name": "Cappuccino sales",
+    "description": "Cappuccino sales",
+    "accountType": "Income",
+    "parent": "Event recovery"
+  },
+  {
+    "name": "Flowers and presents",
+    "description": "Flowers and presents",
+    "accountType": "Expense",
+    "parent": "Charitable giving"
+  },
+  {
+    "name": "Apostolic gifts",
+    "description": "Apostolic gifts",
+    "accountType": "Expense",
+    "parent": "Charitable giving"
+  },
+  {
+    "name": "Travel & accommodation",
+    "description": "Travel & accommodation",
+    "accountType": "Expense",
+    "parent": "Travel expenses"
+  },
+  {
+    "name": "Cell phones",
+    "description": "Cell phones",
+    "accountType": "Expense",
+    "parent": "Dues and subscriptions"
+  },
+  {
+    "name": "Software",
+    "description": "Software",
+    "accountType": "Expense",
+    "parent": "Dues and subscriptions"
+  }
+]

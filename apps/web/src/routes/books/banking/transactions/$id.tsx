@@ -1,13 +1,13 @@
 import { TableFilterBar } from "#/components/table-filter-bar.tsx";
 import { parseAmountFilter } from "#/lib/amount-filter.ts";
-import { useSetBreadcrumbs } from "#/routes/books/-breadcrumbs.ts";
+import { useSetBreadcrumbs } from "#/routes/books/-components/breadcrumbs.ts";
 import { createFileRoute, notFound } from '@tanstack/react-router';
 import { endOfDay, isWithinInterval, startOfDay } from "date-fns";
 import { useMemo, useState } from "react";
 import type { DateRange } from "react-day-picker";
-import { getBankAccountById } from "../-bank-accounts.ts";
+import { getBankAccountById } from "./-components/bank-accounts-fn.ts";
+import { getUnPostedAccountTransactions } from "./-components/transactions-fn.ts";
 import { TransactionsTable } from "./-components/transactions-table.tsx";
-import { getUnPostedAccountTransactions } from "./-transactions.ts";
 
 export const Route = createFileRoute('/books/banking/transactions/$id')({
   beforeLoad: async ({ params }) => {

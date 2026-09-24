@@ -1,18 +1,18 @@
 import { TablePagination } from "#/components/table-pagination.tsx";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from "#/components/ui/table.tsx";
 import { useTablePageSize } from "#/hooks/use-table-page-size.ts";
 import { flexRender } from "@tanstack/react-table";
 import { getPaginationRowModel, useLegacyTable } from "@tanstack/react-table/legacy";
 import { useEffect, useState } from "react";
-import type { AccountTransaction } from "../-transactions.ts";
 import { columns } from "./columns.tsx";
+import type { AccountTransaction } from "./transactions-fn.ts";
 
 export function TransactionsTable({ data }: { data: AccountTransaction[] }) {
   const [pageSize, setPageSize] = useTablePageSize();

@@ -16,7 +16,8 @@
     "db:migrate": "tsx scripts/migrate.ts",
     "script": "tsx",
     "seed:account-types": "tsx scripts/seed-account-types.ts",
-    "seed:bank-accounts": "tsx scripts/seed-bank-accounts.ts"
+    "seed:bank-accounts": "tsx scripts/seed-bank-accounts.ts",
+    "import:accounts": "tsx scripts/import-accounts.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",

@@ -1,4 +1,4 @@
-import { integer, pgTable, serial, text } from "drizzle-orm/pg-core";
+import { foreignKey, integer, pgTable, serial, text } from "drizzle-orm/pg-core";
 import { accountType } from "./account-type.js";
 
 /**
@@ -19,4 +19,12 @@ export const account = pgTable("account", {
   account_type: integer("account_type")
     .notNull()
     .references(() => accountType.id),
-});
+  parentId: integer()
+},
+  (table) => [
+    foreignKey({
+      columns: [table.parentId],
+      foreignColumns: [table.id],
+    })
+  ]
+);

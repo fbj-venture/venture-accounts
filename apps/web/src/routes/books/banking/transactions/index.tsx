@@ -6,10 +6,10 @@ import {
   CardTitle,
 } from "#/components/ui/card.tsx";
 import { cn } from "#/lib/utils.ts";
-import { useSetBreadcrumbs } from "#/routes/books/-breadcrumbs.ts";
+import { useSetBreadcrumbs } from "#/routes/books/-components/breadcrumbs.ts";
 import { Link, createFileRoute, useRouterState } from '@tanstack/react-router';
 import { useEffect } from 'react';
-import { getBankAccounts } from "../-bank-accounts.ts";
+import { getBankAccounts } from "./-components/bank-accounts-fn.ts";
 
 export const Route = createFileRoute('/books/banking/transactions/')({
   beforeLoad: async () => {

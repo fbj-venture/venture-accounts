@@ -1,25 +1,25 @@
 import { auth } from '#/lib/auth.ts';
 import { AppSidebar } from "#/routes/books/-components/app-sidebar";
 import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
+    Breadcrumb,
+    BreadcrumbItem,
+    BreadcrumbLink,
+    BreadcrumbList,
+    BreadcrumbPage,
+    BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
+    SidebarInset,
+    SidebarProvider,
+    SidebarTrigger,
 } from "@/components/ui/sidebar";
 import type { SessionUser } from '@app/models';
 import { createFileRoute, Link, Outlet, redirect } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/react-start';
 import { getRequest } from '@tanstack/react-start/server';
 import { Fragment } from 'react';
-import { useBreadcrumbs } from './-breadcrumbs.ts';
+import { useBreadcrumbs } from './-components/breadcrumbs.ts';
 
 const getAuthSession = createServerFn({ method: 'GET' }).handler(async () => {
   return await auth.api.getSession({ headers: getRequest().headers });

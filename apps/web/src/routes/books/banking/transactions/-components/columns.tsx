@@ -16,9 +16,9 @@ export type PostingState = {
   unpostedLineIds: ReadonlySet<number>;
   onPostChange: (journalLineId: number, shouldPost: boolean) => void;
   /** accountId is the row's current account - a new choice or the saved one. */
-  onSave: (journalLineId: number, accountId: number) => void;
-  /** The row currently being saved, if any. */
-  savingLineId: number | null;
+  onSave: (transaction: AccountTransaction, accountId: number) => void;
+  /** Rows whose save is still in flight - other rows stay editable. */
+  savingLineIds: ReadonlySet<number>;
 };
 
 // @tanstack/react-table v9's native API (useTable + explicit feature slots)
@@ -31,7 +31,7 @@ export function getColumns({
   unpostedLineIds,
   onPostChange,
   onSave,
-  savingLineId,
+  savingLineIds,
 }: PostingState): LegacyColumnDef<AccountTransaction>[] {
   // Only Categories can be posted to for now - Banks (transfers) need their
   // own flow, so choosing one leaves Save disabled.
@@ -92,9 +92,8 @@ export function getColumns({
         // Same rule as the Account cell: an unsaved choice, else the saved one.
         // A saved account alone still enables Save, so it can be posted later.
         const accountId = selections.get(journalLineId) ?? otherAccountId;
-        const isSaving = savingLineId === journalLineId;
-        const canSave =
-          accountId !== null && categoryIds.has(accountId) && savingLineId === null;
+        const isSaving = savingLineIds.has(journalLineId);
+        const canSave = accountId !== null && categoryIds.has(accountId) && !isSaving;
         return (
           <div className="flex justify-end">
             <Button
@@ -102,7 +101,7 @@ export function getColumns({
               size="icon-sm"
               aria-label="Save"
               disabled={!canSave}
-              onClick={() => accountId !== null && onSave(journalLineId, accountId)}
+              onClick={() => accountId !== null && onSave(row.original, accountId)}
             >
               {isSaving ? (
                 <LoaderCircleIcon className="size-4 animate-spin" />

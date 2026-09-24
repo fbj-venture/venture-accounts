@@ -1,11 +1,11 @@
+import { TableFilterBar } from "#/components/table-filter-bar.tsx";
+import { parseAmountFilter } from "#/lib/amount-filter.ts";
 import { useSetBreadcrumbs } from "#/routes/books/-breadcrumbs.ts";
 import { createFileRoute, notFound } from '@tanstack/react-router';
 import { endOfDay, isWithinInterval, startOfDay } from "date-fns";
 import { useMemo, useState } from "react";
 import type { DateRange } from "react-day-picker";
 import { getBankAccountById } from "../-bank-accounts.ts";
-import { TableFilterBar } from "#/components/table-filter-bar.tsx";
-import { parseAmountFilter } from "#/lib/amount-filter.ts";
 import { TransactionsTable } from "./-components/transactions-table.tsx";
 import { getUnPostedAccountTransactions } from "./-transactions.ts";
 
@@ -28,8 +28,8 @@ function RouteComponent() {
   const { bankAccount } = Route.useRouteContext();
   const { transactions } = Route.useLoaderData();
   useSetBreadcrumbs([
-    { title: "Transactions", url: "/books/banking/transactions" },
-    { title: bankAccount.name },
+    { title: "Bank Accounts", url: "/books/banking/transactions" },
+    { title: `Un-posted transactions for ${bankAccount.name}` },
   ]);
 
   const [range, setRange] = useState<DateRange | undefined>(undefined);

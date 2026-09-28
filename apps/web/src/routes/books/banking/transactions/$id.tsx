@@ -1,11 +1,13 @@
 import { TableFilterBar } from "#/components/table-filter-bar.tsx";
 import { parseAmountFilter } from "#/lib/amount-filter.ts";
+import { formatZar } from "#/lib/currency.ts";
 import { useSetBreadcrumbs } from "#/routes/books/-components/breadcrumbs.ts";
-import { createFileRoute, getRouteApi, notFound } from '@tanstack/react-router';
+import { createFileRoute, getRouteApi, notFound, useRouter } from '@tanstack/react-router';
 import { endOfDay, isWithinInterval, startOfDay } from "date-fns";
 import { useMemo, useState } from "react";
 import type { DateRange } from "react-day-picker";
-import { getBankAccountById } from "./-components/bank-accounts-fn.ts";
+import { getBankAccountById, getOpeningBalance } from "./-components/bank-accounts-fn.ts";
+import { OpeningBalanceDialog } from "./-components/opening-balance-dialog.tsx";
 import { getUnPostedAccountTransactions } from "./-components/transactions-fn.ts";
 import { TransactionsTable } from "./-components/transactions-table.tsx";
 
@@ -15,20 +17,22 @@ export const Route = createFileRoute('/books/banking/transactions/$id')({
     if (!bankAccount) {
       throw notFound();
     }
-    return { bankAccount };
+    const openingBalance = await getOpeningBalance({ data: bankAccount.id });
+    return { bankAccount, openingBalance };
   },
   loader: async ({ context }) => {
     const transactions = await getUnPostedAccountTransactions({ data: context.bankAccount.id });
     return { transactions };
   },
   component: RouteComponent,
-})
+});
 
 // Loaded once by the parent layout route - see ./route.tsx.
 const transactionsLayout = getRouteApi('/books/banking/transactions');
 
 function RouteComponent() {
-  const { bankAccount } = Route.useRouteContext();
+  const router = useRouter();
+  const { bankAccount, openingBalance } = Route.useRouteContext();
   const { transactions } = Route.useLoaderData();
   const { accountOptions: allAccountOptions } = transactionsLayout.useLoaderData();
   // A transaction can't be a transfer from this bank account to itself.
@@ -80,9 +84,29 @@ function RouteComponent() {
     });
   }, [transactions, range, descriptionFilter, amountFilter]);
 
+  const openingBallance =
+    openingBalance === null ? (
+      <OpeningBalanceDialog
+        accountId={bankAccount.id}
+        onSaved={() =>
+          router.invalidate({
+            filter: (match) => match.routeId === "/books/banking/transactions/$id",
+            sync: true,
+          })
+        }
+      />
+    ) : (
+      <span>Opening ballance: {formatZar(openingBalance)}</span>
+    );
+
   return (
     <>
-      <h2>{bankAccount.name}</h2>
+      <div className="flex items-center justify-between">
+        <h2>{bankAccount.name}</h2>
+        <div>
+          {openingBallance}
+        </div>
+      </div>
       <div className="mt-4">
         <TableFilterBar
           descriptionFilter={descriptionFilter}

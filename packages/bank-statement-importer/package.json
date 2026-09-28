@@ -11,7 +11,7 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "read-pdf": "tsx src/index.ts",
+    "read-pdf": "tsx src/cli.ts",
     "dev:import": ""
   },
   "dependencies": {

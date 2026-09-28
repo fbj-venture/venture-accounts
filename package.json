@@ -1,14 +1,16 @@
 {
   "name": "venture-accounts",
-  "version": "0.0.1",
-  "description": "A simple Bank Account management web-based tool",
+  "version": "0.1.0",
+  "description": "A simple Bank Account, web-based, management tool",
   "main": "index.js",
   "scripts": {
-    "dev":"pnpm --filter web dev",
-    "dev:import": "pnpm --filter @app/bank-statement-importer read-pdf -- \"D:\\Projects\\Venture Church\\venture-accounts\\data\\current\\12 Feb 2024 to 12 Mar 2024.pdf\" "
+    "dev": "pnpm --filter web dev",
+    "clean": "rmrf ./output",
+    "build": "pnpm --filter web build",
+    "preview": "node --env-file=.env .output/server/index.mjs"
   },
   "keywords": [],
-  "author": "francis Judge<fjudge7@gmail.com>",
+  "author": "Francis Judge<fjudge7@gmail.com>",
   "license": "ISC",
   "devEngines": {
     "packageManager": {
@@ -18,5 +20,8 @@
     }
   },
   "packageManager": "pnpm@12.5.1",
-  "type": "module"
+  "type": "module",
+  "devDependencies": {
+    "rmrf": "^2.0.4"
+  }
 }

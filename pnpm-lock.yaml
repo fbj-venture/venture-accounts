@@ -164,7 +164,11 @@ settings:
 
 importers:
 
-  .: {}
+  .:
+    devDependencies:
+      rmrf:
+        specifier: ^2.0.4
+        version: 2.0.4
 
   apps/web:
     dependencies:
@@ -4243,6 +4247,9 @@ packages:
   reusify@1.1.0:
     resolution: {integrity: sha512-g6QUff04oZpHs0eG5p83rFLhHeV00ug/Yf9nZM6fLeUrPguBTkTQOdpAWWspMh55TZfVQDPaN3NQJfbVRAxdIw==}
     engines: {iojs: '>=1.0.0', node: '>=0.10.0'}
+
+  rmrf@2.0.4:
+    resolution: {integrity: sha512-kvZVgjj6l/J1GlGGXyeKvch1+4nhfkdPRGToXJeUgr3T9AHmDDkZOCLyoY0m6MyycYNb+ZvBR9FdI58xhmczDQ==}
 
   rolldown@1.2.9:
     resolution: {integrity: sha512-hx/Pv0N1haXRb11qkfnK5MXB/iqr7i0yjWQqmO9uHqZpBgQSqzc8UsSnEpalsh+j1I8qQ2CkXAkJC8Br3dKSlg==}
@@ -8437,6 +8444,8 @@ snapshots:
       supports-preserve-symlinks-flag: 1.0.0
 
   reusify@1.1.0: {}
+
+  rmrf@2.0.4: {}
 
   rolldown@1.2.9:
     dependencies:

@@ -15,7 +15,17 @@ export function loadEnv(): void {
     }
   }
 
-  process.loadEnvFile(path.resolve(currentDir, "../../../.env"));
+  try {
+    process.loadEnvFile(path.resolve(currentDir, "../../../.env"));
+  } catch (error) {
+    // No .env file to load - fine in production, where the platform
+    // (e.g. Railway) injects real env vars directly. Also covers a bundled
+    // build (Nitro), where this module's location - and so the relative
+    // path above - no longer matches the source layout at all.
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+      throw error;
+    }
+  }
 }
 
 export function requireEnv(name: string): string {

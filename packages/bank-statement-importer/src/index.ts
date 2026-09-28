@@ -2,7 +2,7 @@ import type { Transaction } from "@app/models";
 import { readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import path from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
 import {
    findAccountByBankAccountNumber,
@@ -19,7 +19,17 @@ const rootEnvPath = path.resolve(
    path.dirname(fileURLToPath(import.meta.url)),
    "../../../.env",
 );
-process.loadEnvFile(rootEnvPath);
+try {
+   process.loadEnvFile(rootEnvPath);
+} catch (error) {
+   // No .env file to load - fine in production, where the platform injects
+   // real env vars directly. Also covers a bundled build, where this
+   // module's location - and so the relative path above - no longer
+   // matches the source layout at all.
+   if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+      throw error;
+   }
+}
 
 // Statements use PDF standard fonts (Helvetica etc.) without embedding them;
 // pdf.js ships replacements in pdfjs-dist/standard_fonts/ but can't locate
@@ -28,13 +38,35 @@ process.loadEnvFile(rootEnvPath);
 // plain directory path (passed straight to fs.readFile), which must end in
 // "/" - a trailing backslash is rejected, so use forward slashes, which
 // Windows accepts too.
-const STANDARD_FONT_DATA_URL =
-   path
-      .join(
-         path.dirname(createRequire(import.meta.url).resolve("pdfjs-dist/package.json")),
-         "standard_fonts",
-      )
-      .replaceAll("\\", "/") + "/";
+//
+// Computed lazily (not at module load) and tolerant of failure: a bundled
+// server build inlines pdfjs-dist's code, so it's no longer a real,
+// separately-resolvable package next to the built server, and this lookup
+// fails there. Missing standard fonts only degrades text extraction for a
+// statement that relies on them (same fallback pdfjs-dist itself already
+// uses for its optional @napi-rs/canvas dependency) - it shouldn't take
+// down every route that happens to import this module.
+let standardFontDataUrl: string | undefined;
+let standardFontDataUrlResolved = false;
+function getStandardFontDataUrl(): string | undefined {
+   if (!standardFontDataUrlResolved) {
+      standardFontDataUrlResolved = true;
+      try {
+         standardFontDataUrl =
+            path
+               .join(
+                  path.dirname(createRequire(import.meta.url).resolve("pdfjs-dist/package.json")),
+                  "standard_fonts",
+               )
+               .replaceAll("\\", "/") + "/";
+      } catch {
+         console.warn(
+            "Couldn't locate pdfjs-dist's standard_fonts directory - PDF text extraction may be broken for statements that rely on non-embedded fonts.",
+         );
+      }
+   }
+   return standardFontDataUrl;
+}
 
 export async function readPdfFileFromFile(filePath: string): Promise<void> {
    console.log(filePath);
@@ -108,7 +140,7 @@ export async function readPdfStreamWithProgress(
 async function extractTextFromPdf(
    data: Uint8Array,
 ): Promise<{ rows: ImportRow[]; statementDate: string | null; accountNumber: string | null; }> {
-   const loadingTask = getDocument({ data, standardFontDataUrl: STANDARD_FONT_DATA_URL });
+   const loadingTask = getDocument({ data, standardFontDataUrl: getStandardFontDataUrl() });
    const pdf = await loadingTask.promise;
 
    const rows: ImportRow[] = [];
@@ -130,21 +162,4 @@ async function extractTextFromPdf(
    await loadingTask.destroy();
 
    return { rows, statementDate, accountNumber };
-}
-
-/**
- * Used for running this file as a script and passing in a file path
- */
-const isRunDirectly =
-   process.argv[1] !== undefined &&
-   import.meta.url === pathToFileURL(process.argv[1]).href;
-
-if (isRunDirectly) {
-   const filePath = process.argv.slice(2).find((arg) => arg !== "--");
-   if (!filePath) {
-      console.error("Usage: pnpm read-pdf -- <path-to-pdf>");
-      process.exit(1);
-   }
-
-   await readPdfFileFromFile(filePath);
 }

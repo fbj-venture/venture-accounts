@@ -1,4 +1,5 @@
 import { readFile } from "node:fs/promises";
+import { eq } from "drizzle-orm";
 import { account, accountType, db } from "../src/index.js";
 import { runScript } from "./harness.js";
 
@@ -93,9 +94,23 @@ await runScript("import-accounts", async () => {
           account_type: accountTypeIds.get(entry.accountType)!,
           parentId: entry.parent ? accountIds.get(entry.parent)! : null,
         })
+        .onConflictDoNothing({ target: account.name })
         .returning({ id: account.id });
 
-      accountIds.set(entry.name, created!.id);
+      if (!created) {
+        // Raced with another writer (or the row appeared after the initial
+        // snapshot) - look up its id so any children can still resolve it
+        // as a parent.
+        const [existing] = await db
+          .select({ id: account.id })
+          .from(account)
+          .where(eq(account.name, entry.name));
+        accountIds.set(entry.name, existing!.id);
+        console.log(`  skipped (already exists): ${entry.name}`);
+        continue;
+      }
+
+      accountIds.set(entry.name, created.id);
       console.log(
         `  created account: ${entry.name}` +
           (entry.parent ? ` (under ${entry.parent})` : ""),

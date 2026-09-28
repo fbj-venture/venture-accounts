@@ -124,5 +124,10 @@
     "description": "Software",
     "accountType": "Expense",
     "parent": "Dues and subscriptions"
+  },
+  {
+    "name": "Opening Balance Equity",
+    "description": "Opening Balance take-on Equity",
+    "accountType": "Equity"
   }
 ]

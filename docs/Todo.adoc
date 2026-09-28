@@ -5,22 +5,27 @@ v1.0, 2026-09: Initial release
 :nofooter:
 
 
-== V0.2
+== v0.2
 
-* [ ] Debounce the login to prevent DoS
+* [x] Debounce the login to prevent DoS
+* [x] `favicon` generation
+* [x] View Bank Account balances
 * [ ] Bank statement reconciliations
 ** [ ] Opening ballance
 ** [ ] Start and end date
 ** [ ] Display transactions to check and a running ballance
-* [ ] View Bank Account balances
+* [ ] System users
+** [ ] List users
+** [ ] Change my password
+** [ ] Link social login to an existing account 
 
 == Out of Scope
 
 * [ ] Split transaction over multiple accounts
-* [ ] Link social login to an existing account 
 * [ ] Enable emails for forgotten password/password reset
+* [ ] Collapsed main navigation
 
-== V0.1
+== v0.1
 
 * [x] Take-on amount (Equity)
 * [x] Transfers to bank account
@@ -30,7 +35,7 @@ v1.0, 2026-09: Initial release
 ** [x] Ensure that transfer is displayed when not posted
 ** [x] Ensure the recon will work with transfers reflected from both sides.
 * [x] Upgrade Drizzle to v1
-* [ ] Deploy to Railway
+* [x] Deploy to Railway
 ** [x] Local build scripts
 ** [x] Setup the Github repo on Venture Church
 ** [x] Deploy the Neon changes to `production`

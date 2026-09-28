@@ -6,6 +6,7 @@ import {
   LandmarkIcon,
   LayoutDashboardIcon,
   ListPlusIcon,
+  ListTodoIcon,
   UsersRoundIcon,
   Wallet2Icon
 } from "lucide-react";
@@ -38,9 +39,14 @@ const data = {
           url: "/books"
         },
         {
-          title: "Transactions",
+          title: "Unallocated Items",
           icon: ListPlusIcon,
           url: "/books/banking/transactions/"
+        },
+        {
+          title: "Bank Reconciliation",
+          icon: ListTodoIcon,
+          url: "/books/banking/recon/"
         },
       ],
     },

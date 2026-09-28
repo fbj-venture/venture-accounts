@@ -6,7 +6,7 @@ import { createFileRoute, getRouteApi, notFound, useRouter } from '@tanstack/rea
 import { endOfDay, isWithinInterval, startOfDay } from "date-fns";
 import { useMemo, useState } from "react";
 import type { DateRange } from "react-day-picker";
-import { getBankAccountById, getOpeningBalance } from "./-components/bank-accounts-fn.ts";
+import { getBankAccountById, getOpeningBalance } from "../-components/bank-accounts-fn.ts";
 import { OpeningBalanceDialog } from "./-components/opening-balance-dialog.tsx";
 import { getUnPostedAccountTransactions } from "./-components/transactions-fn.ts";
 import { TransactionsTable } from "./-components/transactions-table.tsx";

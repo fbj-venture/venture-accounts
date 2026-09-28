@@ -1,10 +1,10 @@
 {
   "name": "venture-accounts",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A simple Bank Account, web-based, management tool",
   "scripts": {
     "dev": "pnpm --filter web dev",
-    "clean": "rimraf ./.output",
+    "clean": "rimraf ./.output/",
     "build": "pnpm --filter web build",
     "start": "node .output/server/index.mjs",
     "preview": "node --env-file=.env .output/server/index.mjs"

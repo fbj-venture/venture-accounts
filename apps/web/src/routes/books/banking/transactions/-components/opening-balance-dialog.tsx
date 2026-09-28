@@ -14,12 +14,12 @@ import { Popover, PopoverContent, PopoverTrigger } from "#/components/ui/popover
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { useState } from "react";
-import { setOpeningBalance } from "./bank-accounts-fn.ts";
+import { setOpeningBalance } from "../../-components/bank-accounts-fn.ts";
 
 const DEFAULT_NOTE = "Opening Balance Equity";
 
 // The Button that opens this is only shown once getOpeningBalance (see
-// bank-accounts-fn.ts) confirms the account has none yet.
+// ../../-components/bank-accounts-fn.ts) confirms the account has none yet.
 export function OpeningBalanceDialog({
   accountId,
   onSaved,

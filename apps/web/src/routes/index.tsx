@@ -1,25 +1,7 @@
-import { useState } from 'react';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { createServerFn } from '@tanstack/react-start';
-import { APIError } from 'better-auth/api';
 import { LoginForm } from '#/components/login-form';
-import { auth } from '#/lib/auth.ts';
-
-const loginFn = createServerFn({ method: 'POST' })
-  .validator((data: { email: string; password: string }) => data)
-  .handler(async ({ data }) => {
-    try {
-      await auth.api.signInEmail({
-        body: { email: data.email, password: data.password },
-      });
-      return { success: true as const };
-    } catch (error) {
-      if (error instanceof APIError) {
-        return { success: false as const, error: error.message };
-      }
-      throw error;
-    }
-  });
+import { authClient } from '#/lib/auth-client.ts';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { useState } from 'react';
 
 export const Route = createFileRoute('/')({ component: Home });
 
@@ -32,12 +14,14 @@ function Home() {
     setPending(true);
     setError(null);
 
-    const result = await loginFn({ data: values });
+    // Goes through /api/auth/sign-in/email (auth.handler), not auth.api directly,
+    // so better-auth's rate limiter and origin check actually apply.
+    const { error: signInError } = await authClient.signIn.email(values);
 
-    if (result.success) {
+    if (!signInError) {
       await navigate({ to: '/books' });
     } else {
-      setError(result.error);
+      setError(signInError.message ?? 'Unable to sign in.');
       setPending(false);
     }
   }

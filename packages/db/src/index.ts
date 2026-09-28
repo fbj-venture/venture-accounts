@@ -1,7 +1,7 @@
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
 import { loadEnv, requireEnv } from "./env.js";
-import * as schema from "./schema.js";
+import { relations } from "./relations.js";
 
 loadEnv();
 
@@ -14,6 +14,9 @@ loadEnv();
 // its own connection pool, use "@app/db/direct" instead.
 const sql = neon(requireEnv("DATABASE_URL"));
 
-export const db = drizzle(sql, { schema });
+// Drizzle v1 takes a single config object; `relations` (not v0's `schema`)
+// powers db.query.* relational queries.
+export const db = drizzle({ client: sql, relations });
 
+export { relations } from "./relations.js";
 export * from "./schema.js";

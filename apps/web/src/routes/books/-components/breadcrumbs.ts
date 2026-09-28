@@ -7,6 +7,7 @@ export type BreadcrumbItem = {
 
 let breadcrumbs: BreadcrumbItem[] = [];
 const listeners = new Set<() => void>();
+const EMPTY_BREADCRUMBS: BreadcrumbItem[] = [];
 
 function setBreadcrumbs(items: BreadcrumbItem[]) {
   breadcrumbs = items;
@@ -26,7 +27,7 @@ function getSnapshot() {
 
 /** Reads the breadcrumb trail set by the currently active page. */
 export function useBreadcrumbs() {
-  return useSyncExternalStore(subscribe, getSnapshot, () => []);
+  return useSyncExternalStore(subscribe, getSnapshot, () => EMPTY_BREADCRUMBS);
 }
 
 /** Sets the breadcrumb trail for the page it's called from; cleared on unmount. */

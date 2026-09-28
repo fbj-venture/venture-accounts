@@ -1,7 +1,7 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import { loadEnv, requireEnv } from "./env.js";
-import * as schema from "./schema.js";
+import { relations } from "./relations.js";
 
 loadEnv();
 
@@ -19,6 +19,9 @@ const pool = new Pool({
   connectionString: requireEnv("DATABASE_URL_UNPOOLED"),
 });
 
-export const db = drizzle(pool, { schema });
+// Drizzle v1 takes a single config object; `relations` (not v0's `schema`)
+// powers db.query.* relational queries.
+export const db = drizzle({ client: pool, relations });
 
+export { relations } from "./relations.js";
 export * from "./schema.js";

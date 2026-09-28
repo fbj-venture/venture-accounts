@@ -4,6 +4,22 @@ Francis Judge <fjudge7@gmail.com>
 v1.0, 2026-09: Initial release
 :nofooter:
 
+
+== V0.2
+
+* [ ] Debounce the login to prevent DoS
+* [ ] Bank statement reconciliations
+** [ ] Opening ballance
+** [ ] Start and end date
+** [ ] Display transactions to check and a running ballance
+* [ ] View Bank Account balances
+
+== Out of Scope
+
+* [ ] Split transaction over multiple accounts
+* [ ] Link social login to an existing account 
+* [ ] Enable emails for forgotten password/password reset
+
 == V0.1
 
 * [x] Take-on amount (Equity)
@@ -19,19 +35,5 @@ v1.0, 2026-09: Initial release
 ** [x] Setup the Github repo on Venture Church
 ** [x] Deploy the Neon changes to `production`
 ** [x] Signup Venture Church on Railway
-** [ ] Enable the Railway integration
-** [ ] Configure Railway environment variables
-
-== V0.2
-
-* [ ] Bank statement reconciliations
-** [ ] Opening ballance
-** [ ] Start and end date
-** [ ] Display transactions to check and a running ballance
-* [ ] View Bank Account balances
-
-== Out of Scope
-
-* [ ] Split transaction over multiple accounts
-* [ ] Debounce the login to prevent DoS
-* [ ] Link social login to an existing account 
+** [x] Enable the Railway integration
+** [x] Configure Railway environment variables

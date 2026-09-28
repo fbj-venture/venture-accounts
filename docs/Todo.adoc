@@ -15,10 +15,12 @@ v1.0, 2026-09: Initial release
 ** [x] Ensure the recon will work with transfers reflected from both sides.
 * [x] Upgrade Drizzle to v1
 * [ ] Deploy to Railway
-** [ ] Local build scripts
-** [ ] Setup the Github repo on Venture Church
-** [ ] Signup Venture Church on Railway
+** [x] Local build scripts
+** [x] Setup the Github repo on Venture Church
+** [x] Deploy the Neon changes to `production`
+** [x] Signup Venture Church on Railway
 ** [ ] Enable the Railway integration
+** [ ] Configure Railway environment variables
 
 == V0.2
 

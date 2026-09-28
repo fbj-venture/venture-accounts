@@ -64,6 +64,20 @@
       "when": 1790254393370,
       "tag": "0008_illegal_prima",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1790585515544,
+      "tag": "0009_grey_the_stranger",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1790586753934,
+      "tag": "0010_same_mentor",
+      "breakpoints": true
     }
   ]
 }

@@ -3,6 +3,9 @@ import {
   ChevronsUpDown,
   CreditCard,
   LogOut,
+  Monitor,
+  Moon,
+  Sun,
   User as UserIcon
 } from "lucide-react";
 
@@ -17,7 +20,12 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "#/components/ui/dropdown-menu.tsx";
 import {
@@ -26,6 +34,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "#/components/ui/sidebar.tsx";
+import { useTheme, type Theme } from "#/hooks/use-theme.ts";
 import { authClient } from "#/lib/auth-client";
 import type { SessionUser } from "@app/models";
 import { useNavigate } from "@tanstack/react-router";
@@ -37,6 +46,8 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar();
   const navigate = useNavigate();
+  const [theme, setTheme] = useTheme();
+  const ThemeIcon = theme === "light" ? Sun : theme === "dark" ? Moon : Monitor;
 
   const signout = async () => {
     await authClient.signOut();
@@ -95,6 +106,32 @@ export function NavUser({
                 Settings
               </DropdownMenuItem>
             </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger className="gap-2">
+                <ThemeIcon className="size-4 text-muted-foreground" />
+                Theme
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                <DropdownMenuRadioGroup
+                  value={theme}
+                  onValueChange={(value) => setTheme(value as Theme)}
+                >
+                  <DropdownMenuRadioItem value="light">
+                    <Sun />
+                    Light
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="dark">
+                    <Moon />
+                    Dark
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="system">
+                    <Monitor />
+                    System
+                  </DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={signout}>
               <LogOut />

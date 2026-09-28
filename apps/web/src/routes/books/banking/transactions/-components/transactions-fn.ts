@@ -1,7 +1,14 @@
 import { account, bankAccount, db, journal, journalLine } from "@app/db/direct";
 import { createServerFn } from "@tanstack/react-start";
-import { and, asc, eq, ne, sql } from "drizzle-orm";
+import { and, asc, eq, ne } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
+import { postToCategory, postTransfer } from "./posting.server.ts";
+
+// Keep ALL database code inside handlers (or in posting.server.ts, used only
+// from a handler). This file is imported by the route tree, so it's in the
+// browser bundle; TanStack Start strips handler bodies and the imports only
+// they use, but not other module-level code - which would drag the database
+// driver into the browser and stop the whole app hydrating (even login).
 
 // One row per Journal Line ("posting" in docs/Ledger Ubiquitous Language.md)
 // on the account, flattened with its parent Journal Entry ("Transaction" in
@@ -12,7 +19,8 @@ export const getUnPostedAccountTransactions = createServerFn({ method: "GET" })
   .validator((accountId: number) => accountId)
   .handler(async ({ data: accountId }) => {
     // The entry's other Journal Line(s) - the side already saved against a
-    // Category - so the table can show which account was chosen.
+    // Category, or the other bank's line for a matched Transfer - so the
+    // table can show which account was chosen.
     const otherLine = alias(journalLine, "other_line");
     const rows = await db
       .select({
@@ -51,13 +59,12 @@ export const getUnPostedAccountTransactions = createServerFn({ method: "GET" })
     });
   });
 
-// Categorises a bank transaction: adds the second half of the double entry -
-// a Journal Line on the chosen Category for the amount that balances the
-// Journal Entry to zero - or, if that line already exists, moves it to the
-// chosen Category. With should_post it also marks the entry posted, so it
-// drops off the un-posted list. Bank accounts are rejected; transfers need
-// their own flow since the other bank's statement brings in its own side of
-// the entry.
+// Saves the other side of a bank transaction - the second half of its
+// double entry. Picking a Category adds (or moves) a balancing line on that
+// Category; picking a Bank matches it up as a Transfer (see postTransfer in
+// posting.server.ts). With should_post it also marks the entry posted, so it
+// drops off the un-posted list. Runs in one database transaction, so any
+// failure leaves nothing half-saved.
 export const postTransaction = createServerFn({ method: "POST" })
   .validator((data: {
     journalLineId: number;
@@ -71,6 +78,9 @@ export const postTransaction = createServerFn({ method: "POST" })
       const [bankLine] = await tx
         .select({
           journalId: journal.id,
+          accountId: journalLine.accountId,
+          amount: journalLine.amount,
+          date: journal.date,
           isPosted: journal.isPosted,
           description: journalLine.description,
           note: journal.note,
@@ -86,63 +96,19 @@ export const postTransaction = createServerFn({ method: "POST" })
         throw new Error("Transaction has already been posted.");
       }
 
-      const [category] = await tx
-        .select({ id: account.id, bankAccountId: bankAccount.id })
+      const [target] = await tx
+        .select({ id: account.id, name: account.name, bankAccountId: bankAccount.id })
         .from(account)
         .leftJoin(bankAccount, eq(bankAccount.id, account.id))
         .where(eq(account.id, data.accountId));
-      if (!category) {
+      if (!target) {
         throw new Error("Account not found.");
       }
-      if (category.bankAccountId !== null) {
-        throw new Error("Transfers between bank accounts aren't supported yet.");
-      }
 
-      const [{ total }] = await tx
-        .select({ total: sql<number>`coalesce(sum(${journalLine.amount}), 0)`.mapWith(Number) })
-        .from(journalLine)
-        .where(eq(journalLine.journalEntryId, bankLine.journalId));
-      // numeric(14,2) sums come back exact, but round anyway so float noise
-      // from mapWith(Number) can't leave the entry a fraction of a cent out.
-      const balancingAmount = Math.round(-total * 100) / 100;
-
-      const otherLines = await tx
-        .select({ id: journalLine.id, accountId: journalLine.accountId })
-        .from(journalLine)
-        .where(
-          and(
-            eq(journalLine.journalEntryId, bankLine.journalId),
-            ne(journalLine.id, data.journalLineId),
-          ),
-        );
-
-      if (otherLines.length === 0) {
-        // First save: add the balancing line.
-        if (balancingAmount === 0) {
-          throw new Error("Transaction has no amount to balance.");
-        }
-        await tx.insert(journalLine).values({
-          journalEntryId: bankLine.journalId,
-          accountId: category.id,
-          amount: balancingAmount,
-          description: bankLine.description ?? bankLine.note,
-        });
-      } else if (otherLines.length === 1 && balancingAmount === 0) {
-        // Already categorised: move the existing balancing line to the new
-        // account. Its amount is unchanged, so the entry stays balanced.
-        const [otherLine] = otherLines;
-        if (otherLine!.accountId !== category.id) {
-          await tx
-            .update(journalLine)
-            .set({ accountId: category.id })
-            .where(eq(journalLine.id, otherLine!.id));
-        }
+      if (target.bankAccountId !== null) {
+        await postTransfer(tx, data.journalLineId, bankLine, target);
       } else {
-        // Splits (or an entry left unbalanced some other way) can't be
-        // safely reduced to a single account from this screen.
-        throw new Error(
-          "This transaction is split across several accounts or doesn't balance, so it can't be changed here.",
-        );
+        await postToCategory(tx, data.journalLineId, bankLine, target.id);
       }
 
       if (data.should_post) {

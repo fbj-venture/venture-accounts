@@ -6,11 +6,23 @@ v1.0, 2026-09: Initial release
 
 [%interactive]
 * [ ] Take-on amount (Equity)
-[%interactive]
-** [ ] Bank Account balances
 * [ ] Transfers to bank account
 [%interactive]
-** [ ] Find matching account journal-line
-** [ ] Work-out how to link the two
+** [x] Find matching account journal-line
+** [x] Work-out how to link the two
 ** [*] NB that transfers have no other Account
+** [ ] Ensure that transfer is displayed when not posted
+** [x] Ensure the recon will work with transfers reflected from both sides.
+* [ ] Upgrade Drizzle to v1
 * [ ] Bank statement reconciliations
+[%interactive]
+** [ ] Opening ballance
+** [ ] Start and end date
+
+== Out of Scope
+
+[%interactive]
+* [ ] View Bank Account balances
+* [ ] Split transaction over multiple accounts
+* [ ] Debounce the login to prevent DoS
+* [ ] Link social login to an existing account 

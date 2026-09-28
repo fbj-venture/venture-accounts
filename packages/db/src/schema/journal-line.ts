@@ -1,4 +1,4 @@
-import { integer, numeric, pgTable, serial, text } from "drizzle-orm/pg-core";
+import { boolean, integer, numeric, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
 import { account } from "./account.js";
 import { journal } from "./journal.js";
 
@@ -20,5 +20,11 @@ export const journalLine = pgTable("journal_line", {
     .notNull()
     .references(() => account.id),
   amount: numeric("amount", { precision: 14, scale: 2, mode: "number" }).notNull(),
-  hash: text("import_hash")
+  hash: text("import_hash"),
+  // Ticked off against this line's bank statement. Per line, not per entry:
+  // a matched Transfer's entry has a line for each bank, and each bank's
+  // statement is reconciled on its own.
+  isReconciled: boolean("is_reconciled").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

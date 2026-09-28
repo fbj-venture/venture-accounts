@@ -1,5 +1,6 @@
 import type { Transaction } from "@app/models";
 import { readFile } from "node:fs/promises";
+import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
@@ -19,6 +20,21 @@ const rootEnvPath = path.resolve(
    "../../../.env",
 );
 process.loadEnvFile(rootEnvPath);
+
+// Statements use PDF standard fonts (Helvetica etc.) without embedding them;
+// pdf.js ships replacements in pdfjs-dist/standard_fonts/ but can't locate
+// them on its own under Node, and warns "Ensure that the
+// `standardFontDataUrl` API parameter is provided". Under Node it takes a
+// plain directory path (passed straight to fs.readFile), which must end in
+// "/" - a trailing backslash is rejected, so use forward slashes, which
+// Windows accepts too.
+const STANDARD_FONT_DATA_URL =
+   path
+      .join(
+         path.dirname(createRequire(import.meta.url).resolve("pdfjs-dist/package.json")),
+         "standard_fonts",
+      )
+      .replaceAll("\\", "/") + "/";
 
 export async function readPdfFileFromFile(filePath: string): Promise<void> {
    console.log(filePath);
@@ -92,7 +108,7 @@ export async function readPdfStreamWithProgress(
 async function extractTextFromPdf(
    data: Uint8Array,
 ): Promise<{ rows: ImportRow[]; statementDate: string | null; accountNumber: string | null; }> {
-   const loadingTask = getDocument({ data });
+   const loadingTask = getDocument({ data, standardFontDataUrl: STANDARD_FONT_DATA_URL });
    const pdf = await loadingTask.promise;
 
    const rows: ImportRow[] = [];

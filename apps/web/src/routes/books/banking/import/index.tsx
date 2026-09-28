@@ -1,10 +1,10 @@
 import { Alert, AlertDescription, AlertTitle } from "#/components/ui/alert.tsx";
 import { Button } from "#/components/ui/button.tsx";
 import {
-    Field,
-    FieldDescription,
-    FieldGroup,
-    FieldLabel,
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
 } from "#/components/ui/field.tsx";
 import { Input } from "#/components/ui/input.tsx";
 import { Progress } from "#/components/ui/progress";
@@ -82,9 +82,11 @@ function RouteComponent() {
   return (
     <>
       <h2>Import Bank Statements</h2>
-      <p className='border rounded-lg border-gray-800 p-2.5 bg-gray-300'>
+      <p className='py-2'>
         The import feature currently only supports uploading Standard 
-        Bank statements in PDF format, and without passwords.
+        Bank statements in PDF format, and without passwords. 
+        The bank account number and statement date will be read 
+        from the uploaded PDF.
       </p>
 
       <form onSubmit={handleSubmit} className="mt-6 max-w-sm">

@@ -2,6 +2,7 @@ import { TanStackDevtools } from '@tanstack/react-devtools';
 import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router';
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools';
 
+import { THEME_INIT_SCRIPT } from '#/hooks/use-theme.ts';
 import appCss from '../styles.css?url';
 
 export const Route = createRootRoute({
@@ -30,8 +31,12 @@ export const Route = createRootRoute({
 
 function RootDocument({ children }: { children: React.ReactNode; }) {
   return (
-    <html lang="en">
+    // suppressHydrationWarning: THEME_INIT_SCRIPT sets the dark class and
+    // colour-scheme on <html> before React hydrates, so they won't match
+    // the server render.
+    <html lang="en" suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <HeadContent />
       </head>
       <body className='bg-muted'>

@@ -7,7 +7,7 @@ import {
 } from "#/components/ui/popover.tsx";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "#/components/ui/tabs.tsx";
 import { cn } from "cn";
-import { CheckIcon, ChevronsUpDownIcon, SearchIcon } from "lucide-react";
+import { ArrowLeftRightIcon, CheckIcon, ChevronsUpDownIcon, SearchIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 
 export type AccountOption = {
@@ -47,10 +47,17 @@ export function AccountSelector({
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState<Tab>("categories");
 
-  const selected = useMemo(
-    () => [...options.categories, ...options.banks].find((option) => option.id === value),
-    [options, value],
-  );
+  // Which tab the current value lives on - a Bank means it's a Transfer.
+  const selected = useMemo(() => {
+    for (const key of ["categories", "banks"] as const) {
+      const option = options[key].find((candidate) => candidate.id === value);
+      if (option) {
+        return { option, tab: key };
+      }
+    }
+    return undefined;
+  }, [options, value]);
+  const isTransfer = selected?.tab === "banks";
 
   function select(accountId: number) {
     onValueChange(accountId);
@@ -62,7 +69,11 @@ export function AccountSelector({
       open={open}
       onOpenChange={(next) => {
         setOpen(next);
-        if (!next) {
+        if (next) {
+          // Open where the current choice is, so a Transfer shows the Banks
+          // tab with its bank ticked rather than an unticked Categories list.
+          setTab(selected?.tab ?? "categories");
+        } else {
           setSearch("");
         }
       }}
@@ -74,11 +85,21 @@ export function AccountSelector({
           size="sm"
           role="combobox"
           aria-expanded={open}
-          aria-label="Account"
+          aria-label={
+            selected
+              ? `Account: ${isTransfer ? "transfer with " : ""}${selected.option.name}`
+              : "Account"
+          }
+          title={isTransfer ? `Transfer with ${selected.option.name}` : undefined}
           className={cn("w-[200px] justify-between font-normal", className)}
         >
-          <span className={cn("truncate", !selected && "text-muted-foreground")}>
-            {selected ? selected.name : "Select account"}
+          <span
+            className={cn("flex min-w-0 items-center gap-1.5", !selected && "text-muted-foreground")}
+          >
+            {isTransfer && (
+              <ArrowLeftRightIcon className="size-4 shrink-0 text-muted-foreground" />
+            )}
+            <span className="truncate">{selected ? selected.option.name : "Select account"}</span>
           </span>
           <ChevronsUpDownIcon className="size-4 opacity-50" />
         </Button>

@@ -1,4 +1,4 @@
-import { integer, pgTable, text } from "drizzle-orm/pg-core";
+import { integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { account } from "./account.js";
 
 /**
@@ -16,4 +16,6 @@ export const bankAccount = pgTable("bank_account", {
   bankName: text("bank_name").notNull(),
   description: text("description").notNull(),
   accountNumber: text("account_number").notNull().unique(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

@@ -33,9 +33,11 @@ export function getColumns({
   onSave,
   savingLineIds,
 }: PostingState): LegacyColumnDef<AccountTransaction>[] {
-  // Only Categories can be posted to for now - Banks (transfers) need their
-  // own flow, so choosing one leaves Save disabled.
-  const categoryIds = new Set(accountOptions.categories.map((option) => option.id));
+  // Either tab can be saved: a Category balances the transaction, a Bank
+  // matches it up as a Transfer with that bank's side (server-side).
+  const selectableIds = new Set(
+    [...accountOptions.categories, ...accountOptions.banks].map((option) => option.id),
+  );
 
   return [
     {
@@ -93,7 +95,7 @@ export function getColumns({
         // A saved account alone still enables Save, so it can be posted later.
         const accountId = selections.get(journalLineId) ?? otherAccountId;
         const isSaving = savingLineIds.has(journalLineId);
-        const canSave = accountId !== null && categoryIds.has(accountId) && !isSaving;
+        const canSave = accountId !== null && selectableIds.has(accountId) && !isSaving;
         return (
           <div className="flex justify-end">
             <Button

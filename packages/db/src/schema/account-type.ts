@@ -1,4 +1,4 @@
-import { integer, pgEnum, pgTable, text } from "drizzle-orm/pg-core";
+import { integer, pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
 // Debit for Asset/Expense, Credit for Liability/Equity/Income (see
 // docs/Ledger Ubiquitous Language.md). Drives how a Journal Line's signed
@@ -21,4 +21,6 @@ export const accountType = pgTable("account_type", {
   name: text("name").notNull().unique(),
   description: text("description"),
   normalBalance: normalBalance("normal_balance").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

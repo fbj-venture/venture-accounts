@@ -10,6 +10,5 @@ function RouteComponent() {
 
   return <>
     <h2>Accounts Dashboard</h2>
-
   </>;
 }

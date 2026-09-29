@@ -7,6 +7,8 @@ v1.0, 2026-09: Initial release
 
 == v0.2
 
+* [ ] Add T3.env to the project and configure it
+** [ ] Update all the direct references to `process.env`
 * [x] Debounce the login to prevent DoS
 * [x] `favicon` generation
 * [x] View Bank Account balances
@@ -16,8 +18,9 @@ v1.0, 2026-09: Initial release
 ** [ ] Display transactions to check and a running ballance
 * [ ] System users
 ** [ ] List users
-** [ ] Change my password
-** [ ] Link social login to an existing account 
+** [ ] Personal preferences
+*** [ ] Change my password
+*** [ ] Link social login to an existing account 
 
 == Out of Scope
 

@@ -4,6 +4,7 @@ import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
+import * as pdfjsWorker from "pdfjs-dist/legacy/build/pdf.worker.mjs";
 import {
    findAccountByBankAccountNumber,
    importTransactions,
@@ -12,6 +13,18 @@ import {
 import { extractAccountNumber, extractStatementDate, extractTableRows } from "./extractor.js";
 import type { ImportRow } from "./import-row.js";
 import { toTransactions } from "./transaction.js";
+
+// In Node, pdf.js normally runs a "fake worker" in-process rather than a
+// real Worker thread - but it locates that worker code by dynamically
+// import()-ing GlobalWorkerOptions.workerSrc (a bare "./pdf.worker.mjs"),
+// which only resolves next to a real, installed pdfjs-dist package. A
+// bundled server build inlines pdf.mjs's own code but has no such file on
+// disk, so that import fails ("Cannot find module ... pdf.worker.mjs").
+// Statically importing the worker module ourselves gets it bundled
+// alongside pdf.mjs, and stashing it on globalThis.pdfjsWorker is pdf.js's
+// own documented escape hatch (see PDFWorker.#mainThreadWorkerMessageHandler
+// upstream) for skipping that dynamic import entirely.
+(globalThis as { pdfjsWorker?: unknown }).pdfjsWorker = pdfjsWorker;
 
 // Loaded by path (rather than the default cwd-relative lookup) so this
 // works regardless of which directory this is run from.

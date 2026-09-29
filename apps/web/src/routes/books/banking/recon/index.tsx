@@ -32,7 +32,7 @@ function RouteComponent() {
 
   return (
     <>
-      <h2 className="pb-2 px-0">Select Bank Account</h2>
+      <h2 className="pb-2">Select Bank Account</h2>
       <p className="py-2">
         Select a bank account to reconcile against its bank statement.
       </p>

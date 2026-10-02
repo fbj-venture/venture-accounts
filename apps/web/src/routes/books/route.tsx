@@ -1,4 +1,5 @@
 import { auth } from '#/lib/auth.ts';
+import { env } from '@app/env';
 import { AppSidebar } from "#/routes/books/-components/app-sidebar";
 import {
     Breadcrumb,
@@ -25,10 +26,10 @@ const getAuthSession = createServerFn({ method: 'GET' }).handler(async () => {
   return await auth.api.getSession({ headers: getRequest().headers });
 });
 
-// process.env.APP_COMPANY is only readable server-side, so it's fetched
+// env.APP_COMPANY is only readable server-side, so it's fetched
 // here rather than via a VITE_-prefixed client env var.
 const getAppCompany = createServerFn({ method: 'GET' }).handler(async () => {
-  return process.env.APP_COMPANY ?? 'Venture';
+  return env.APP_COMPANY;
 });
 
 export const Route = createFileRoute('/books')({

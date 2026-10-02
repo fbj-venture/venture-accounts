@@ -5,22 +5,31 @@ v1.0, 2026-09: Initial release
 :nofooter:
 
 
-== v0.2
+== v0.3
 
-* [ ] Add T3.env to the project and configure it
-** [ ] Update all the direct references to `process.env`
-* [x] Debounce the login to prevent DoS
-* [x] `favicon` generation
-* [x] View Bank Account balances
 * [ ] Bank statement reconciliations
 ** [ ] Opening ballance
 ** [ ] Start and end date
 ** [ ] Display transactions to check and a running ballance
 * [ ] System users
-** [ ] List users
-** [ ] Personal preferences
-*** [ ] Change my password
-*** [ ] Link social login to an existing account 
+** [ ] Deactivate user (Ban)
+** [ ] Change user role
+* [ ] Personal preferences
+** [ ] Change my password
+** [ ] Link social login to an existing account 
+
+== v0.2
+
+* [x] Fix the algorithm for finding and auto-allocating transfers.
+* [x] Add T3.env to the project and configure it
+** [x] Update all the direct references to `process.env`
+* [x] Debounce the login to prevent DoS
+* [x] `favicon` generation
+* [x] View Bank Account balances
+* [x] Move to using Shadcn Table
+* [x] System users
+** [x] List users
+** [x] Setup application roles
 
 == Out of Scope
 

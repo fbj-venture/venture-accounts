@@ -8,11 +8,25 @@ import { formatZar } from "#/lib/currency.ts";
 import { bankAccount, db, journal, journalLine } from "@app/db/direct";
 import { and, asc, eq, ne, sql } from "drizzle-orm";
 
-// How far apart (in days) the two sides of a Transfer may be dated and
-// still match. 0 = same date only - all the church's accounts are at one
-// bank, so both statements show the same day. Raise this if transfers to
-// another bank start clearing a day or two later.
-const TRANSFER_DATE_TOLERANCE_DAYS = 0;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+// Banks don't settle at weekends, so the two sides of a Transfer can be
+// dated a business day apart. The dates a transfer's other side may carry:
+// everything from the weekday (Mon-Fri) before the transaction to the
+// weekday after it, both included - so weekend days in between count.
+// Computed in UTC on the calendar date, so time zones can't shift the day.
+function transferMatchRange(date: Date): { from: string; to: string } {
+  const isWeekend = (time: number) => [0, 6].includes(new Date(time).getUTCDay());
+  const own = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+
+  let before = own - DAY_MS;
+  while (isWeekend(before)) before -= DAY_MS;
+  let after = own + DAY_MS;
+  while (isWeekend(after)) after += DAY_MS;
+
+  const iso = (time: number) => new Date(time).toISOString().slice(0, 10);
+  return { from: iso(before), to: iso(after) };
+}
 
 export type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
@@ -100,9 +114,11 @@ export async function postToCategory(
 
 // A Transfer is imported twice - once from each bank's statement - as two
 // separate one-line entries. Matching finds the other bank's line (opposite
-// amount, same date within TRANSFER_DATE_TOLERANCE_DAYS, not yet
+// amount, dated from the weekday before to the weekday after, not yet
 // categorised or posted) and moves it into this entry, so the two bank
 // lines balance each other; the other bank's now-empty entry is deleted.
+// Exactly one candidate must exist: with several, guessing could pair the
+// wrong lines, so that is an error too.
 // Its import hash moves with the line, so re-importing either statement
 // still skips both sides. No match is an error rather than creating the
 // other side here - that would be duplicated when the other bank's
@@ -136,12 +152,12 @@ export async function postTransfer(
     );
   }
 
-  const bankDate = bankLine.date.toISOString().slice(0, 10);
-  const dayGap = sql<number>`abs(${journal.date} - ${bankDate}::date)`;
+  const matchRange = transferMatchRange(bankLine.date);
 
-  // Lock the candidate's entry too, so it can't be matched (or categorised)
-  // by someone else at the same moment.
-  const [counterpart] = await tx
+  // Lock the candidates' entries too, so they can't be matched (or
+  // categorised) by someone else at the same moment. Two rows is enough to
+  // tell "one match" from "several".
+  const counterparts = await tx
     .select({
       lineId: journalLine.id,
       journalId: journal.id,
@@ -156,21 +172,27 @@ export async function postTransfer(
         eq(journalLine.amount, -bankLine.amount),
         eq(journal.isPosted, false),
         ne(journal.id, bankLine.journalId),
-        sql`${dayGap} <= ${TRANSFER_DATE_TOLERANCE_DAYS}`,
+        sql`${journal.date} between ${matchRange.from}::date and ${matchRange.to}::date`,
         // Only its own imported bank line - not already categorised or
         // matched with something else.
         sql`(select count(*) from journal_line entry_lines where entry_lines.journal_entry_id = ${journal.id}) = 1`,
       ),
     )
-    // Closest date first; ties are interchangeable (same bank, amount and
-    // date), so the lowest id keeps the choice deterministic.
-    .orderBy(dayGap, asc(journalLine.id))
-    .limit(1)
+    .orderBy(asc(journalLine.id))
+    .limit(2)
     .for("update", { of: journal });
 
+  const expected = `${formatZar(-bankLine.amount)} in ${target.name}`;
+  if (counterparts.length > 1) {
+    throw new Error(
+      `More than one transaction matches ${expected} between ${matchRange.from} and ${matchRange.to}, so it can't be chosen automatically. ` +
+        `Match this transfer by hand once the others are sorted out.`,
+    );
+  }
+  const [counterpart] = counterparts;
   if (!counterpart) {
     throw new Error(
-      `No matching transaction found in ${target.name}: expected ${formatZar(-bankLine.amount)} on ${bankDate}. ` +
+      `No matching transaction found: expected ${expected} between ${matchRange.from} and ${matchRange.to}. ` +
         `Check that account's statement has been imported and that the amount and date agree.`,
     );
   }

@@ -7,7 +7,7 @@ import {
 } from "#/components/ui/popover.tsx";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "#/components/ui/tabs.tsx";
 import { cn } from "cn";
-import { ArrowLeftRightIcon, CheckIcon, ChevronsUpDownIcon, SearchIcon } from "lucide-react";
+import { ArrowLeftRightIcon, CheckIcon, ChevronsUpDownIcon, SearchIcon, TagIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 
 export type AccountOption = {
@@ -22,16 +22,19 @@ export type AccountOption = {
 };
 
 export type AccountOptions = {
-  /** Income/expense etc. ledger accounts - "categories" in the UI. */
+  /** Income/expense etc. ledger accounts - the "Accounts" tab in the UI. */
   categories: AccountOption[];
-  /** Accounts backed by a real bank account - picking one is a transfer. */
+  /** Accounts backed by a real bank account - the "Transfers" tab; picking one is a transfer. */
   banks: AccountOption[];
 };
 
 type Tab = keyof AccountOptions;
 
+// The keys are internal; these are what the user sees on the tabs.
+const TAB_LABELS: Record<Tab, string> = { categories: "Accounts", banks: "Transfers" };
+
 // Shared picker for the ledger account something posts to: a search box
-// filtering whichever tab (Categories / Banks) is showing.
+// filtering whichever tab (Accounts / Transfers) is showing.
 export function AccountSelector({
   options,
   value,
@@ -71,7 +74,7 @@ export function AccountSelector({
         setOpen(next);
         if (next) {
           // Open where the current choice is, so a Transfer shows the Banks
-          // tab with its bank ticked rather than an unticked Categories list.
+          // tab with its bank ticked rather than an unticked Accounts list.
           setTab(selected?.tab ?? "categories");
         } else {
           setSearch("");
@@ -90,7 +93,9 @@ export function AccountSelector({
               ? `Account: ${isTransfer ? "transfer with " : ""}${selected.option.name}`
               : "Account"
           }
-          title={isTransfer ? `Transfer with ${selected.option.name}` : undefined}
+          title={
+            selected ? `${isTransfer ? "Transfer with" : "Account:"} ${selected.option.name}` : undefined
+          }
           className={cn("w-[200px] justify-between font-normal", className)}
         >
           <span
@@ -98,6 +103,9 @@ export function AccountSelector({
           >
             {isTransfer && (
               <ArrowLeftRightIcon className="size-4 shrink-0 text-muted-foreground" />
+            )}
+            {selected && !isTransfer && (
+              <TagIcon className="size-4 shrink-0 text-muted-foreground" />
             )}
             <span className="truncate">{selected ? selected.option.name : "Select account"}</span>
           </span>
@@ -110,15 +118,15 @@ export function AccountSelector({
           <Input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder={`Search ${tab}...`}
+            placeholder={`Search ${TAB_LABELS[tab].toLowerCase()}...`}
             aria-label="Search accounts"
             className="h-8 pl-8"
           />
         </div>
         <Tabs value={tab} onValueChange={(next) => setTab(next as Tab)} className="mt-2">
           <TabsList className="w-full">
-            <TabsTrigger value="categories">Categories</TabsTrigger>
-            <TabsTrigger value="banks">Banks</TabsTrigger>
+            <TabsTrigger value="categories">{TAB_LABELS.categories}</TabsTrigger>
+            <TabsTrigger value="banks">{TAB_LABELS.banks}</TabsTrigger>
           </TabsList>
           {(["categories", "banks"] as const).map((key) => (
             <TabsContent key={key} value={key}>

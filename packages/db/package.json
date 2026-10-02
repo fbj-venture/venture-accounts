@@ -20,6 +20,7 @@
     "seed:accounts": "tsx scripts/import-accounts.ts"
   },
   "dependencies": {
+    "@app/env": "workspace:*",
     "@neondatabase/serverless": "^1.1.0",
     "drizzle-orm": "^1.0.0-rc.4",
     "pg": "^8.23.0"

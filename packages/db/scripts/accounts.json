@@ -129,5 +129,26 @@
     "name": "Opening Balance Equity",
     "description": "Opening Balance take-on Equity",
     "accountType": "Equity"
+  },
+  {
+    "name": "Salaries & Wages",
+    "description": "Salaries & Wages",
+    "accountType": "Expense"
+  },
+  {
+    "name": "Consulting Fees",
+    "description": "Consulting Fees",
+    "accountType": "Expense",
+    "parent": "Salaries & Wages"
+  },
+  {
+    "name": "SARS PAYE",
+    "description": "SARS PAYE",
+    "accountType": "Expense"
+  },
+  {
+    "name": "Insurance",
+    "description": "Insurance",
+    "accountType": "Expense"
   }
 ]

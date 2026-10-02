@@ -39,7 +39,7 @@ const data = {
           url: "/books"
         },
         {
-          title: "Unallocated Items",
+          title: "Allocate Accounts",
           icon: ListPlusIcon,
           url: "/books/banking/transactions/"
         },
@@ -92,7 +92,7 @@ export function AppSidebar({
       </SidebarHeader>
       <SidebarContent>
         <NavAccounts items={data.accounts} />
-        <NavUsers users={data.admin} />
+        {sessionUser.role === "admin" && <NavUsers users={data.admin} />}
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={sessionUser} />

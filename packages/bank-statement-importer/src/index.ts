@@ -2,7 +2,6 @@ import type { Transaction } from "@app/models";
 import { readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
 import * as pdfjsWorker from "pdfjs-dist/legacy/build/pdf.worker.mjs";
 import {
@@ -25,24 +24,6 @@ import { toTransactions } from "./transaction.js";
 // own documented escape hatch (see PDFWorker.#mainThreadWorkerMessageHandler
 // upstream) for skipping that dynamic import entirely.
 (globalThis as { pdfjsWorker?: unknown }).pdfjsWorker = pdfjsWorker;
-
-// Loaded by path (rather than the default cwd-relative lookup) so this
-// works regardless of which directory this is run from.
-const rootEnvPath = path.resolve(
-   path.dirname(fileURLToPath(import.meta.url)),
-   "../../../.env",
-);
-try {
-   process.loadEnvFile(rootEnvPath);
-} catch (error) {
-   // No .env file to load - fine in production, where the platform injects
-   // real env vars directly. Also covers a bundled build, where this
-   // module's location - and so the relative path above - no longer
-   // matches the source layout at all.
-   if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
-      throw error;
-   }
-}
 
 // Statements use PDF standard fonts (Helvetica etc.) without embedding them;
 // pdf.js ships replacements in pdfjs-dist/standard_fonts/ but can't locate

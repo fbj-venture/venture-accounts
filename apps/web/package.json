@@ -15,6 +15,7 @@
   "dependencies": {
     "@app/bank-statement-importer": "workspace:*",
     "@app/db": "workspace:*",
+    "@app/env": "workspace:*",
     "@app/models": "workspace:*",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/nitro-v2-vite-plugin": "^1.155.2",

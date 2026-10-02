@@ -7,16 +7,23 @@ v1.0, 2026-09: Initial release
 
 == v0.3
 
-* [ ] Bank statement reconciliations
-** [ ] Opening ballance
-** [ ] Start and end date
-** [ ] Display transactions to check and a running ballance
+* [x] Bank statement reconciliations
+** [x] Opening ballance
+** [x] Start and end date
+** [x] Display transactions to check and a running ballance
 * [ ] System users
 ** [ ] Deactivate user (Ban)
 ** [ ] Change user role
 * [ ] Personal preferences
+** [ ] Edit personal details & add avatar
 ** [ ] Change my password
 ** [ ] Link social login to an existing account 
+
+== Out of Scope
+
+* [ ] Split transaction over multiple accounts
+* [ ] Enable emails for forgotten password/password reset
+* [ ] Fix collapsed main navigation
 
 == v0.2
 
@@ -30,12 +37,6 @@ v1.0, 2026-09: Initial release
 * [x] System users
 ** [x] List users
 ** [x] Setup application roles
-
-== Out of Scope
-
-* [ ] Split transaction over multiple accounts
-* [ ] Enable emails for forgotten password/password reset
-* [ ] Collapsed main navigation
 
 == v0.1
 

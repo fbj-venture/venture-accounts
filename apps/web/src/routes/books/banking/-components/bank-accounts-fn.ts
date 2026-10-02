@@ -1,11 +1,8 @@
-import { account, accountType, bankAccount, db, journal, journalLine } from "@app/db/direct";
+import { account, bankAccount, db, journal, journalLine } from "@app/db/direct";
 import { createServerFn } from "@tanstack/react-start";
 import { and, eq, ne } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
-
-// The single Equity account every take-on entry's other line is posted
-// against - see docs/Ledger Ubiquitous Language.md ("Opening balance").
-const OPENING_BALANCE_EQUITY_ACCOUNT = "Opening Balance Equity";
+import { findOpeningBalance, OPENING_BALANCE_EQUITY_ACCOUNT } from "./opening-balance.server.ts";
 
 // Joins the ledger Account with its real-world bankAccount details (see
 // docs/Ledger Ubiquitous Language.md - "Account" is overloaded) into one
@@ -47,37 +44,10 @@ export const getBankAccountById = createServerFn({ method: "GET" })
     return row ?? null;
   });
 
-// A bank account's take-on entry: the journal line on this account whose
-// entry's other line is posted against the Opening Balance Equity account.
-// Its amount (signed, as always - see journal-line.ts) is the take-on
-// balance; null means no opening balance has been set yet.
+// See findOpeningBalance: null means no opening balance has been set yet.
 export const getOpeningBalance = createServerFn({ method: "GET" })
   .validator((accountId: number) => accountId)
-  .handler(async ({ data: accountId }) => {
-    const equityLine = alias(journalLine, "equity_line");
-    const equityAccount = alias(account, "equity_account");
-
-    const [row] = await db
-      .select({ amount: journalLine.amount })
-      .from(journalLine)
-      .innerJoin(journal, eq(journal.id, journalLine.journalEntryId))
-      .innerJoin(
-        equityLine,
-        and(eq(equityLine.journalEntryId, journal.id), ne(equityLine.id, journalLine.id)),
-      )
-      .innerJoin(equityAccount, eq(equityAccount.id, equityLine.accountId))
-      .innerJoin(accountType, eq(accountType.id, equityAccount.account_type))
-      .where(
-        and(
-          eq(journalLine.accountId, accountId),
-          eq(accountType.name, "Equity"),
-          eq(equityAccount.name, OPENING_BALANCE_EQUITY_ACCOUNT),
-        ),
-      )
-      .limit(1);
-
-    return row?.amount ?? null;
-  });
+  .handler(async ({ data: accountId }) => findOpeningBalance(accountId));
 
 // Creates a bank account's take-on entry: a balanced Journal entry with one
 // line on the bank account (the take-on amount) and one on Opening Balance

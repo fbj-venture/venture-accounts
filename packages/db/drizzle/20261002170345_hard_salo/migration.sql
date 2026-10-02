@@ -1,0 +1,1 @@
+ALTER TABLE "bank_recon" ADD COLUMN "statement_date" date NOT NULL;

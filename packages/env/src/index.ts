@@ -37,6 +37,11 @@ export const env = createEnv({
     BETTER_AUTH_SECRET: z.string().min(1),
     APP_COMPANY: z.string().min(1).default("Venture"),
     PDF_PASSWORD: z.string().optional(),
+    // Resend API key (see docs/resend.md) - Resend keys start with "re_".
+    RESEND_API_KEY: z.string().startsWith("re_"),
+    // The From header for outgoing mail, e.g. "Venture Accounts <accounts@mail.example.org>".
+    // The domain must be verified in Resend (or use onboarding@resend.dev to test).
+    EMAIL_FROM: z.string().min(1),
   },
   runtimeEnv: process.env,
   // An empty value in .env (e.g. "BETTER_AUTH_SECRET=") counts as unset.

@@ -12,11 +12,15 @@ v1.0, 2026-09: Initial release
 ** [x] Start and end date
 ** [x] Display transactions to check and a running ballance
 * [ ] System users
-** [ ] Deactivate user (Ban)
-** [ ] Change user role
+** [x] Deactivate user (Ban)
+** [x] Change user role
+** [x] Delete user
+** [x] Add new user
+*** [ ] Send new user verification email
 * [ ] Personal preferences
 ** [ ] Edit personal details & add avatar
 ** [ ] Change my password
+** [ ] Forgot password (Login)
 ** [ ] Link social login to an existing account 
 
 == Out of Scope

@@ -1,12 +1,12 @@
-import { BankAccountCard } from '#/routes/books/-components/bank-account-card.tsx';
 import { getBankAccountBalances } from '#/routes/books/-components/bank-account-balances-fn.ts';
+import { BankAccountCard } from '#/routes/books/-components/bank-account-card.tsx';
 import { useSetBreadcrumbs } from '#/routes/books/-components/breadcrumbs';
 import { createFileRoute } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/books/')({
   loader: () => getBankAccountBalances(),
   component: RouteComponent,
-})
+});
 
 function RouteComponent() {
   useSetBreadcrumbs([{ title: 'Dashboard' }]);

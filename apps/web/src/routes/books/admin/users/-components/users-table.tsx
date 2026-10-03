@@ -82,7 +82,12 @@ export function UsersTable({
         header: () => <span className="sr-only">Actions</span>,
         enableSorting: false,
         cell: ({ row }) => (
-          <Button variant="outline" size="sm" onClick={() => onEdit(row.original)}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="hover:border-primary hover:bg-primary hover:text-primary-foreground dark:hover:bg-primary"
+            onClick={() => onEdit(row.original)}
+          >
             <PencilIcon />
             Edit
           </Button>

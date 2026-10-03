@@ -1,0 +1,17 @@
+= Read Me
+:author: Francis Judge
+:email: fjudge7@gmail.com
+:toc: auto
+
+== Overview
+
+This application is a basic accounting package. 
+Originally developed for Venture Church (www.venturechurch.co.za).
+
+When setting up a new instance, there are several technical requirements that need to be met in order for it to work Correctly.
+
+=== Resend
+
+Resend (https://resend.com/[^]) is an email service that is ideal for sending low-volume emails. Read the 
+xref:./docs/resend.md[linked document]
+for the `tldr`.

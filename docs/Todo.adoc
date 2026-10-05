@@ -4,18 +4,26 @@ Francis Judge <fjudge7@gmail.com>
 v1.0, 2026-09: Initial release
 :nofooter:
 
+== Deployment
 
-== v0.3
+* [ ] Add new Environment variables
+* [ ] Migrate the database
+* [ ] Git push all changes
 
-* [x] Bank statement reconciliations
-** [x] Opening ballance
-** [x] Start and end date
-** [x] Display transactions to check and a running ballance
+== v0.4
+
+* [ ] Audit trails
+** [ ] Bank recon
+** [ ] Journal entry createdBy, ReconciledBy user
+** [ ] Journal Line CreatedBy, assignedBy, ReconciledBy user
+* [ ] Bank statements
+** [ ] List recons per Bank account (new tab on Recon.$id.tsx - lazy-loaded)
+** [ ] View Recon details
+** [ ] Add upload details to recon
+** [ ] Railway Uploads
+*** [ ] Upload PDF
+*** [ ] Download PDF
 * [ ] System users
-** [x] Deactivate user (Ban)
-** [x] Change user role
-** [x] Delete user
-** [x] Add new user
 *** [ ] Send new user verification email
 * [ ] Personal preferences
 ** [ ] Edit personal details & add avatar
@@ -28,34 +36,3 @@ v1.0, 2026-09: Initial release
 * [ ] Split transaction over multiple accounts
 * [ ] Enable emails for forgotten password/password reset
 * [ ] Fix collapsed main navigation
-
-== v0.2
-
-* [x] Fix the algorithm for finding and auto-allocating transfers.
-* [x] Add T3.env to the project and configure it
-** [x] Update all the direct references to `process.env`
-* [x] Debounce the login to prevent DoS
-* [x] `favicon` generation
-* [x] View Bank Account balances
-* [x] Move to using Shadcn Table
-* [x] System users
-** [x] List users
-** [x] Setup application roles
-
-== v0.1
-
-* [x] Take-on amount (Equity)
-* [x] Transfers to bank account
-** [x] Find matching account journal-line
-** [x] Work-out how to link the two
-** [*] NB that transfers have no other Account
-** [x] Ensure that transfer is displayed when not posted
-** [x] Ensure the recon will work with transfers reflected from both sides.
-* [x] Upgrade Drizzle to v1
-* [x] Deploy to Railway
-** [x] Local build scripts
-** [x] Setup the Github repo on Venture Church
-** [x] Deploy the Neon changes to `production`
-** [x] Signup Venture Church on Railway
-** [x] Enable the Railway integration
-** [x] Configure Railway environment variables

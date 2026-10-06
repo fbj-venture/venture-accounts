@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "bank_uploads_bank_id_file_hash_index" ON "bank_uploads" ("bank_id","file_hash");

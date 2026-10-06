@@ -22,19 +22,22 @@ v1.0, 2026-09: Initial release
 ** [ ] List recons per Bank account (new tab on Recon.$id.tsx - lazy-loaded)
 ** [ ] View Recon details
 ** [ ] Add upload details to recon
-** [ ] Railway Uploads
-*** [ ] Upload PDF
-*** [ ] Download PDF
-* [ ] System users
-*** [ ] Send new user verification email
+* [x] Railway Uploads
+** [x] Upload PDF
+** [x] List uploads from Dashboard
+** [x] Download PDF
 * [ ] Personal preferences
 ** [ ] Edit personal details & add avatar
 ** [ ] Change my password
-** [ ] Forgot password (Login)
-** [ ] Link social login to an existing account 
 
 == Out of Scope
 
+* [ ] System users
+** [ ] Send new user verification email
+* [ ] Personal preferences
+** [ ] Change my password: send email verification first if not verified, then password change email with link
+** [ ] Forgot password (Login)
+** [ ] Link social login to an existing account 
 * [ ] Split transaction over multiple accounts
 * [ ] Enable emails for forgotten password/password reset
 * [ ] Fix collapsed main navigation

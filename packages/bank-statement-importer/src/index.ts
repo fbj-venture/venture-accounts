@@ -1,4 +1,6 @@
 import type { Transaction } from "@app/models";
+import { isStorageConfigured, uploadFile } from "@app/storage";
+import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import path from "node:path";
@@ -7,11 +9,12 @@ import * as pdfjsWorker from "pdfjs-dist/legacy/build/pdf.worker.mjs";
 import {
    findAccountByBankAccountNumber,
    importTransactions,
+   recordBankUpload,
    type ImportRowProgress,
 } from "./db-import.js";
 import { extractAccountNumber, extractStatementDate, extractTableRows } from "./extractor.js";
 import type { ImportRow } from "./import-row.js";
-import { toTransactions } from "./transaction.js";
+import { statementDateToIso, toTransactions } from "./transaction.js";
 
 // In Node, pdf.js normally runs a "fake worker" in-process rather than a
 // real Worker thread - but it locates that worker code by dynamically
@@ -82,12 +85,17 @@ export async function readPdfStream(data: Uint8Array, userId: string): Promise<T
    return readPdfStreamWithProgress(data, userId, () => { });
 }
 
+// What an upload is described as when the caller doesn't say.
+export const DEFAULT_UPLOAD_DESCRIPTION = "Uploading bank statement";
+
 // userId is the signed-in user the imported entries are attributed to
-// (createdBy/updatedBy).
+// (createdBy/updatedBy). options.description is saved with the uploaded PDF
+// (see storeStatementPdf).
 export async function readPdfStreamWithProgress(
    data: Uint8Array,
    userId: string,
    onEvent: (event: ImportEvent) => void,
+   options: { description?: string } = {},
 ): Promise<Transaction[]> {
    onEvent({ phase: "extracting" });
 
@@ -117,6 +125,14 @@ export async function readPdfStreamWithProgress(
       rowCount: transactions.length,
    });
 
+   await storeStatementPdf(data, {
+      bankId: accountDetails.account.id,
+      accountNumber,
+      statementDate,
+      userId,
+      description: options.description?.trim() || DEFAULT_UPLOAD_DESCRIPTION,
+   });
+
    let imported = 0;
    let skipped = 0;
 
@@ -132,6 +148,38 @@ export async function readPdfStreamWithProgress(
    onEvent({ phase: "done", imported, skipped, total: transactions.length });
 
    return transactions;
+}
+
+// Keeps the original statement PDF in file storage (still password
+// protected, exactly as uploaded) and records it as a bank upload, so an
+// imported entry can be traced back to its source document. Stored at
+// statements/<accountNumber>/<yyyy-MM-dd>.pdf by the statement date, so
+// re-importing the same statement overwrites rather than duplicates. Skipped
+// when storage isn't configured; a failed upload fails the import, so a
+// stored file and the entries it produced never disagree.
+async function storeStatementPdf(
+   data: Uint8Array,
+   statement: {
+      bankId: number;
+      accountNumber: string;
+      statementDate: string;
+      userId: string;
+      description: string;
+   },
+): Promise<void> {
+   if (!isStorageConfigured()) {
+      return;
+   }
+   const folder = statement.accountNumber.replace(/[^0-9A-Za-z-]/g, "");
+   const key = `statements/${folder}/${statementDateToIso(statement.statementDate)}.pdf`;
+   await uploadFile(key, data, "application/pdf");
+   await recordBankUpload(
+      statement.bankId,
+      key,
+      createHash("sha256").update(data).digest("hex"),
+      statement.description,
+      statement.userId,
+   );
 }
 
 async function extractTextFromPdf(

@@ -42,6 +42,17 @@ export const env = createEnv({
     // The From header for outgoing mail, e.g. "Venture Accounts <accounts@mail.example.org>".
     // The domain must be verified in Resend (or use onboarding@resend.dev to test).
     EMAIL_FROM: z.string().min(1),
+
+    // Railway Bucket (S3-compatible object storage) for uploaded files - see
+    // @app/storage. All optional so the app runs without a bucket (nothing
+    // is saved); they are only checked together, when a file is uploaded.
+    // On Railway, reference the bucket's variables, e.g.
+    // S3_ENDPOINT=${{Bucket.ENDPOINT}}.
+    S3_ENDPOINT: z.url().optional(),
+    S3_REGION: z.string().min(1).optional(),
+    S3_BUCKET: z.string().min(1).optional(),
+    S3_ACCESS_KEY_ID: z.string().min(1).optional(),
+    S3_SECRET_ACCESS_KEY: z.string().min(1).optional(),
   },
   runtimeEnv: process.env,
   // An empty value in .env (e.g. "BETTER_AUTH_SECRET=") counts as unset.

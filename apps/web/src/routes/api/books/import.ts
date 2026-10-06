@@ -22,6 +22,9 @@ export const Route = createFileRoute("/api/books/import")({
 
         const formData = await request.formData();
         const file = formData.get("file");
+        const rawDescription = formData.get("description");
+        const description =
+          typeof rawDescription === "string" ? rawDescription.trim() : "";
 
         if (!(file instanceof File)) {
           return new Response("No file was uploaded.", { status: 400 });
@@ -50,7 +53,9 @@ export const Route = createFileRoute("/api/books/import")({
 
             try {
               const bytes = new Uint8Array(await file.arrayBuffer());
-              await readPdfStreamWithProgress(bytes, session.user.id, send);
+              await readPdfStreamWithProgress(bytes, session.user.id, send, {
+                description: description || undefined,
+              });
             } catch (error) {
               send({
                 phase: "error",

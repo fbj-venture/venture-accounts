@@ -15,6 +15,8 @@ import { AlertCircleIcon, CheckCircle2Icon } from "lucide-react";
 import { useState } from "react";
 import { toDisplayLines, toProgressValue } from "./-import-events.ts";
 
+const DEFAULT_DESCRIPTION = "Uploading bank statement";
+
 export const Route = createFileRoute("/books/banking/import/")({
   component: RouteComponent,
 });
@@ -101,6 +103,20 @@ function RouteComponent() {
               required
             />
             <FieldDescription>PDF documents only.</FieldDescription>
+          </Field>
+
+          <Field>
+            <FieldLabel htmlFor="description">Description</FieldLabel>
+            <Input
+              id="description"
+              name="description"
+              type="text"
+              defaultValue={DEFAULT_DESCRIPTION}
+              required
+            />
+            <FieldDescription>
+              Shown with the document on the bank account&apos;s uploads page.
+            </FieldDescription>
           </Field>
 
           <Field>

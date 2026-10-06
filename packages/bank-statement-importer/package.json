@@ -17,6 +17,7 @@
   "dependencies": {
     "@app/db": "workspace:*",
     "@app/models": "workspace:*",
+    "@app/storage": "workspace:*",
     "drizzle-orm": "^1.0.0-rc.4",
     "pdfjs-dist": "^6.3.289"
   },

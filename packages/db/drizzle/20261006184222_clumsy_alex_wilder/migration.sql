@@ -1,0 +1,1 @@
+ALTER TABLE "bank_uploads" ADD COLUMN "file_hash" char(64) NOT NULL;

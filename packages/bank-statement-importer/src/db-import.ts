@@ -1,9 +1,18 @@
 // Uses the unpooled/direct connection (not the default pooled "@app/db")
 // since this imports many rows in a loop - a real connection/pool suits
 // that better than a fresh HTTP request per query.
-import { account, bankAccount, db, journal, journalLine, withCreate } from "@app/db/direct";
+import {
+  account,
+  bankAccount,
+  bankUpload,
+  db,
+  journal,
+  journalLine,
+  withCreate,
+  withUpdate,
+} from "@app/db/direct";
 import type { Transaction } from "@app/models";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 // "Account" is overloaded (see docs/Ledger Ubiquitous Language.md): this
 // looks up the ledger Account - what a Journal Line actually references -
@@ -18,6 +27,35 @@ export async function findAccountByBankAccountNumber(accountNumber: string) {
     .limit(1);
 
   return { found: Boolean(row), account: row?.account, bankAccount: row?.bankAccount };
+}
+
+// Records an uploaded statement so it can be found again later. The file lives
+// in file storage under `fileKey`, which is what's saved (not a URL - the
+// bucket is private and download links are temporary, see getFileUrl in
+// @app/storage). A statement is stored under one key per account and date, so
+// re-importing it overwrites the file; the existing record is kept rather
+// than adding a second one for the same file - but its description is updated,
+// since the person re-importing may have worded it differently.
+export async function recordBankUpload(
+  bankId: number,
+  fileKey: string,
+  fileHash: string,
+  description: string,
+  userId: string,
+): Promise<void> {
+  const [existing] = await db
+    .select({ id: bankUpload.id })
+    .from(bankUpload)
+    .where(and(eq(bankUpload.bankId, bankId), eq(bankUpload.fileUrl, fileKey)))
+    .limit(1);
+  if (existing) {
+    await db
+      .update(bankUpload)
+      .set(withUpdate(userId, { description, fileHash }))
+      .where(eq(bankUpload.id, existing.id));
+    return;
+  }
+  await db.insert(bankUpload).values(withCreate(userId, { bankId, description, fileUrl: fileKey, fileHash }));
 }
 
 export type ImportRowProgress =

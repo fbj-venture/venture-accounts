@@ -30,19 +30,34 @@ function parseAmount(value: string, options?: { signed?: boolean }): number {
 function parseStatementDate(statementDate: string): {
   year: number;
   month: number;
+  day: number;
 } {
   const match = STATEMENT_DATE_TEXT_PATTERN.exec(statementDate.trim());
   if (!match) {
     throw new Error(`Unrecognised statement date: "${statementDate}"`);
   }
 
-  const [, , monthName, yearText] = match;
+  const [, dayText, monthName, yearText] = match;
   const month = MONTH_NAMES.indexOf(monthName ?? "") + 1;
   if (month === 0) {
     throw new Error(`Unrecognised month in statement date: "${statementDate}"`);
   }
 
-  return { year: Number.parseInt(yearText ?? "", 10), month };
+  return {
+    year: Number.parseInt(yearText ?? "", 10),
+    month,
+    day: Number.parseInt(dayText ?? "", 10),
+  };
+}
+
+// "12 March 2024" -> "2024-03-12" (yyyy-MM-dd).
+export function statementDateToIso(statementDate: string): string {
+  const { year, month, day } = parseStatementDate(statementDate);
+  return [
+    String(year).padStart(4, "0"),
+    String(month).padStart(2, "0"),
+    String(day).padStart(2, "0"),
+  ].join("-");
 }
 
 // Transaction rows only carry "MM DD" - no year - so the year is taken from

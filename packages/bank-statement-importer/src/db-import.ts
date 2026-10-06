@@ -1,7 +1,7 @@
 // Uses the unpooled/direct connection (not the default pooled "@app/db")
 // since this imports many rows in a loop - a real connection/pool suits
 // that better than a fresh HTTP request per query.
-import { account, bankAccount, db, journal, journalLine } from "@app/db/direct";
+import { account, bankAccount, db, journal, journalLine, withCreate } from "@app/db/direct";
 import type { Transaction } from "@app/models";
 import { eq } from "drizzle-orm";
 
@@ -33,6 +33,7 @@ export type ImportRowProgress =
 export async function importTransactions(
   transactions: Transaction[],
   ledgerAccount: typeof account.$inferSelect,
+  userId: string,
   onProgress?: (progress: ImportRowProgress) => void,
 ): Promise<void> {
   const total = transactions.length;
@@ -54,10 +55,12 @@ export async function importTransactions(
     // Creating the Journal entry
     const [createdJournal] = await db
       .insert(journal)
-      .values({
-        date: transaction.date,
-        note: transaction.details,
-      })
+      .values(
+        withCreate(userId, {
+          date: transaction.date,
+          note: transaction.details,
+        }),
+      )
       .returning();
 
     if (!createdJournal) {
@@ -69,12 +72,14 @@ export async function importTransactions(
     // Creating the Journal Line
     const [createdLine] = await db
       .insert(journalLine)
-      .values({
-        journalEntryId: createdJournal.id,
-        accountId: ledgerAccount.id,
-        amount: transaction.amount,
-        hash: transaction.hash,
-      })
+      .values(
+        withCreate(userId, {
+          journalEntryId: createdJournal.id,
+          accountId: ledgerAccount.id,
+          amount: transaction.amount,
+          hash: transaction.hash,
+        }),
+      )
       .returning();
 
     if (!createdLine) {

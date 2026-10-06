@@ -1,4 +1,5 @@
-import { account, bankAccount, db, recon } from "@app/db/direct";
+import { requireUser } from "#/lib/require-user.server.ts";
+import { account, bankAccount, db, recon, withCreate, withUpdate } from "@app/db/direct";
 import { createServerFn } from "@tanstack/react-start";
 import { eq } from "drizzle-orm";
 import { applyReconSelection, listReconLines, resolveReconSetup } from "./recon.server.ts";
@@ -37,6 +38,7 @@ type SaveReconInput = {
 export const saveRecon = createServerFn({ method: "POST" })
   .validator((data: SaveReconInput) => data)
   .handler(async ({ data }) => {
+    const { id: userId } = await requireUser();
     if (!/^\d{4}-\d{2}-\d{2}$/.test(data.statementDate)) {
       throw new Error("Statement date is not a valid date.");
     }
@@ -59,12 +61,12 @@ export const saveRecon = createServerFn({ method: "POST" })
       statementDate: data.statementDate,
     };
     if (openRecon) {
-      await db.update(recon).set(values).where(eq(recon.id, openRecon.id));
+      await db.update(recon).set(withUpdate(userId, values)).where(eq(recon.id, openRecon.id));
       return { reconId: openRecon.id };
     }
     const [created] = await db
       .insert(recon)
-      .values({ bankAccountId: data.bankAccountId, ...values })
+      .values(withCreate(userId, { bankAccountId: data.bankAccountId, ...values }))
       .returning({ id: recon.id });
     return { reconId: created!.id };
   });
@@ -153,9 +155,10 @@ async function loadOpenRecon(tx: Parameters<Parameters<typeof db.transaction>[0]
 export const saveReconLines = createServerFn({ method: "POST" })
   .validator((data: ReconSelection) => data)
   .handler(async ({ data }) => {
+    const { id: userId } = await requireUser();
     await db.transaction(async (tx) => {
       const row = await loadOpenRecon(tx, data.reconId);
-      await applyReconSelection(tx, row, data.includedLineIds);
+      await applyReconSelection(tx, row, data.includedLineIds, userId);
     });
   });
 
@@ -165,15 +168,19 @@ export const saveReconLines = createServerFn({ method: "POST" })
 export const markReconBalanced = createServerFn({ method: "POST" })
   .validator((data: ReconSelection) => data)
   .handler(async ({ data }) => {
+    const { id: userId } = await requireUser();
     await db.transaction(async (tx) => {
       const row = await loadOpenRecon(tx, data.reconId);
-      const linesCents = await applyReconSelection(tx, row, data.includedLineIds);
+      const linesCents = await applyReconSelection(tx, row, data.includedLineIds, userId);
       const totalCents = Math.round(row.openingBalance * 100) + linesCents;
       if (totalCents !== Math.round(row.closingBalance * 100)) {
         throw new Error(
           `The running total (${totalCents / 100}) doesn't equal the closing balance (${row.closingBalance}) - nothing was saved.`,
         );
       }
-      await tx.update(recon).set({ ballancedAt: new Date() }).where(eq(recon.id, row.id));
+      await tx
+        .update(recon)
+        .set(withUpdate(userId, { ballancedAt: new Date() }))
+        .where(eq(recon.id, row.id));
     });
   });

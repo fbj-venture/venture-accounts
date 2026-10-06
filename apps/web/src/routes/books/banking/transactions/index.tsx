@@ -29,7 +29,7 @@ function RouteComponent() {
 
   return (
     <>
-      <h2 className="pb-2 px-0">Select Bank Account</h2>
+      <h2 className="pb-2 px-0">Post Transaction Accounts</h2>
       <p className="py-2">
         Select a bank account to display un-allocated transactions 
         for assigning Account categories.

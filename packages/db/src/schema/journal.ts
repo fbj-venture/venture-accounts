@@ -1,4 +1,5 @@
-import { boolean, date, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, date, pgTable, serial, text } from "drizzle-orm/pg-core";
+import { auditColumns } from "./audit.js";
 
 /**
  * Journal entry
@@ -17,6 +18,5 @@ export const journal = pgTable("journal", {
   date: date("date", { mode: "date" }).notNull(),
   note: text("note").notNull(),
   isPosted: boolean("is_posted").notNull().default(false),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  ...auditColumns,
 });

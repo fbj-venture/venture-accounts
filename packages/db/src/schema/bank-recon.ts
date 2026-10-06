@@ -1,4 +1,5 @@
 import { date, index, integer, numeric, snakeCase, timestamp } from "drizzle-orm/pg-core";
+import { auditColumns } from "./audit";
 import { bankAccount } from "./bank-account";
 
 export const recon = snakeCase.table("bank_recon", {
@@ -8,7 +9,7 @@ export const recon = snakeCase.table("bank_recon", {
    closingBallance: numeric({ precision: 14, scale: 2, mode: "number" }).notNull(),
    statementDate: date().notNull(),
    ballancedAt: timestamp(),
-   createdAt: timestamp().notNull().defaultNow()
+   ...auditColumns
 }, (t) => [
    index().on(t.bankAccountId, t.ballancedAt)
 ]);

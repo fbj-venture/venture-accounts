@@ -62,11 +62,11 @@ function getStandardFontDataUrl(): string | undefined {
    return standardFontDataUrl;
 }
 
-export async function readPdfFileFromFile(filePath: string): Promise<void> {
+export async function readPdfFileFromFile(filePath: string, userId: string): Promise<void> {
    console.log(filePath);
 
    const data = await readFile(filePath);
-   await readPdfStream(data);
+   await readPdfStream(data, userId);
 }
 
 // One event per phase of readPdfStreamWithProgress's pipeline, so a caller
@@ -78,12 +78,15 @@ export type ImportEvent =
    | ({ phase: "importing" } & ImportRowProgress)
    | { phase: "done"; imported: number; skipped: number; total: number };
 
-export async function readPdfStream(data: Uint8Array): Promise<Transaction[]> {
-   return readPdfStreamWithProgress(data, () => { });
+export async function readPdfStream(data: Uint8Array, userId: string): Promise<Transaction[]> {
+   return readPdfStreamWithProgress(data, userId, () => { });
 }
 
+// userId is the signed-in user the imported entries are attributed to
+// (createdBy/updatedBy).
 export async function readPdfStreamWithProgress(
    data: Uint8Array,
+   userId: string,
    onEvent: (event: ImportEvent) => void,
 ): Promise<Transaction[]> {
    onEvent({ phase: "extracting" });
@@ -117,7 +120,7 @@ export async function readPdfStreamWithProgress(
    let imported = 0;
    let skipped = 0;
 
-   await importTransactions(transactions, accountDetails.account, (progress) => {
+   await importTransactions(transactions, accountDetails.account, userId, (progress) => {
       if (progress.status === "imported") {
          imported++;
       } else {

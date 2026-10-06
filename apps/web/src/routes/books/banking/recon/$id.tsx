@@ -31,7 +31,7 @@ function RouteComponent() {
 
    return (
       <>
-         <h2 className="pb-2">Reconcile {bankAccount.name}</h2>
+         <h2 className="pb-2">{bankAccount.name} Statement Recon</h2>
          <div className="max-w-sm">
             <BankAccountCard bankAccount={bankAccount} />
          </div>

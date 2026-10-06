@@ -5,7 +5,14 @@
 // createServerFn is NOT stripped: helpers kept in transactions-fn.ts pulled
 // the database driver into the client and broke hydration app-wide.
 import { formatZar } from "#/lib/currency.ts";
-import { bankAccount, db, journal, journalLine } from "@app/db/direct";
+import {
+  bankAccount,
+  db,
+  journal,
+  journalLine,
+  withCreate,
+  withUpdate,
+} from "@app/db/direct";
 import { and, asc, eq, ne, sql } from "drizzle-orm";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -69,6 +76,7 @@ export async function postToCategory(
   journalLineId: number,
   bankLine: BankLine,
   categoryId: number,
+  userId: string,
 ) {
   const otherLines = await getOtherLines(tx, bankLine.journalId, journalLineId);
 
@@ -87,12 +95,14 @@ export async function postToCategory(
     if (balancingAmount === 0) {
       throw new Error("Transaction has no amount to balance.");
     }
-    await tx.insert(journalLine).values({
-      journalEntryId: bankLine.journalId,
-      accountId: categoryId,
-      amount: balancingAmount,
-      description: bankLine.description ?? bankLine.note,
-    });
+    await tx.insert(journalLine).values(
+      withCreate(userId, {
+        journalEntryId: bankLine.journalId,
+        accountId: categoryId,
+        amount: balancingAmount,
+        description: bankLine.description ?? bankLine.note,
+      }),
+    );
   } else if (otherLines.length === 1 && balancingAmount === 0) {
     // Already categorised: move the existing balancing line to the new
     // account. Its amount is unchanged, so the entry stays balanced.
@@ -100,7 +110,7 @@ export async function postToCategory(
     if (otherLine!.accountId !== categoryId) {
       await tx
         .update(journalLine)
-        .set({ accountId: categoryId })
+        .set(withUpdate(userId, { accountId: categoryId }))
         .where(eq(journalLine.id, otherLine!.id));
     }
   } else {
@@ -128,6 +138,7 @@ export async function postTransfer(
   journalLineId: number,
   bankLine: BankLine,
   target: { id: number; name: string },
+  userId: string,
 ) {
   if (target.id === bankLine.accountId) {
     throw new Error("A transfer must be to a different bank account.");
@@ -205,12 +216,14 @@ export async function postTransfer(
 
   await tx
     .update(journalLine)
-    .set({
-      journalEntryId: bankLine.journalId,
-      // Imported lines carry their text on the entry's note, which is about
-      // to be deleted - keep it on the line.
-      description: counterpart.description ?? counterpart.note,
-    })
+    .set(
+      withUpdate(userId, {
+        journalEntryId: bankLine.journalId,
+        // Imported lines carry their text on the entry's note, which is about
+        // to be deleted - keep it on the line.
+        description: counterpart.description ?? counterpart.note,
+      }),
+    )
     .where(eq(journalLine.id, counterpart.lineId));
   await tx.delete(journal).where(eq(journal.id, counterpart.journalId));
 

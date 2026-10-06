@@ -39,12 +39,12 @@ const data = {
           url: "/books"
         },
         {
-          title: "Allocate Accounts",
+          title: "Post Transactions",
           icon: ListPlusIcon,
           url: "/books/banking/transactions/"
         },
         {
-          title: "Bank Reconciliation",
+          title: "Bank Account Recon",
           icon: ListTodoIcon,
           url: "/books/banking/recon/"
         },

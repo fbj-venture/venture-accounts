@@ -1,4 +1,5 @@
-import { account, bankAccount, db, journal, journalLine } from "@app/db/direct";
+import { requireUser } from "#/lib/require-user.server.ts";
+import { account, bankAccount, db, journal, journalLine, withCreate } from "@app/db/direct";
 import { createServerFn } from "@tanstack/react-start";
 import { and, eq, ne } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
@@ -58,6 +59,7 @@ export const setOpeningBalance = createServerFn({ method: "POST" })
     (data: { accountId: number; date: Date; note: string; amount: number }) => data,
   )
   .handler(async ({ data }) => {
+    const { id: userId } = await requireUser();
     await db.transaction(async (tx) => {
       const [equityAccount] = await tx
         .select({ id: account.id })
@@ -90,12 +92,14 @@ export const setOpeningBalance = createServerFn({ method: "POST" })
 
       const [entry] = await tx
         .insert(journal)
-        .values({ date: data.date, note: data.note, isPosted: true })
+        .values(withCreate(userId, { date: data.date, note: data.note, isPosted: true }))
         .returning({ id: journal.id });
 
-      await tx.insert(journalLine).values([
-        { journalEntryId: entry!.id, accountId: data.accountId, amount: data.amount },
-        { journalEntryId: entry!.id, accountId: equityAccount.id, amount: -data.amount },
-      ]);
+      await tx.insert(journalLine).values(
+        withCreate(userId, [
+          { journalEntryId: entry!.id, accountId: data.accountId, amount: data.amount },
+          { journalEntryId: entry!.id, accountId: equityAccount.id, amount: -data.amount },
+        ]),
+      );
     });
   });

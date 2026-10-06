@@ -1,4 +1,5 @@
-import { account, bankAccount, db, journal, journalLine } from "@app/db/direct";
+import { requireUser } from "#/lib/require-user.server.ts";
+import { account, bankAccount, db, journal, journalLine, withUpdate } from "@app/db/direct";
 import { createServerFn } from "@tanstack/react-start";
 import { and, asc, eq, ne } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
@@ -72,6 +73,7 @@ export const postTransaction = createServerFn({ method: "POST" })
     should_post: boolean;
   }) => data)
   .handler(async ({ data }) => {
+    const { id: userId } = await requireUser();
     await db.transaction(async (tx) => {
       // Lock the entry so two saves on the same transaction can't both
       // add a balancing line, or race to change it.
@@ -106,13 +108,16 @@ export const postTransaction = createServerFn({ method: "POST" })
       }
 
       if (target.bankAccountId !== null) {
-        await postTransfer(tx, data.journalLineId, bankLine, target);
+        await postTransfer(tx, data.journalLineId, bankLine, target, userId);
       } else {
-        await postToCategory(tx, data.journalLineId, bankLine, target.id);
+        await postToCategory(tx, data.journalLineId, bankLine, target.id, userId);
       }
 
       if (data.should_post) {
-        await tx.update(journal).set({ isPosted: true }).where(eq(journal.id, bankLine.journalId));
+        await tx
+          .update(journal)
+          .set(withUpdate(userId, { isPosted: true }))
+          .where(eq(journal.id, bankLine.journalId));
       }
     });
   });

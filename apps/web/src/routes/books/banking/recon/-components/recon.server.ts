@@ -9,6 +9,7 @@ import {
   journal,
   journalLine,
   recon,
+  withUpdate,
 } from "@app/db/direct";
 import {
   and,
@@ -152,6 +153,7 @@ export async function applyReconSelection(
   tx: Tx,
   row: ReconRow,
   includedLineIds: readonly number[],
+  userId: string,
 ): Promise<number> {
   const eligible = await listReconLines(tx, row);
   const eligibleIds = new Set(eligible.map((line) => line.journalLineId));
@@ -168,7 +170,7 @@ export async function applyReconSelection(
   if (toTick.length > 0) {
     await tx
       .update(journalLine)
-      .set({ isReconciled: true, bankReconId: row.id })
+      .set(withUpdate(userId, { isReconciled: true, bankReconId: row.id }))
       .where(
         inArray(
           journalLine.id,
@@ -179,7 +181,7 @@ export async function applyReconSelection(
   if (toRelease.length > 0) {
     await tx
       .update(journalLine)
-      .set({ isReconciled: false, bankReconId: null })
+      .set(withUpdate(userId, { isReconciled: false, bankReconId: null }))
       .where(
         inArray(
           journalLine.id,

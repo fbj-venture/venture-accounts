@@ -32,9 +32,9 @@ function RouteComponent() {
 
   return (
     <>
-      <h2 className="pb-2">Select Bank Account</h2>
+      <h2 className="pb-2">Bank Account Reconciliation</h2>
       <p className="py-2">
-        Select a bank account to reconcile against its bank statement.
+        Select a bank account to reconcile.
       </p>
       <div className="mt-6 flex max-w-sm flex-col gap-4">
         {bankAccounts.map((bankAccount) => (

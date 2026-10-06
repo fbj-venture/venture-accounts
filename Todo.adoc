@@ -12,10 +12,12 @@ v1.0, 2026-09: Initial release
 
 == v0.4
 
-* [ ] Audit trails
-** [ ] Bank recon
-** [ ] Journal entry createdBy, ReconciledBy user
-** [ ] Journal Line CreatedBy, assignedBy, ReconciledBy user
+* [x] accounts drop-down
+** [x] Change display for sub-items to be indented with a "branch" character
+* [x] Audit trails
+** [x] Bank recon
+** [x] Journal entry createdBy, ReconciledBy user
+** [x] Journal Line CreatedBy, assignedBy, ReconciledBy user
 * [ ] Bank statements
 ** [ ] List recons per Bank account (new tab on Recon.$id.tsx - lazy-loaded)
 ** [ ] View Recon details
@@ -36,3 +38,4 @@ v1.0, 2026-09: Initial release
 * [ ] Split transaction over multiple accounts
 * [ ] Enable emails for forgotten password/password reset
 * [ ] Fix collapsed main navigation
+* [ ] Manually add missing transactions

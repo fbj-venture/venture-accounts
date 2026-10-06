@@ -50,7 +50,7 @@ export const Route = createFileRoute("/api/books/import")({
 
             try {
               const bytes = new Uint8Array(await file.arrayBuffer());
-              await readPdfStreamWithProgress(bytes, send);
+              await readPdfStreamWithProgress(bytes, session.user.id, send);
             } catch (error) {
               send({
                 phase: "error",

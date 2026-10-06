@@ -7,7 +7,14 @@ import {
 } from "#/components/ui/popover.tsx";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "#/components/ui/tabs.tsx";
 import { cn } from "cn";
-import { ArrowLeftRightIcon, CheckIcon, ChevronsUpDownIcon, SearchIcon, TagIcon } from "lucide-react";
+import {
+  ArrowLeftRightIcon,
+  CheckIcon,
+  ChevronsUpDownIcon,
+  CornerDownRightIcon,
+  SearchIcon,
+  TagIcon,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 
 export type AccountOption = {
@@ -184,16 +191,31 @@ function AccountList({
               {group.accountType}
             </div>
           )}
-          {group.options.map((option) => (
+          {group.options.map((option, index) => {
+            // Options are ordered with sub-accounts directly under their
+            // parent, so a branch mark is enough when the row above is the
+            // parent or a sibling. A search can hide the parent, though -
+            // then the parent's name is kept, so the row isn't left
+            // without context.
+            const previous = group.options[index - 1];
+            const needsParentName =
+              option.parentName &&
+              previous?.name !== option.parentName &&
+              previous?.parentName !== option.parentName;
+            return (
             <div key={option.id} role="option" aria-selected={option.id === value}>
               <button
                 type="button"
                 onClick={() => onSelect(option.id)}
+                title={option.parentName ? `${option.parentName} › ${option.name}` : undefined}
                 className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:outline-none"
               >
                 <span className="min-w-0 flex-1 truncate">
                   {option.parentName && (
-                    <span className="text-muted-foreground">{option.parentName} › </span>
+                    <span className="text-muted-foreground">
+                      {needsParentName && `${option.parentName} `}
+                      <CornerDownRightIcon className="mr-1 ml-1 inline size-3.5 align-text-bottom" />
+                    </span>
                   )}
                   {option.name}
                   {option.accountNumber && (
@@ -203,7 +225,8 @@ function AccountList({
                 <CheckIcon className={cn("size-4", option.id !== value && "invisible")} />
               </button>
             </div>
-          ))}
+            );
+          })}
         </div>
       ))}
     </div>

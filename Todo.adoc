@@ -20,14 +20,7 @@ endif::[]
 * [ ] Migrate the database
 * [ ] Git push all changes
 
-== v0.5
-
-* [x] Login
-** [x] Reset password request
-* [x] System users
-** [x] Send new user verification email
-* [x] Personal preferences
-** [x] Change my password: send email verification first if not verified, then password change email with link
+== v0.6
 
 
 == Todo

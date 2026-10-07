@@ -7,6 +7,7 @@ import {
   LayoutDashboardIcon,
   ListPlusIcon,
   ListTodoIcon,
+  SearchIcon,
   UsersRoundIcon,
   Wallet2Icon
 } from "lucide-react";
@@ -37,6 +38,11 @@ const data = {
           title: "Dashboard",
           icon: LayoutDashboardIcon,
           url: "/books"
+        },
+        {
+          title: "Find transactions",
+          icon: SearchIcon,
+          url: "/books/banking/search/"
         },
         {
           title: "Post Transactions",

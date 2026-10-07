@@ -20,20 +20,25 @@ endif::[]
 * [ ] Migrate the database
 * [ ] Git push all changes
 
-== v0.4
+== v0.5
+
+* [ ] Add a Find transactions page
+** [x] Multiple (optional) criteria and a search button
+** [ ] Preselected bank_account when launched from a dashboard item
+** [ ] Remember last criteria but don't auto-execute
 
 * [ ] Fix bank transfers logic
 * [ ] Personal preferences
 ** [ ] Change my password
-
-== Todo
-
 * [ ] System users
 ** [ ] Send new user verification email
 * [ ] Personal preferences
 ** [ ] Change my password: send email verification first if not verified, then password change email with link
 ** [ ] Forgot password (Login)
 ** [ ] Link social login to an existing account 
+
+== Todo
+
 * [ ] Uploads
 ** [ ] Upload + Link invoices/receipts to JournalLines
 * [ ] Split transaction over multiple accounts

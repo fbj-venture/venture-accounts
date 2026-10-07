@@ -11,9 +11,11 @@ import {
   ChevronDownIcon,
   PaperclipIcon,
   ScaleIcon,
+  SearchIcon,
+  ZapIcon,
 } from "lucide-react";
 
-// The "More" menu in a bank account card's footer. Uploads comes first; add
+// The "Actions" menu in a bank account card's footer. Uploads comes first; add
 // further per-account pages below it.
 export function BankAccountMenu({ bankAccountId }: { bankAccountId: number }) {
   const id = String(bankAccountId);
@@ -21,7 +23,8 @@ export function BankAccountMenu({ bankAccountId }: { bankAccountId: number }) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm">
-          More
+          <ZapIcon />
+          Actions
           <ChevronDownIcon />
         </Button>
       </DropdownMenuTrigger>
@@ -42,6 +45,12 @@ export function BankAccountMenu({ bankAccountId }: { bankAccountId: number }) {
           <Link to="/books/banking/recon/$id" params={{ id }}>
             <ScaleIcon />
             Reconciliation
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to="/books/banking/search" search={{ bankAccountId }}>
+            <SearchIcon />
+            Find Transactions
           </Link>
         </DropdownMenuItem>
       </DropdownMenuContent>

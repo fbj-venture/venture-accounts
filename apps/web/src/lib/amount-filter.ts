@@ -77,3 +77,13 @@ function parseSingleExpression(input: string): AmountPredicate | null {
 
   return null;
 }
+
+/**
+ * Whether the whole input is a usable amount filter: not blank, and every
+ * "&"-separated expression parses. (parseAmountFilter is more forgiving - it
+ * silently skips segments it can't read - which suits filtering a table but
+ * not telling the user their expression is right.)
+ */
+export function isValidAmountFilter(input: string): boolean {
+  return input.trim() !== "" && input.split("&").every((part) => parseSingleExpression(part) !== null);
+}

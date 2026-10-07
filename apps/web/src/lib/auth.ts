@@ -6,13 +6,16 @@ import { admin } from "better-auth/plugins";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { APP_COMPANY } from "./app-company.ts";
-import { sendEmail } from "./email.server.ts";
+import { renderResetPasswordEmail, renderVerifyEmail } from "@app/email";
+import { sendEmail } from "@app/email/send";
+
+// Email clients load images from the web, so this must be a public absolute URL
+// (file is apps/web/public/img/venture-church.png). It will show broken in
+// emails sent from localhost.
+export const EMAIL_LOGO_URL = new URL("/img/venture-church.png", env.BETTER_AUTH_URL).toString();
 
 // Most reset emails one address gets in an hour.
 const RESET_EMAILS_PER_HOUR = 3;
-
-const escapeHtml = (text: string) =>
-  text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
 export const auth = betterAuth({
   baseURL: env.BETTER_AUTH_URL,
@@ -53,11 +56,7 @@ export const auth = betterAuth({
       await sendEmail({
         to: target.email,
         subject: `Reset your ${APP_COMPANY} Accounts password`,
-        html:
-          `<p>Hi ${escapeHtml(target.name)},</p>` +
-          `<p>We received a request to reset your ${escapeHtml(APP_COMPANY)} Accounts password. This link works for one hour:</p>` +
-          `<p><a href="${url}">Reset my password</a></p>` +
-          `<p>If you didn't ask for this, you can ignore this email - your password won't change.</p>`,
+        html: await renderResetPasswordEmail({ name: target.name, company: APP_COMPANY, url, logoUrl: EMAIL_LOGO_URL }),
       });
     },
   },
@@ -69,11 +68,7 @@ export const auth = betterAuth({
       await sendEmail({
         to: user.email,
         subject: `Verify your email address for ${APP_COMPANY} Accounts`,
-        html:
-          `<p>Hi ${escapeHtml(user.name)},</p>` +
-          `<p>Please confirm your email address to finish setting up your ${escapeHtml(APP_COMPANY)} Accounts login:</p>` +
-          `<p><a href="${url}">Verify my email address</a></p>` +
-          `<p>If you weren't expecting this, you can ignore this email.</p>`,
+        html: await renderVerifyEmail({ name: user.name, company: APP_COMPANY, url, logoUrl: EMAIL_LOGO_URL }),
       });
     },
   },

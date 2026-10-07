@@ -1,4 +1,4 @@
-import { sendEmail } from "#/lib/email.server.ts";
+import { sendEmail } from "@app/email/send";
 import { requireAdmin } from "#/lib/require-admin.server.ts";
 import { createServerFn } from "@tanstack/react-start";
 

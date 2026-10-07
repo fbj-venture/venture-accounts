@@ -1,14 +1,12 @@
 import { env } from "@app/env";
 import { randomBytes } from "node:crypto";
-import { auth } from "./auth.ts";
+import { auth, EMAIL_LOGO_URL } from "./auth.ts";
 import { APP_COMPANY } from "./app-company.ts";
-import { sendEmail } from "./email.server.ts";
+import { renderInvitationEmail } from "@app/email";
+import { sendEmail } from "@app/email/send";
 
 // How long an invitation link works for.
 const INVITATION_DAYS = 7;
-
-const escapeHtml = (text: string) =>
-  text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
 // Emails a user a link to /set-password, where they choose their password.
 // The link carries one of better-auth's own password-reset tokens (so the
@@ -32,10 +30,12 @@ export async function sendInvitationEmail(user: { id: string; name: string; emai
   await sendEmail({
     to: user.email,
     subject: `You've been invited to ${APP_COMPANY} Accounts`,
-    html:
-      `<p>Hi ${escapeHtml(user.name)},</p>` +
-      `<p>You've been invited to ${escapeHtml(APP_COMPANY)} Accounts. Choose a password to finish setting up your login:</p>` +
-      `<p><a href="${url.toString()}">Set my password</a></p>` +
-      `<p>This link works for ${INVITATION_DAYS} days. If you weren't expecting this, you can ignore this email.</p>`,
+    html: await renderInvitationEmail({
+      name: user.name,
+      company: APP_COMPANY,
+      url: url.toString(),
+      validDays: INVITATION_DAYS,
+      logoUrl: EMAIL_LOGO_URL,
+    }),
   });
 }

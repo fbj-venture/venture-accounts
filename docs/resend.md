@@ -40,7 +40,7 @@ RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxx
 EMAIL_FROM=Venture Accounts <onboarding@resend.dev>
 ```
 
-**b) List them in `env.example`** (no real values - this file is committed):
+**b) List them in `.env.example`** (no real values - this file is committed):
 
 ```ini
 RESEND_API_KEY=
@@ -60,19 +60,19 @@ Two consequences of that being required:
 
 ## 4. Install the Resend package
 
-From the repo root (pnpm, scoped to the web app):
+The mailer lives in the `@app/email` workspace package (`packages/email`), so Resend is installed there, not in the web app. It is already a dependency; for a fresh setup, from the repo root:
 
 ```bash
-pnpm --filter web add resend
+pnpm --filter @app/email add resend
 ```
 
 ## 5. Send a test email
 
 Resend lets every account send *without* any DNS setup using its shared test address, `onboarding@resend.dev`, with one restriction: **it can only deliver to the email address you signed up with**. That is enough to prove the code works.
 
-### 5a. A small mailer module
+### 5a. The mailer module
 
-Create `apps/web/src/lib/email.server.ts`:
+The mailer is `packages/email/src/send.server.ts`, exposed to the rest of the repo as `@app/email/send`:
 
 ```ts
 import { env } from "@app/env";
@@ -96,12 +96,47 @@ export async function sendEmail(options: { to: string | string[]; subject: strin
 
 Why the `.server.ts` suffix matters: in TanStack Start, code that is reachable from a route is bundled for the browser too, and a server-only import at the top level of such a file can leak into the client bundle and break the whole app (this project has been bitten by exactly that with the database - see the note at the top of `transactions-fn.ts`). Keep this module imported **only from inside server function handlers or scripts**, never from a component or the top level of a route file.
 
-### 5b. Quickest test: a script
+That is also why the package has two entry points: `@app/email` (the templates and `render*Email` functions - no secrets, no env) and `@app/email/send` (the Resend mailer - server only).
+
+### 5b. Email bodies are React Email templates
+
+HTML bodies are written as [React Email](https://react.email) components in `packages/email/src/templates/` and turned into an HTML string by a `render*Email` function exported from `@app/email`:
+
+| Email | Template | Render function |
+| --- | --- | --- |
+| Reset password | `reset-password.tsx` | `renderResetPasswordEmail` |
+| Verify email address | `verify-email.tsx` | `renderVerifyEmail` |
+| Invitation | `invitation.tsx` | `renderInvitationEmail` |
+
+Rendering is async, so `await` it and pass the result to `sendEmail`:
+
+```ts
+import { renderResetPasswordEmail } from "@app/email";
+import { sendEmail } from "@app/email/send";
+
+await sendEmail({
+  to: user.email,
+  subject: "Reset your password",
+  html: await renderResetPasswordEmail({ name: user.name, company: APP_COMPANY, url }),
+});
+```
+
+Values passed as props are HTML-escaped by React, so don't escape them yourself.
+
+To preview the templates in a browser (uses each template's `PreviewProps`):
+
+```bash
+pnpm --filter @app/email dev
+```
+
+This serves the preview on <http://localhost:3001>. To add a template: create `packages/email/src/templates/<name>.tsx` (copy an existing one), then add a `render<Name>Email` function to `packages/email/src/index.ts`.
+
+### 5c. Quickest test: a script
 
 Create `apps/web/scripts/send-test-email.ts`:
 
 ```ts
-import { sendEmail } from "../src/lib/email.server.ts";
+import { sendEmail } from "@app/email/send";
 
 const to = process.argv[2];
 if (!to) {
@@ -130,13 +165,13 @@ pnpm --filter web send-test-email you@example.com
 
 Expected: it prints `Sent: { id: '...' }` and the email arrives within a few seconds (check spam the first time). Then open the dashboard -> **Emails**: you should see it listed as **Delivered**.
 
-### 5c. Sending from inside the app: a server function
+### 5d. Sending from inside the app: a server function
 
 This is the shape real features (password resets, statements, notifications) will use. Put it in a route's `-components` file like the project's other `*-fn.ts` files:
 
 ```ts
 import { requireAdmin } from "#/lib/require-admin.server.ts";
-import { sendEmail } from "#/lib/email.server.ts";
+import { sendEmail } from "@app/email/send";
 import { createServerFn } from "@tanstack/react-start";
 
 export const sendTestEmail = createServerFn({ method: "POST" })
@@ -175,7 +210,7 @@ Once the domain shows **Verified**:
 
 1. Change `EMAIL_FROM` in `.env` (and in Railway) to an address on that domain, e.g. `Venture Accounts <accounts@mail.yourchurch.org.za>`. The part before the `@` can be anything; the domain must be the verified one.
 2. Optionally create a new API key restricted to that domain (step 2) and replace the old one.
-3. Re-run the test from step 5b, now with **any** recipient address.
+3. Re-run the test from step 5c, now with **any** recipient address.
 
 ## 7. Troubleshooting
 
@@ -186,12 +221,12 @@ Once the domain shows **Verified**:
 | `The ... domain is not verified` | `EMAIL_FROM` uses a domain that is not yet **Verified** in the dashboard, or has a typo. |
 | App refuses to start, naming `RESEND_API_KEY` or `EMAIL_FROM` | The variable is missing in that environment (e.g. Railway) - `@app/env` validates at startup. |
 | Sent, but nothing arrives | Open **Emails** in the dashboard and click the message: it shows *Delivered*, *Bounced* or *Complained*, with the reason. Also check spam, and that DNS (SPF/DKIM) is verified. |
-| White screen / hydration errors after adding email code | A server-only import (`email.server.ts`, `@app/env`) is reachable from browser code. Move it inside a `createServerFn` handler. |
+| White screen / hydration errors after adding email code | A server-only import (`send.server.ts`, `@app/env`) is reachable from browser code. Move it inside a `createServerFn` handler. |
 
 ## 8. Before relying on it in production
 
 - Use a separate production API key, stored only in the hosting platform's environment, never committed.
-- Keep every send behind authentication or an internal trigger (see the `requireAdmin()` note in 5c).
+- Keep every send behind authentication or an internal trigger (see the `requireAdmin()` note in 5d).
 - Send small, plain transactional messages (receipts, statements, password resets). Bulk or marketing mail needs unsubscribe handling and is a different use of the service.
 - Rotate the key (create new, deploy, delete old) if it is ever pasted into chat, a screenshot or a commit.
 

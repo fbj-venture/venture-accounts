@@ -1,7 +1,7 @@
 import { requireUser } from "#/lib/require-user.server.ts";
-import { account, bankAccount, db, recon, withCreate, withUpdate } from "@app/db/direct";
+import { account, bankAccount, bankUpload, db, recon, withCreate, withUpdate } from "@app/db/direct";
 import { createServerFn } from "@tanstack/react-start";
-import { eq } from "drizzle-orm";
+import { and, desc, eq, isNotNull, ne, notExists } from "drizzle-orm";
 import { applyReconSelection, listReconLines, resolveReconSetup } from "./recon.server.ts";
 
 // Keep ALL database code inside handlers (or in recon.server.ts, used only
@@ -16,6 +16,19 @@ export const getReconForm = createServerFn({ method: "GET" })
   .handler(async ({ data: bankAccountId }) => {
     const { openRecon, openingBalance, openingBalanceLocked } =
       await resolveReconSetup(bankAccountId);
+    // The statement the open reconciliation is linked to, if any.
+    let upload: UploadSummary | null = null;
+    if (openRecon?.bankUploadId) {
+      const [row] = await db
+        .select({
+          id: bankUpload.id,
+          description: bankUpload.description,
+          uploadedAt: bankUpload.createdAt,
+        })
+        .from(bankUpload)
+        .where(eq(bankUpload.id, openRecon.bankUploadId));
+      upload = row ?? null;
+    }
     return {
       reconId: openRecon?.id ?? null,
       openingBalance,
@@ -23,7 +36,97 @@ export const getReconForm = createServerFn({ method: "GET" })
       closingBalance: openRecon?.closingBallance ?? null,
       // yyyy-MM-dd, as stored.
       statementDate: openRecon?.statementDate ?? null,
+      upload,
     };
+  });
+
+export type UploadSummary = { id: number; description: string; uploadedAt: Date };
+
+// The bank account's uploads that no reconciliation is linked to yet,
+// newest first.
+export const listUnlinkedUploads = createServerFn({ method: "GET" })
+  .validator((bankAccountId: number) => bankAccountId)
+  .handler(async ({ data: bankAccountId }) => {
+    await requireUser();
+    return db
+      .select({
+        id: bankUpload.id,
+        description: bankUpload.description,
+        path: bankUpload.fileUrl,
+        uploadedAt: bankUpload.createdAt,
+      })
+      .from(bankUpload)
+      .where(
+        and(
+          eq(bankUpload.bankId, bankAccountId),
+          notExists(db.select({ one: recon.id }).from(recon).where(eq(recon.bankUploadId, bankUpload.id))),
+        ),
+      )
+      .orderBy(desc(bankUpload.createdAt), desc(bankUpload.id));
+  });
+
+export type ReconHistoryItem = Awaited<ReturnType<typeof listReconHistory>>[number];
+
+// A bank account's balanced reconciliations, most recent first.
+export const listReconHistory = createServerFn({ method: "GET" })
+  .validator((bankAccountId: number) => bankAccountId)
+  .handler(async ({ data: bankAccountId }) => {
+    const rows = await db
+      .select({
+        id: recon.id,
+        statementDate: recon.statementDate,
+        openingBalance: recon.openingBallance,
+        closingBalance: recon.closingBallance,
+        ballancedAt: recon.ballancedAt,
+        uploadId: bankUpload.id,
+        uploadDescription: bankUpload.description,
+      })
+      .from(recon)
+      .leftJoin(bankUpload, eq(bankUpload.id, recon.bankUploadId))
+      .where(and(eq(recon.bankAccountId, bankAccountId), isNotNull(recon.ballancedAt)))
+      .orderBy(desc(recon.statementDate), desc(recon.id));
+    return rows.map(({ ballancedAt, ...row }) => ({
+      ...row,
+      balancedAt: ballancedAt!.toISOString(),
+    }));
+  });
+
+// Links a reconciliation to an uploaded statement, or - with null - unlinks it.
+export const setReconUpload = createServerFn({ method: "POST" })
+  .validator((data: { reconId: number; bankUploadId: number | null }) => data)
+  .handler(async ({ data }) => {
+    const { id: userId } = await requireUser();
+    const [row] = await db
+      .select({ bankAccountId: recon.bankAccountId })
+      .from(recon)
+      .where(eq(recon.id, data.reconId));
+    if (!row) {
+      throw new Error("Reconciliation not found.");
+    }
+    if (data.bankUploadId !== null) {
+      const [upload] = await db
+        .select({ id: bankUpload.id })
+        .from(bankUpload)
+        .where(
+          and(
+            eq(bankUpload.id, data.bankUploadId),
+            eq(bankUpload.bankId, row.bankAccountId),
+            notExists(
+              db
+                .select({ one: recon.id })
+                .from(recon)
+                .where(and(eq(recon.bankUploadId, bankUpload.id), ne(recon.id, data.reconId))),
+            ),
+          ),
+        );
+      if (!upload) {
+        throw new Error("That upload can't be linked - it may already be linked to another reconciliation.");
+      }
+    }
+    await db
+      .update(recon)
+      .set(withUpdate(userId, { bankUploadId: data.bankUploadId }))
+      .where(eq(recon.id, data.reconId));
   });
 
 type SaveReconInput = {
@@ -33,6 +136,8 @@ type SaveReconInput = {
   closingBalance: number;
   /** yyyy-MM-dd */
   statementDate: string;
+  /** The uploaded statement this reconciliation is linked to, if any. */
+  bankUploadId: number | null;
 };
 
 export const saveRecon = createServerFn({ method: "POST" })
@@ -55,10 +160,38 @@ export const saveRecon = createServerFn({ method: "POST" })
       throw new Error("Opening balance is required.");
     }
 
+    if (data.bankUploadId !== null) {
+      // Must be this account's upload, and not linked to another reconciliation.
+      const [upload] = await db
+        .select({ id: bankUpload.id })
+        .from(bankUpload)
+        .where(
+          and(
+            eq(bankUpload.id, data.bankUploadId),
+            eq(bankUpload.bankId, data.bankAccountId),
+            notExists(
+              db
+                .select({ one: recon.id })
+                .from(recon)
+                .where(
+                  and(
+                    eq(recon.bankUploadId, bankUpload.id),
+                    openRecon ? ne(recon.id, openRecon.id) : undefined,
+                  ),
+                ),
+            ),
+          ),
+        );
+      if (!upload) {
+        throw new Error("That upload can't be linked - it may already be linked to another reconciliation.");
+      }
+    }
+
     const values = {
       openingBallance: opening,
       closingBallance: data.closingBalance,
       statementDate: data.statementDate,
+      bankUploadId: data.bankUploadId,
     };
     if (openRecon) {
       await db.update(recon).set(withUpdate(userId, values)).where(eq(recon.id, openRecon.id));

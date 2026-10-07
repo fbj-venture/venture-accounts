@@ -157,6 +157,11 @@ export function ReconTransactionsTable({
           {error}
         </p>
       ) : null}
+      {isBalanced ? (
+        <p className="mt-4 text-right text-sm text-muted-foreground">
+          This reconciliation is balanced.
+        </p>
+      ) : (
       <div className="mt-4 flex items-end justify-between gap-4">
         <Button
           type="button"
@@ -172,16 +177,12 @@ export function ReconTransactionsTable({
           Save
         </Button>
         <div className="flex flex-col items-end gap-2">
-          {isBalanced ? (
-            <p className="text-sm text-muted-foreground">This reconciliation is balanced.</p>
-          ) : (
-            <p className="text-sm tabular-nums">
-              <span className="text-muted-foreground">Difference: </span>
-              <span className={reachesClosingBalance ? undefined : "font-medium text-destructive"}>
-                {formatZar(differenceCents / 100)}
-              </span>
-            </p>
-          )}
+          <p className="text-sm tabular-nums">
+            <span className="text-muted-foreground">Difference: </span>
+            <span className={reachesClosingBalance ? undefined : "font-medium text-destructive"}>
+              {formatZar(differenceCents / 100)}
+            </span>
+          </p>
           <Button
             type="button"
             disabled={!canBalance}
@@ -196,6 +197,7 @@ export function ReconTransactionsTable({
           </Button>
         </div>
       </div>
+      )}
     </>
   );
 }

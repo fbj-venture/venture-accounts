@@ -7,7 +7,8 @@ import { useNavigate } from "@tanstack/react-router";
 import { format, parseISO } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { useState } from "react";
-import { saveRecon, type ReconForm as ReconFormData } from "./recon-fn.ts";
+import { saveRecon, type ReconForm as ReconFormData, type UploadSummary } from "./recon-fn.ts";
+import { UploadPickerDialog } from "./upload-picker-dialog.tsx";
 
 // Reconcile creates the reconciliation from these figures, or - when one was
 // already started - saves them only if they've changed, then continues to
@@ -28,6 +29,8 @@ export function ReconForm({
     initial.statementDate ? parseISO(initial.statementDate) : undefined,
   );
   const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const [upload, setUpload] = useState<UploadSummary | null>(initial.upload);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,9 +50,11 @@ export function ReconForm({
         openingBalance: initial.openingBalanceLocked ? null : Number(opening),
         closingBalance: Number(closing),
         statementDate: format(statementDate, "yyyy-MM-dd"),
+        bankUploadId: upload?.id ?? null,
       };
       const changed =
         initial.reconId === null ||
+        figures.bankUploadId !== (initial.upload?.id ?? null) ||
         figures.statementDate !== initial.statementDate ||
         figures.closingBalance !== initial.closingBalance ||
         (!initial.openingBalanceLocked && figures.openingBalance !== initial.openingBalance);
@@ -125,6 +130,30 @@ export function ReconForm({
             value={closing}
             onChange={(event) => setClosing(event.target.value)}
             required
+          />
+        </Field>
+        <Field>
+          <FieldLabel>Uploaded statement</FieldLabel>
+          <div className="flex items-center gap-2 text-sm">
+            {upload ? (
+              <>
+                <span>{upload.description}</span>
+                <Button type="button" variant="link" size="sm" onClick={() => setUpload(null)}>
+                  Unlink
+                </Button>
+              </>
+            ) : (
+              <span className="text-muted-foreground">None linked.</span>
+            )}
+            <Button type="button" variant="link" size="sm" onClick={() => setPickerOpen(true)}>
+              {upload ? "Change" : "Link an upload"}
+            </Button>
+          </div>
+          <UploadPickerDialog
+            bankAccountId={bankAccountId}
+            open={pickerOpen}
+            onOpenChange={setPickerOpen}
+            onSelect={setUpload}
           />
         </Field>
         {error ? (

@@ -2,6 +2,16 @@ Venture Accounts Todo
 =====================
 Francis Judge <fjudge7@gmail.com>
 v1.0, 2026-09: Initial release
+ifndef::env-github[:icons: font]
+ifdef::env-github[]
+:status:
+:outfilesuffix: .adoc
+:caution-caption: :fire:
+:important-caption: :exclamation:
+:note-caption: :paperclip:
+:tip-caption: :bulb:
+:warning-caption: :warning:
+endif::[]
 :nofooter:
 
 == Deployment
@@ -12,16 +22,17 @@ v1.0, 2026-09: Initial release
 
 == v0.4
 
+* [ ] Fix bank transfers logic
 * [x] accounts drop-down
 ** [x] Change display for sub-items to be indented with a "branch" character
 * [x] Audit trails
 ** [x] Bank recon
 ** [x] Journal entry createdBy, ReconciledBy user
 ** [x] Journal Line CreatedBy, assignedBy, ReconciledBy user
-* [ ] Bank statements
-** [ ] List recons per Bank account (new tab on Recon.$id.tsx - lazy-loaded)
-** [ ] View Recon details
-** [ ] Add upload details to recon
+* [x] Bank statements
+** [x] List recons per Bank account (new tab on Recon.$id.tsx - lazy-loaded)
+** [x] View Recon details
+** [x] Add upload details to recon
 * [x] Railway Uploads
 ** [x] Upload PDF
 ** [x] List uploads from Dashboard
@@ -30,8 +41,9 @@ v1.0, 2026-09: Initial release
 ** [ ] Edit personal details & add avatar
 ** [ ] Change my password
 
-== Out of Scope
+== Todo
 
+* [ ] Upload + Link invoices/receipts to JournalLines
 * [ ] System users
 ** [ ] Send new user verification email
 * [ ] Personal preferences

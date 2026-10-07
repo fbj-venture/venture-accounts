@@ -1,0 +1,2 @@
+ALTER TABLE "bank_recon" ADD COLUMN "bank_upload_id" integer;--> statement-breakpoint
+ALTER TABLE "bank_recon" ADD CONSTRAINT "bank_recon_bank_upload_id_bank_uploads_id_fkey" FOREIGN KEY ("bank_upload_id") REFERENCES "bank_uploads"("id");

@@ -38,18 +38,19 @@ endif::[]
 ** [x] List uploads from Dashboard
 ** [x] Download PDF
 * [ ] Personal preferences
-** [ ] Edit personal details & add avatar
+** [x] Edit personal details & add avatar
 ** [ ] Change my password
 
 == Todo
 
-* [ ] Upload + Link invoices/receipts to JournalLines
 * [ ] System users
 ** [ ] Send new user verification email
 * [ ] Personal preferences
 ** [ ] Change my password: send email verification first if not verified, then password change email with link
 ** [ ] Forgot password (Login)
 ** [ ] Link social login to an existing account 
+* [ ] Uploads
+** [ ] Upload + Link invoices/receipts to JournalLines
 * [ ] Split transaction over multiple accounts
 * [ ] Enable emails for forgotten password/password reset
 * [ ] Fix collapsed main navigation

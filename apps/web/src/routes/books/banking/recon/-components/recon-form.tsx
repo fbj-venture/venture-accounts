@@ -146,7 +146,7 @@ export function ReconForm({
               <span className="text-muted-foreground">None linked.</span>
             )}
             <Button type="button" variant="link" size="sm" onClick={() => setPickerOpen(true)}>
-              {upload ? "Change" : "Link an upload"}
+              {upload ? "Change" : "Link to an uploaded statement"}
             </Button>
           </div>
           <UploadPickerDialog

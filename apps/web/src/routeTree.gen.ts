@@ -18,6 +18,7 @@ import { Route as ApiBooksImportRouteImport } from './routes/api/books/import'
 import { Route as BooksBankingTransactionsRouteRouteImport } from './routes/books/banking/transactions/route'
 import { Route as BooksAdminUsersIndexRouteImport } from './routes/books/admin/users/index'
 import { Route as BooksAdminUsersIdRouteImport } from './routes/books/admin/users/$id'
+import { Route as BooksAdminUsersMeRouteImport } from './routes/books/admin/users/me'
 import { Route as BooksAdminUsersNewRouteImport } from './routes/books/admin/users/new'
 import { Route as BooksBankingImportIndexRouteImport } from './routes/books/banking/import/index'
 import { Route as BooksBankingReconIndexRouteImport } from './routes/books/banking/recon/index'
@@ -73,6 +74,11 @@ const BooksAdminUsersIdRoute = BooksAdminUsersIdRouteImport.update({
   path: '/users/$id',
   getParentRoute: () => BooksAdminRouteRoute,
 } as any)
+const BooksAdminUsersMeRoute = BooksAdminUsersMeRouteImport.update({
+  id: '/users/me',
+  path: '/users/me',
+  getParentRoute: () => BooksAdminRouteRoute,
+} as any)
 const BooksAdminUsersNewRoute = BooksAdminUsersNewRouteImport.update({
   id: '/users/new',
   path: '/users/new',
@@ -126,6 +132,7 @@ export interface FileRoutesByFullPath {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/books/import': typeof ApiBooksImportRoute
   '/books/admin/users/$id': typeof BooksAdminUsersIdRoute
+  '/books/admin/users/me': typeof BooksAdminUsersMeRoute
   '/books/admin/users/new': typeof BooksAdminUsersNewRoute
   '/books/banking/recon/$id': typeof BooksBankingReconIdRoute
   '/books/banking/transactions/$id': typeof BooksBankingTransactionsIdRoute
@@ -143,6 +150,7 @@ export interface FileRoutesByTo {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/books/import': typeof ApiBooksImportRoute
   '/books/admin/users/$id': typeof BooksAdminUsersIdRoute
+  '/books/admin/users/me': typeof BooksAdminUsersMeRoute
   '/books/admin/users/new': typeof BooksAdminUsersNewRoute
   '/books/banking/recon/$id': typeof BooksBankingReconIdRoute
   '/books/banking/transactions/$id': typeof BooksBankingTransactionsIdRoute
@@ -163,6 +171,7 @@ export interface FileRoutesById {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/books/import': typeof ApiBooksImportRoute
   '/books/admin/users/$id': typeof BooksAdminUsersIdRoute
+  '/books/admin/users/me': typeof BooksAdminUsersMeRoute
   '/books/admin/users/new': typeof BooksAdminUsersNewRoute
   '/books/banking/recon/$id': typeof BooksBankingReconIdRoute
   '/books/banking/transactions/$id': typeof BooksBankingTransactionsIdRoute
@@ -184,6 +193,7 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/api/books/import'
     | '/books/admin/users/$id'
+    | '/books/admin/users/me'
     | '/books/admin/users/new'
     | '/books/banking/recon/$id'
     | '/books/banking/transactions/$id'
@@ -201,6 +211,7 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/api/books/import'
     | '/books/admin/users/$id'
+    | '/books/admin/users/me'
     | '/books/admin/users/new'
     | '/books/banking/recon/$id'
     | '/books/banking/transactions/$id'
@@ -220,6 +231,7 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/api/books/import'
     | '/books/admin/users/$id'
+    | '/books/admin/users/me'
     | '/books/admin/users/new'
     | '/books/banking/recon/$id'
     | '/books/banking/transactions/$id'
@@ -303,6 +315,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BooksAdminUsersIdRouteImport
       parentRoute: typeof BooksAdminRouteRoute
     }
+    '/books/admin/users/me': {
+      id: '/books/admin/users/me'
+      path: '/users/me'
+      fullPath: '/books/admin/users/me'
+      preLoaderRoute: typeof BooksAdminUsersMeRouteImport
+      parentRoute: typeof BooksAdminRouteRoute
+    }
     '/books/admin/users/new': {
       id: '/books/admin/users/new'
       path: '/users/new'
@@ -364,12 +383,14 @@ declare module '@tanstack/react-router' {
 
 interface BooksAdminRouteRouteChildren {
   BooksAdminUsersIdRoute: typeof BooksAdminUsersIdRoute
+  BooksAdminUsersMeRoute: typeof BooksAdminUsersMeRoute
   BooksAdminUsersNewRoute: typeof BooksAdminUsersNewRoute
   BooksAdminUsersIndexRoute: typeof BooksAdminUsersIndexRoute
 }
 
 const BooksAdminRouteRouteChildren: BooksAdminRouteRouteChildren = {
   BooksAdminUsersIdRoute: BooksAdminUsersIdRoute,
+  BooksAdminUsersMeRoute: BooksAdminUsersMeRoute,
   BooksAdminUsersNewRoute: BooksAdminUsersNewRoute,
   BooksAdminUsersIndexRoute: BooksAdminUsersIndexRoute,
 }

@@ -37,7 +37,7 @@ import {
 import { useTheme, type Theme } from "#/hooks/use-theme.ts";
 import { authClient } from "#/lib/auth-client";
 import type { SessionUser } from "@app/models";
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 
 export function NavUser({
   user,
@@ -97,9 +97,11 @@ export function NavUser({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheck />
-                My Account
+              <DropdownMenuItem asChild>
+                <Link to="/books/admin/users/me">
+                  <BadgeCheck />
+                  My Account
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <CreditCard />

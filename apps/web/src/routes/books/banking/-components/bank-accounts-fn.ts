@@ -27,24 +27,6 @@ export const getBankAccounts = createServerFn({ method: "GET" }).handler(
   },
 );
 
-export const getBankAccountById = createServerFn({ method: "GET" })
-  .validator((id: string) => id)
-  .handler(async ({ data: id }) => {
-    const accountId = Number(id);
-    if (!Number.isInteger(accountId)) {
-      return null;
-    }
-
-    const [row] = await db
-      .select(bankAccountColumns)
-      .from(bankAccount)
-      .innerJoin(account, eq(account.id, bankAccount.id))
-      .where(eq(account.id, accountId))
-      .limit(1);
-
-    return row ?? null;
-  });
-
 // See findOpeningBalance: null means no opening balance has been set yet.
 export const getOpeningBalance = createServerFn({ method: "GET" })
   .validator((accountId: number) => accountId)

@@ -6,14 +6,15 @@ import { createFileRoute, getRouteApi, notFound, useRouter } from '@tanstack/rea
 import { endOfDay, isWithinInterval, startOfDay } from "date-fns";
 import { useMemo, useState } from "react";
 import type { DateRange } from "react-day-picker";
-import { getBankAccountById, getOpeningBalance } from "../-components/bank-accounts-fn.ts";
+import { loadBankAccount } from "../-components/bank-accounts-cache.ts";
+import { getOpeningBalance } from "../-components/bank-accounts-fn.ts";
 import { OpeningBalanceDialog } from "./-components/opening-balance-dialog.tsx";
 import { getUnPostedAccountTransactions } from "./-components/transactions-fn.ts";
 import { TransactionsTable } from "./-components/transactions-table.tsx";
 
 export const Route = createFileRoute('/books/banking/transactions/$id')({
   beforeLoad: async ({ params }) => {
-    const bankAccount = await getBankAccountById({ data: params.id });
+    const bankAccount = await loadBankAccount(params.id);
     if (!bankAccount) {
       throw notFound();
     }

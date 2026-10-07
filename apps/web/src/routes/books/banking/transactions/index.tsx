@@ -3,11 +3,11 @@ import { BankAccountCard } from "#/routes/books/-components/bank-account-card.ts
 import { useSetBreadcrumbs } from "#/routes/books/-components/breadcrumbs.ts";
 import { Link, createFileRoute, useRouterState } from '@tanstack/react-router';
 import { useEffect } from 'react';
-import { getBankAccounts } from "../-components/bank-accounts-fn.ts";
+import { loadBankAccounts } from "../-components/bank-accounts-cache.ts";
 
 export const Route = createFileRoute('/books/banking/transactions/')({
   beforeLoad: async () => {
-    const bankAccounts = await getBankAccounts();
+    const bankAccounts = await loadBankAccounts();
     return { bankAccounts };
   },
   component: RouteComponent,

@@ -12,12 +12,12 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 import { format } from "date-fns";
 import { FileTextIcon } from "lucide-react";
 import { useState } from "react";
-import { getBankAccountById } from "../-components/bank-accounts-fn.ts";
+import { loadBankAccount } from "../-components/bank-accounts-cache.ts";
 import { getBankUploads, getBankUploadUrl } from "./-components/uploads-fn.ts";
 
 export const Route = createFileRoute("/books/banking/uploads/$id")({
   beforeLoad: async ({ params }) => {
-    const bankAccount = await getBankAccountById({ data: params.id });
+    const bankAccount = await loadBankAccount(params.id);
     if (!bankAccount) {
       throw notFound();
     }

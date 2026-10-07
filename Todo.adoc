@@ -23,22 +23,7 @@ endif::[]
 == v0.4
 
 * [ ] Fix bank transfers logic
-* [x] accounts drop-down
-** [x] Change display for sub-items to be indented with a "branch" character
-* [x] Audit trails
-** [x] Bank recon
-** [x] Journal entry createdBy, ReconciledBy user
-** [x] Journal Line CreatedBy, assignedBy, ReconciledBy user
-* [x] Bank statements
-** [x] List recons per Bank account (new tab on Recon.$id.tsx - lazy-loaded)
-** [x] View Recon details
-** [x] Add upload details to recon
-* [x] Railway Uploads
-** [x] Upload PDF
-** [x] List uploads from Dashboard
-** [x] Download PDF
 * [ ] Personal preferences
-** [x] Edit personal details & add avatar
 ** [ ] Change my password
 
 == Todo

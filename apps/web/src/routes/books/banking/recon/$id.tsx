@@ -1,7 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '#/components/ui/tabs.tsx';
 import { BankAccountCard } from '#/routes/books/-components/bank-account-card.tsx';
 import { createFileRoute, notFound } from '@tanstack/react-router';
-import { getBankAccountById } from '../-components/bank-accounts-fn.ts';
+import { loadBankAccount } from '../-components/bank-accounts-cache.ts';
 import { useSetBreadcrumbs } from '../../-components/breadcrumbs';
 import { getReconForm } from './-components/recon-fn.ts';
 import { ReconForm } from './-components/recon-form.tsx';
@@ -10,7 +10,7 @@ import { useState } from 'react';
 
 export const Route = createFileRoute('/books/banking/recon/$id')({
    beforeLoad: async ({ params }) => {
-      const bankAccount = await getBankAccountById({ data: params.id });
+      const bankAccount = await loadBankAccount(params.id);
       if (!bankAccount) {
          throw notFound();
       }

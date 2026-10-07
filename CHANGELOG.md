@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-10-07
+
+### Added
+
+- accounts drop-down
+  - Change display for sub-items to be indented with a "branch" character
+- Audit trails
+  - Bank recon
+  - Journal entry createdBy, ReconciledBy user
+  - Journal Line CreatedBy, assignedBy, ReconciledBy user
+- Bank statements
+  - List recons per Bank account (new tab on Recon.$id.tsx - lazy-loaded)
+  - View Recon details
+  - Add upload details to recon
+- Railway Uploads
+  - Upload PDF
+  - List uploads from Dashboard
+  - Download PDF
+- Personal preferences
+  - Edit personal details & add avatar
+
 ## [0.3.0] - 2026-10-05
 
 ### Added

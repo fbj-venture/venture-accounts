@@ -1,7 +1,7 @@
 import {
   BadgeCheck,
   ChevronsUpDown,
-  CreditCard,
+  KeyRound,
   LogOut,
   Monitor,
   Moon,
@@ -14,6 +14,13 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "#/components/ui/avatar.tsx";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "#/components/ui/dialog.tsx";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,6 +45,7 @@ import { useTheme, type Theme } from "#/hooks/use-theme.ts";
 import { authClient } from "#/lib/auth-client";
 import type { SessionUser } from "@app/models";
 import { Link, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 
 export function NavUser({
   user,
@@ -48,6 +56,33 @@ export function NavUser({
   const navigate = useNavigate();
   const [theme, setTheme] = useTheme();
   const ThemeIcon = theme === "light" ? Sun : theme === "dark" ? Moon : Monitor;
+
+  // null: closed. Otherwise the progress of the reset email the dialog reports.
+  const [passwordEmail, setPasswordEmail] = useState<
+    null | { status: "sending" } | { status: "sent" } | { status: "error"; message: string }
+  >(null);
+
+  // Emails the signed-in user a link (to /set-password) to choose a new
+  // password - the same email as "Forgot your password?", so it is throttled
+  // the same way.
+  const changePassword = async () => {
+    setPasswordEmail({ status: "sending" });
+    const { error } = await authClient.requestPasswordReset({
+      email: user.email,
+      redirectTo: "/set-password",
+    });
+    setPasswordEmail(
+      error
+        ? {
+            status: "error",
+            message:
+              error.status === 429
+                ? "Too many requests. Please wait a few minutes and try again."
+                : (error.message ?? "Couldn't send the email."),
+          }
+        : { status: "sent" },
+    );
+  };
 
   const signout = async () => {
     await authClient.signOut();
@@ -98,14 +133,14 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuGroup>
               <DropdownMenuItem asChild>
-                <Link to="/books/admin/users/me">
+                <Link to="/books/account">
                   <BadgeCheck />
                   My Account
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCard />
-                Settings
+              <DropdownMenuItem onSelect={changePassword}>
+                <KeyRound />
+                Change Password
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
@@ -142,6 +177,25 @@ export function NavUser({
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
+      <Dialog
+        open={passwordEmail !== null}
+        onOpenChange={(open) => !open && setPasswordEmail(null)}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Change Password</DialogTitle>
+            <DialogDescription>
+              {passwordEmail?.status === "sending"
+                ? "Sending..."
+                : passwordEmail?.status === "sent"
+                  ? `We've emailed a link to ${user.email}. Follow it to choose a new password - it works for one hour.`
+                  : passwordEmail?.status === "error"
+                    ? passwordEmail.message
+                    : null}
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
     </SidebarMenu>
   );
 }

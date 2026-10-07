@@ -22,23 +22,17 @@ endif::[]
 
 == v0.5
 
-* [ ] Add a Find transactions page
-** [x] Multiple (optional) criteria and a search button
-** [ ] Preselected bank_account when launched from a dashboard item
-** [ ] Remember last criteria but don't auto-execute
-
-* [ ] Fix bank transfers logic
-* [ ] Personal preferences
-** [ ] Change my password
-* [ ] System users
-** [ ] Send new user verification email
-* [ ] Personal preferences
-** [ ] Change my password: send email verification first if not verified, then password change email with link
-** [ ] Forgot password (Login)
-** [ ] Link social login to an existing account 
+* [x] Login
+** [x] Reset password request
+* [x] System users
+** [x] Send new user verification email
+* [x] Personal preferences
+** [x] Change my password: send email verification first if not verified, then password change email with link
 
 == Todo
 
+* [ ] Personal preferences
+** [ ] Link social login to an existing account 
 * [ ] Uploads
 ** [ ] Upload + Link invoices/receipts to JournalLines
 * [ ] Split transaction over multiple accounts

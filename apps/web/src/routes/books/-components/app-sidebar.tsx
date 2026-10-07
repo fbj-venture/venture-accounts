@@ -40,7 +40,7 @@ const data = {
           url: "/books"
         },
         {
-          title: "Find transactions",
+          title: "Find Transactions",
           icon: SearchIcon,
           url: "/books/banking/search/"
         },
@@ -72,7 +72,7 @@ const data = {
   ],
   admin: [
     {
-      name: "List Users",
+      name: "Users",
       url: "/books/admin/users/",
       icon: UsersRoundIcon
     }

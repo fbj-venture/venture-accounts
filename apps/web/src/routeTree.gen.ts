@@ -11,14 +11,16 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BooksRouteRouteImport } from './routes/books/route'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as SetPasswordRouteImport } from './routes/set-password'
 import { Route as BooksIndexRouteImport } from './routes/books/index'
 import { Route as BooksAdminRouteRouteImport } from './routes/books/admin/route'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiBooksImportRouteImport } from './routes/api/books/import'
+import { Route as BooksAccountIndexRouteImport } from './routes/books/account/index'
 import { Route as BooksBankingTransactionsRouteRouteImport } from './routes/books/banking/transactions/route'
 import { Route as BooksAdminUsersIndexRouteImport } from './routes/books/admin/users/index'
 import { Route as BooksAdminUsersIdRouteImport } from './routes/books/admin/users/$id'
-import { Route as BooksAdminUsersMeRouteImport } from './routes/books/admin/users/me'
 import { Route as BooksAdminUsersNewRouteImport } from './routes/books/admin/users/new'
 import { Route as BooksBankingImportIndexRouteImport } from './routes/books/banking/import/index'
 import { Route as BooksBankingReconIndexRouteImport } from './routes/books/banking/recon/index'
@@ -37,6 +39,16 @@ const IndexRoute = IndexRouteImport.update({
 const BooksRouteRoute = BooksRouteRouteImport.update({
   id: '/books',
   path: '/books',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SetPasswordRoute = SetPasswordRouteImport.update({
+  id: '/set-password',
+  path: '/set-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BooksIndexRoute = BooksIndexRouteImport.update({
@@ -59,6 +71,11 @@ const ApiBooksImportRoute = ApiBooksImportRouteImport.update({
   path: '/api/books/import',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BooksAccountIndexRoute = BooksAccountIndexRouteImport.update({
+  id: '/account/',
+  path: '/account/',
+  getParentRoute: () => BooksRouteRoute,
+} as any)
 const BooksBankingTransactionsRouteRoute =
   BooksBankingTransactionsRouteRouteImport.update({
     id: '/banking/transactions',
@@ -73,11 +90,6 @@ const BooksAdminUsersIndexRoute = BooksAdminUsersIndexRouteImport.update({
 const BooksAdminUsersIdRoute = BooksAdminUsersIdRouteImport.update({
   id: '/users/$id',
   path: '/users/$id',
-  getParentRoute: () => BooksAdminRouteRoute,
-} as any)
-const BooksAdminUsersMeRoute = BooksAdminUsersMeRouteImport.update({
-  id: '/users/me',
-  path: '/users/me',
   getParentRoute: () => BooksAdminRouteRoute,
 } as any)
 const BooksAdminUsersNewRoute = BooksAdminUsersNewRouteImport.update({
@@ -132,13 +144,15 @@ const BooksBankingReconSessionIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/books': typeof BooksRouteRouteWithChildren
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/set-password': typeof SetPasswordRoute
   '/books/admin': typeof BooksAdminRouteRouteWithChildren
   '/books/': typeof BooksIndexRoute
   '/books/banking/transactions': typeof BooksBankingTransactionsRouteRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/books/import': typeof ApiBooksImportRoute
+  '/books/account/': typeof BooksAccountIndexRoute
   '/books/admin/users/$id': typeof BooksAdminUsersIdRoute
-  '/books/admin/users/me': typeof BooksAdminUsersMeRoute
   '/books/admin/users/new': typeof BooksAdminUsersNewRoute
   '/books/banking/recon/$id': typeof BooksBankingReconIdRoute
   '/books/banking/transactions/$id': typeof BooksBankingTransactionsIdRoute
@@ -152,12 +166,14 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/set-password': typeof SetPasswordRoute
   '/books/admin': typeof BooksAdminRouteRouteWithChildren
   '/books': typeof BooksIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/books/import': typeof ApiBooksImportRoute
+  '/books/account': typeof BooksAccountIndexRoute
   '/books/admin/users/$id': typeof BooksAdminUsersIdRoute
-  '/books/admin/users/me': typeof BooksAdminUsersMeRoute
   '/books/admin/users/new': typeof BooksAdminUsersNewRoute
   '/books/banking/recon/$id': typeof BooksBankingReconIdRoute
   '/books/banking/transactions/$id': typeof BooksBankingTransactionsIdRoute
@@ -173,13 +189,15 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/books': typeof BooksRouteRouteWithChildren
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/set-password': typeof SetPasswordRoute
   '/books/admin': typeof BooksAdminRouteRouteWithChildren
   '/books/': typeof BooksIndexRoute
   '/books/banking/transactions': typeof BooksBankingTransactionsRouteRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/books/import': typeof ApiBooksImportRoute
+  '/books/account/': typeof BooksAccountIndexRoute
   '/books/admin/users/$id': typeof BooksAdminUsersIdRoute
-  '/books/admin/users/me': typeof BooksAdminUsersMeRoute
   '/books/admin/users/new': typeof BooksAdminUsersNewRoute
   '/books/banking/recon/$id': typeof BooksBankingReconIdRoute
   '/books/banking/transactions/$id': typeof BooksBankingTransactionsIdRoute
@@ -196,13 +214,15 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/books'
+    | '/forgot-password'
+    | '/set-password'
     | '/books/admin'
     | '/books/'
     | '/books/banking/transactions'
     | '/api/auth/$'
     | '/api/books/import'
+    | '/books/account/'
     | '/books/admin/users/$id'
-    | '/books/admin/users/me'
     | '/books/admin/users/new'
     | '/books/banking/recon/$id'
     | '/books/banking/transactions/$id'
@@ -216,12 +236,14 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/forgot-password'
+    | '/set-password'
     | '/books/admin'
     | '/books'
     | '/api/auth/$'
     | '/api/books/import'
+    | '/books/account'
     | '/books/admin/users/$id'
-    | '/books/admin/users/me'
     | '/books/admin/users/new'
     | '/books/banking/recon/$id'
     | '/books/banking/transactions/$id'
@@ -236,13 +258,15 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/books'
+    | '/forgot-password'
+    | '/set-password'
     | '/books/admin'
     | '/books/'
     | '/books/banking/transactions'
     | '/api/auth/$'
     | '/api/books/import'
+    | '/books/account/'
     | '/books/admin/users/$id'
-    | '/books/admin/users/me'
     | '/books/admin/users/new'
     | '/books/banking/recon/$id'
     | '/books/banking/transactions/$id'
@@ -258,6 +282,8 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BooksRouteRoute: typeof BooksRouteRouteWithChildren
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
+  SetPasswordRoute: typeof SetPasswordRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiBooksImportRoute: typeof ApiBooksImportRoute
 }
@@ -276,6 +302,20 @@ declare module '@tanstack/react-router' {
       path: '/books'
       fullPath: '/books'
       preLoaderRoute: typeof BooksRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/set-password': {
+      id: '/set-password'
+      path: '/set-password'
+      fullPath: '/set-password'
+      preLoaderRoute: typeof SetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/books/': {
@@ -306,6 +346,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiBooksImportRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/books/account/': {
+      id: '/books/account/'
+      path: '/account'
+      fullPath: '/books/account/'
+      preLoaderRoute: typeof BooksAccountIndexRouteImport
+      parentRoute: typeof BooksRouteRoute
+    }
     '/books/banking/transactions': {
       id: '/books/banking/transactions'
       path: '/banking/transactions'
@@ -325,13 +372,6 @@ declare module '@tanstack/react-router' {
       path: '/users/$id'
       fullPath: '/books/admin/users/$id'
       preLoaderRoute: typeof BooksAdminUsersIdRouteImport
-      parentRoute: typeof BooksAdminRouteRoute
-    }
-    '/books/admin/users/me': {
-      id: '/books/admin/users/me'
-      path: '/users/me'
-      fullPath: '/books/admin/users/me'
-      preLoaderRoute: typeof BooksAdminUsersMeRouteImport
       parentRoute: typeof BooksAdminRouteRoute
     }
     '/books/admin/users/new': {
@@ -402,14 +442,12 @@ declare module '@tanstack/react-router' {
 
 interface BooksAdminRouteRouteChildren {
   BooksAdminUsersIdRoute: typeof BooksAdminUsersIdRoute
-  BooksAdminUsersMeRoute: typeof BooksAdminUsersMeRoute
   BooksAdminUsersNewRoute: typeof BooksAdminUsersNewRoute
   BooksAdminUsersIndexRoute: typeof BooksAdminUsersIndexRoute
 }
 
 const BooksAdminRouteRouteChildren: BooksAdminRouteRouteChildren = {
   BooksAdminUsersIdRoute: BooksAdminUsersIdRoute,
-  BooksAdminUsersMeRoute: BooksAdminUsersMeRoute,
   BooksAdminUsersNewRoute: BooksAdminUsersNewRoute,
   BooksAdminUsersIndexRoute: BooksAdminUsersIndexRoute,
 }
@@ -438,6 +476,7 @@ interface BooksRouteRouteChildren {
   BooksAdminRouteRoute: typeof BooksAdminRouteRouteWithChildren
   BooksIndexRoute: typeof BooksIndexRoute
   BooksBankingTransactionsRouteRoute: typeof BooksBankingTransactionsRouteRouteWithChildren
+  BooksAccountIndexRoute: typeof BooksAccountIndexRoute
   BooksBankingReconIdRoute: typeof BooksBankingReconIdRoute
   BooksBankingUploadsIdRoute: typeof BooksBankingUploadsIdRoute
   BooksBankingImportIndexRoute: typeof BooksBankingImportIndexRoute
@@ -451,6 +490,7 @@ const BooksRouteRouteChildren: BooksRouteRouteChildren = {
   BooksIndexRoute: BooksIndexRoute,
   BooksBankingTransactionsRouteRoute:
     BooksBankingTransactionsRouteRouteWithChildren,
+  BooksAccountIndexRoute: BooksAccountIndexRoute,
   BooksBankingReconIdRoute: BooksBankingReconIdRoute,
   BooksBankingUploadsIdRoute: BooksBankingUploadsIdRoute,
   BooksBankingImportIndexRoute: BooksBankingImportIndexRoute,
@@ -466,6 +506,8 @@ const BooksRouteRouteWithChildren = BooksRouteRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BooksRouteRoute: BooksRouteRouteWithChildren,
+  ForgotPasswordRoute: ForgotPasswordRoute,
+  SetPasswordRoute: SetPasswordRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiBooksImportRoute: ApiBooksImportRoute,
 }

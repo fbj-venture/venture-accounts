@@ -213,4 +213,7 @@ body {
   h2 {
     @apply py-2 text-3xl font-semibold;
   }
+  .link:hover {
+    @apply underline text-primary
+  }
 }

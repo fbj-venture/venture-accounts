@@ -1,6 +1,6 @@
 import { devtools } from '@tanstack/devtools-vite';
 import { fileURLToPath } from 'node:url';
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 
 import { tanstackStart } from '@tanstack/react-start/plugin/vite';
 
@@ -14,7 +14,16 @@ import viteReact from '@vitejs/plugin-react';
 // directly means the workspace root doesn't need its own copy step.
 const outputDir = fileURLToPath(new URL("../../.output", import.meta.url));
 
-const config = defineConfig({
+// APP_COMPANY comes from the workspace root .env (or the platform's real
+// environment variables) and is inlined at build time as __APP_COMPANY__, so
+// the same value is available to browser and server code alike - see
+// src/lib/app-company.ts. Mirrors the default in @app/env.
+const rootDir = fileURLToPath(new URL("../..", import.meta.url));
+
+const config = defineConfig(({ mode }) => ({
+  define: {
+    __APP_COMPANY__: JSON.stringify(loadEnv(mode, rootDir, "").APP_COMPANY || "Venture"),
+  },
   resolve: { tsconfigPaths: true },
   plugins: [
     devtools({ eventBusConfig: { port: 6206 } }),
@@ -26,6 +35,6 @@ const config = defineConfig({
     tanstackStart(),
     viteReact(),
   ],
-})
+}))
 
 export default config

@@ -1,9 +1,10 @@
 import { auth } from "#/lib/auth.ts";
+import { sendInvitationEmail } from "#/lib/invitation.server.ts";
 import { requireAdmin } from "#/lib/require-admin.server.ts";
-import { db, session, user } from "@app/db/direct";
+import { authAccount, db, session, user } from "@app/db/direct";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
-import { asc, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 
 // The roles the admin plugin knows by default.
 export const USER_ROLES = ["admin", "user"] as const;
@@ -137,19 +138,15 @@ export const deleteUser = createServerFn({ method: "POST" })
 type NewUserInput = {
   name: string;
   email: string;
-  password: string;
-  confirmPassword: string;
   role: string;
-  /** Unticked: the user is saved as already verified and can sign in at once. */
-  requireVerification: boolean;
 };
 
-// Creates a user (and their email + password login) through the admin
-// plugin. With requireVerification they're created unverified, and sign-in
-// stays blocked until they follow the link in the verification email sent
-// here (and re-sent whenever they try to sign in). Without it they're saved
-// as already verified. A failed verification email doesn't undo the
-// creation - it comes back in verificationEmailError instead.
+// Creates a user and emails them an invitation to choose their own password
+// (see sendInvitationEmail). They're created without a password - so they
+// can't sign in until they accept - and already marked as verified, since
+// the only way to get a password is the link sent to their address. A failed
+// invitation email doesn't undo the creation - it comes back in
+// invitationEmailError instead, and can be re-sent (sendUserInvitation).
 export const createUser = createServerFn({ method: "POST" })
   .validator((data: NewUserInput) => data)
   .handler(async ({ data }) => {
@@ -162,39 +159,68 @@ export const createUser = createServerFn({ method: "POST" })
     if (!email) {
       throw new Error("Email is required.");
     }
-    // better-auth's own limits: 8 to 128 characters.
-    if (data.password.length < 8 || data.password.length > 128) {
-      throw new Error("The password must be between 8 and 128 characters.");
-    }
-    if (data.password !== data.confirmPassword) {
-      throw new Error("The passwords don't match.");
-    }
     const role = USER_ROLES.find((known) => known === data.role);
     if (!role) {
       throw new Error("Unknown role.");
     }
 
-    const headers = getRequest().headers;
     const { user: created } = await auth.api.createUser({
-      body: {
-        email,
-        password: data.password,
-        name,
-        role,
-        data: { emailVerified: !data.requireVerification },
-      },
-      headers,
+      body: { email, name, role, data: { emailVerified: true } },
+      headers: getRequest().headers,
     });
 
-    let verificationEmailError: string | null = null;
-    if (data.requireVerification) {
-      try {
-        await auth.api.sendVerificationEmail({ body: { email, callbackURL: "/books" } });
-      } catch (caught) {
-        verificationEmailError =
-          caught instanceof Error ? caught.message : "The email couldn't be sent.";
-      }
+    let invitationEmailError: string | null = null;
+    try {
+      await sendInvitationEmail({ id: created.id, name, email });
+    } catch (caught) {
+      invitationEmailError =
+        caught instanceof Error ? caught.message : "The email couldn't be sent.";
     }
 
-    return { id: created.id, verificationEmailError };
+    return { id: created.id, invitationEmailError };
+  });
+
+// (Re-)sends the invitation to a user who hasn't set a password yet.
+export const sendUserInvitation = createServerFn({ method: "POST" })
+  .validator((id: string) => id)
+  .handler(async ({ data: id }) => {
+    await requireAdmin();
+    const [target] = await db
+      .select({ id: user.id, name: user.name, email: user.email })
+      .from(user)
+      .where(eq(user.id, id));
+    if (!target) {
+      throw new Error("User not found.");
+    }
+    const [credential] = await db
+      .select({ id: authAccount.id })
+      .from(authAccount)
+      .where(and(eq(authAccount.userId, id), eq(authAccount.providerId, "credential")));
+    if (credential) {
+      throw new Error("This user has already set a password.");
+    }
+    await sendInvitationEmail(target);
+  });
+
+// Sends (or re-sends) the verification email to a user who hasn't verified
+// their address yet. The link in it is built by better-auth from
+// BETTER_AUTH_URL and sent through Resend (see sendVerificationEmail in
+// lib/auth.ts). Throws if the email couldn't be sent.
+export const sendUserVerificationEmail = createServerFn({ method: "POST" })
+  .validator((id: string) => id)
+  .handler(async ({ data: id }) => {
+    await requireAdmin();
+    const [target] = await db
+      .select({ email: user.email, emailVerified: user.emailVerified })
+      .from(user)
+      .where(eq(user.id, id));
+    if (!target) {
+      throw new Error("User not found.");
+    }
+    if (target.emailVerified) {
+      throw new Error("This user's email address is already verified.");
+    }
+    await auth.api.sendVerificationEmail({
+      body: { email: target.email, callbackURL: "/books" },
+    });
   });

@@ -1,5 +1,5 @@
 import { auth } from '#/lib/auth.ts';
-import { env } from '@app/env';
+import { APP_COMPANY } from '#/lib/app-company.ts';
 import { AppSidebar } from "#/routes/books/-components/app-sidebar";
 import {
     Breadcrumb,
@@ -26,12 +26,6 @@ const getAuthSession = createServerFn({ method: 'GET' }).handler(async () => {
   return await auth.api.getSession({ headers: getRequest().headers });
 });
 
-// env.APP_COMPANY is only readable server-side, so it's fetched
-// here rather than via a VITE_-prefixed client env var.
-const getAppCompany = createServerFn({ method: 'GET' }).handler(async () => {
-  return env.APP_COMPANY;
-});
-
 export const Route = createFileRoute('/books')({
   beforeLoad: async () => {
     const authSession = await getAuthSession();
@@ -41,8 +35,7 @@ export const Route = createFileRoute('/books')({
     // Explicit annotation so this fails to typecheck if better-auth's
     // inferred user shape ever drifts from @app/models' User.
     const user: SessionUser = authSession.user;
-    const appCompany = await getAppCompany();
-    return { user, appCompany };
+    return { user, appCompany: APP_COMPANY };
   },
   component: BooksLayout,
 });

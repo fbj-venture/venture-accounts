@@ -5,11 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-10-07
+
+### Added
+
+- Login
+  - Reset password request
+- System users
+  - Send new user verification email
+  - Email verification links from table and personal details
+  - Made email in user details an email link
+- Personal preferences
+  - Change my password: send email verification first if not verified, then password change email with link
+
+### Changed
+
+- New users get a joining email to set their password
+- Personal Settings menu was changed to Change Password
+
 ## [0.4.1] - 2026-10-07
 
 ### Added
 
 - A search transactions page
+  - Multiple (optional) criteria and a search button
+  - Preselected bank_account when launched from a dashboard item
+  - Remember last criteria but don't auto-execute
 
 ## [0.4.0] - 2026-10-07
 

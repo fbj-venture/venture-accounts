@@ -9,7 +9,7 @@ import { SaveIcon, UserIcon } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { updateMyProfile } from './-components/my-account-fn.ts';
 
-export const Route = createFileRoute('/books/admin/users/me')({
+export const Route = createFileRoute('/books/account/')({
   component: RouteComponent,
 });
 
@@ -50,7 +50,7 @@ async function toAvatarDataUrl(file: File): Promise<string> {
 function RouteComponent() {
   const router = useRouter();
   const { user } = Route.useRouteContext();
-  useSetBreadcrumbs([{ title: 'Users', url: '/books/admin/users' }, { title: 'My Account' }]);
+  useSetBreadcrumbs([{ title: 'Dashboard', url: '/books' }, { title: 'My Account' }]);
 
   const fileInput = useRef<HTMLInputElement>(null);
   const [name, setName] = useState(user.name);

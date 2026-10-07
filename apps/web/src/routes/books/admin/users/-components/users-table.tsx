@@ -17,6 +17,7 @@ import {
 } from "@tanstack/react-table/legacy";
 import { ArrowDownIcon, ArrowUpDownIcon, ArrowUpIcon, PencilIcon } from "lucide-react";
 import { useMemo, useState } from "react";
+import { SendVerificationLink } from "./send-verification-link.tsx";
 import type { AppUser } from "./users-fn.ts";
 
 function SortableHeader({ column, title }: { column: LegacyColumn<AppUser>; title: string }) {
@@ -70,7 +71,8 @@ export function UsersTable({
       {
         accessorKey: "emailVerified",
         header: ({ column }) => <SortableHeader column={column} title="Verified" />,
-        cell: ({ getValue }) => (getValue<boolean>() ? "Yes" : "No"),
+        cell: ({ row, getValue }) =>
+          getValue<boolean>() ? "Yes" : <SendVerificationLink user={row.original} />,
       },
       {
         accessorKey: "createdAt",

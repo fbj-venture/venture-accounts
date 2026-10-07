@@ -1,3 +1,4 @@
+import { Checkbox } from "#/components/ui/checkbox.tsx";
 import { TablePagination } from "#/components/table-pagination.tsx";
 import {
   Table,
@@ -13,6 +14,20 @@ import { formatZar } from "#/lib/currency.ts";
 import { useEffect, useMemo, useState } from "react";
 import type { SearchResult } from "./search-fn.ts";
 import { TransactionIdsDialog } from "./transaction-ids-dialog.tsx";
+
+// A tick for display only: it ignores the pointer (so a click falls through to
+// the row) and stays out of the tab order.
+function ReadOnlyCheckbox({ checked, label }: { checked: boolean; label: string }) {
+  return (
+    <Checkbox
+      checked={checked}
+      tabIndex={-1}
+      aria-readonly
+      aria-label={label}
+      className="pointer-events-none"
+    />
+  );
+}
 
 // The search's results, paginated at the page size saved for every table.
 // The amount expression is applied here, over what the server returned.
@@ -94,8 +109,12 @@ export function SearchResultsTable({
                 <TableCell>{row.description}</TableCell>
                 <TableCell>{row.otherAccountNames.join(", ")}</TableCell>
                 <TableCell className="text-right tabular-nums">{formatZar(row.amount)}</TableCell>
-                <TableCell>{row.isPosted ? "Yes" : "No"}</TableCell>
-                <TableCell>{row.isReconciled ? "Yes" : "No"}</TableCell>
+                <TableCell>
+                  <ReadOnlyCheckbox checked={row.isPosted} label="Posted" />
+                </TableCell>
+                <TableCell>
+                  <ReadOnlyCheckbox checked={row.isReconciled} label="Reconciled" />
+                </TableCell>
               </TableRow>
             ))
           ) : (

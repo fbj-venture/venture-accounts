@@ -8,8 +8,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '#/components/ui/alert-dialog.tsx';
-import { Button } from '#/components/ui/button.tsx';
 import { ButtonGroup } from '#/components/ui/button-group.tsx';
+import { Button } from '#/components/ui/button.tsx';
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card.tsx';
 import { Field, FieldLabel } from '#/components/ui/field.tsx';
 import { Input } from '#/components/ui/input.tsx';
@@ -20,12 +20,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '#/components/ui/select.tsx';
+import { APP_COMPANY } from "#/lib/app-company.ts";
 import { cn } from '#/lib/utils.ts';
 import { useSetBreadcrumbs } from '#/routes/books/-components/breadcrumbs';
 import { createFileRoute, notFound, useRouter } from '@tanstack/react-router';
 import { format } from 'date-fns';
 import { SaveIcon, Trash2Icon, UserCheckIcon, UserXIcon } from 'lucide-react';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
+import { SendVerificationLink } from './-components/send-verification-link.tsx';
 import {
   USER_ROLES,
   deactivateUser,
@@ -104,15 +106,15 @@ function RouteComponent() {
     : [user.role, ...USER_ROLES];
   const canSave = !busy && name.trim() !== '' && (name.trim() !== user.name || role !== user.role);
 
-  const details: [string, string][] = [
+  const details: [string, ReactNode][] = [
     ['Email', user.email],
-    ['Email verified', user.emailVerified ? 'Yes' : 'No'],
+    ['Email verified', user.emailVerified ? 'Yes' : <SendVerificationLink user={user} />],
     ['Status', isEnabled ? 'Active' : 'Deactivated'],
     ...(!isEnabled && user.banReason
-      ? [['Deactivation reason', user.banReason] as [string, string]]
+      ? [['Deactivation reason', user.banReason] as [string, ReactNode]]
       : []),
     ...(!isEnabled && user.banExpires
-      ? [['Deactivated until', formatDateTime(user.banExpires)] as [string, string]]
+      ? [['Deactivated until', formatDateTime(user.banExpires)] as [string, ReactNode]]
       : []),
     ['Created', formatDateTime(user.createdAt)],
     ['Last updated', formatDateTime(user.updatedAt)],
@@ -316,7 +318,7 @@ function RouteComponent() {
                 <dd
                   className={cn(label === 'Deactivation reason' && 'font-medium text-destructive')}
                 >
-                  {value}
+                  {label == "Email" ? <a className="link" href={`mailto:${value}?subject=${APP_COMPANY} Accounts`}>{value}</a> : value}
                 </dd>
               </div>
             ))}

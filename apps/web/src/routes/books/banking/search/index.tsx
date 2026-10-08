@@ -5,6 +5,7 @@ import { Button } from '#/components/ui/button.tsx';
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card.tsx';
 import { Checkbox } from '#/components/ui/checkbox.tsx';
 import { Field, FieldLabel } from '#/components/ui/field.tsx';
+import { Input } from '#/components/ui/input.tsx';
 import { useSetBreadcrumbs } from '#/routes/books/-components/breadcrumbs';
 import { createFileRoute } from '@tanstack/react-router';
 import { SearchIcon, XIcon } from 'lucide-react';
@@ -13,7 +14,12 @@ import { useMemo, useRef, useState } from 'react';
 import type { DateRange } from 'react-day-picker';
 import { loadBankAccounts } from '../-components/bank-accounts-cache.ts';
 import { isValidAmountFilter } from '#/lib/amount-filter.ts';
-import { getIsAdmin, searchTransactions, type SearchResult } from './-components/search-fn.ts';
+import {
+  getIsAdmin,
+  searchTransactions,
+  type SearchCriteria,
+  type SearchResult,
+} from './-components/search-fn.ts';
 import { SearchResultsTable } from './-components/search-results-table.tsx';
 import { getAccountOptions } from '../transactions/-components/account-options-fn.ts';
 
@@ -40,6 +46,8 @@ type Criteria = {
   range: DateRange | undefined;
   /** The amount expression, as on the transactions page (e.g. ">100 & <500"). */
   amount: string;
+  /** Text to find anywhere in the transaction's note or description (any case). */
+  description: string;
   /** null: either way; true: only posted; false: only unposted. */
   posted: boolean | null;
   reconciled: boolean | null;
@@ -55,6 +63,7 @@ const NO_CRITERIA: Criteria = {
   bankAccountIds: [],
   range: undefined,
   amount: '',
+  description: '',
   posted: null,
   reconciled: null,
   accountIds: [],
@@ -107,22 +116,26 @@ function RouteComponent() {
   // with (applied to them in the results table).
   const [outcome, setOutcome] = useState<Outcome | null>(null);
   const searchCount = useRef(0);
+  // The criteria the latest search was run with, so refreshSearch repeats
+  // that search even if the form has been edited since.
+  const lastSearch = useRef<SearchCriteria | null>(null);
 
   async function runSearch() {
     const searchId = ++searchCount.current;
     const { range, amount } = criteria;
     setOutcome({ status: 'loading' });
     try {
-      const results = await searchTransactions({
-        data: {
-          bankAccountIds: criteria.bankAccountIds,
-          accountIds: criteria.accountIds,
-          from: range?.from ? format(range.from, 'yyyy-MM-dd') : null,
-          to: range?.from ? format(range.to ?? range.from, 'yyyy-MM-dd') : null,
-          posted: criteria.posted,
-          reconciled: criteria.reconciled,
-        },
-      });
+      const data: SearchCriteria = {
+        bankAccountIds: criteria.bankAccountIds,
+        accountIds: criteria.accountIds,
+        description: criteria.description,
+        from: range?.from ? format(range.from, 'yyyy-MM-dd') : null,
+        to: range?.from ? format(range.to ?? range.from, 'yyyy-MM-dd') : null,
+        posted: criteria.posted,
+        reconciled: criteria.reconciled,
+      };
+      lastSearch.current = data;
+      const results = await searchTransactions({ data });
       if (searchId === searchCount.current) {
         setOutcome({ status: 'done', results, amount });
       }
@@ -133,6 +146,26 @@ function RouteComponent() {
           message: caught instanceof Error ? caught.message : "Couldn't run the search.",
         });
       }
+    }
+  }
+
+  // Repeats the latest search without the "Searching..." state, so the table
+  // (and its sort and page) stays put while an administrator's change shows.
+  async function refreshSearch() {
+    const data = lastSearch.current;
+    if (!data) {
+      return;
+    }
+    const searchId = ++searchCount.current;
+    try {
+      const results = await searchTransactions({ data });
+      setOutcome((previous) =>
+        searchId === searchCount.current && previous?.status === 'done'
+          ? { ...previous, results }
+          : previous,
+      );
+    } catch {
+      // The old results stay; the next Search will show any error.
     }
   }
 
@@ -214,6 +247,15 @@ function RouteComponent() {
                 />
               </Field>
             </div>
+            <Field>
+              <FieldLabel htmlFor="search-description">Description</FieldLabel>
+              <Input
+                id="search-description"
+                value={criteria.description}
+                onChange={(event) => update({ description: event.target.value })}
+                placeholder="Contains... (any case)"
+              />
+            </Field>
             <div className="flex flex-wrap gap-6">
               <TriStateCheckbox
                 label="Posted"
@@ -261,6 +303,7 @@ function RouteComponent() {
             results={outcome.results}
             amountFilter={outcome.amount}
             isAdmin={isAdmin}
+            onChanged={refreshSearch}
           />
         )}
       </div>

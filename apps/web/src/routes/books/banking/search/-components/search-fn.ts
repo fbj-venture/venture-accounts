@@ -1,8 +1,8 @@
 import { requireAdmin } from "#/lib/require-admin.server.ts";
 import { requireUser } from "#/lib/require-user.server.ts";
-import { account, bankAccount, db, journal, journalLine } from "@app/db/direct";
+import { account, bankAccount, db, journal, journalLine, withUpdate } from "@app/db/direct";
 import { createServerFn } from "@tanstack/react-start";
-import { and, asc, desc, eq, exists, gte, inArray, lte, ne } from "drizzle-orm";
+import { and, asc, desc, eq, exists, gte, ilike, inArray, isNotNull, lte, ne, or } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 
 // Keep ALL database code inside handlers - see
@@ -13,6 +13,8 @@ export type SearchCriteria = {
   bankAccountIds: number[];
   /** Empty: any account. Matches the account on the other side of the bank line. */
   accountIds: number[];
+  /** Empty: any. Matches (case-insensitively) anywhere in the journal's note or the bank line's description. */
+  description: string;
   /** yyyy-MM-dd, inclusive; either end may be missing. */
   from: string | null;
   to: string | null;
@@ -40,6 +42,11 @@ export const searchTransactions = createServerFn({ method: "POST" })
     if (!isDay(data.from) || !isDay(data.to)) {
       throw new Error("The dates are not valid.");
     }
+
+    // A "contains" match: the user's text is escaped so %, _ and \ in it are
+    // taken literally rather than as LIKE wildcards.
+    const description = data.description.trim();
+    const descriptionPattern = `%${description.replace(/[\\%_]/g, "\\$&")}%`;
 
     const bank = alias(account, "bank");
     const otherLine = alias(journalLine, "other_line");
@@ -75,6 +82,12 @@ export const searchTransactions = createServerFn({ method: "POST" })
           data.to ? lte(journal.date, toDate(data.to)) : undefined,
           data.posted === null ? undefined : eq(journal.isPosted, data.posted),
           data.reconciled === null ? undefined : eq(journalLine.isReconciled, data.reconciled),
+          description
+            ? or(
+                ilike(journal.note, descriptionPattern),
+                ilike(journalLine.description, descriptionPattern),
+              )
+            : undefined,
           data.accountIds.length
             ? exists(
                 db
@@ -120,8 +133,9 @@ export const getTransactionIds = createServerFn({ method: "POST" })
   .handler(async ({ data: journalLineId }) => {
     await requireAdmin();
     const [bankLine] = await db
-      .select({ journalId: journalLine.journalEntryId })
+      .select({ journalId: journalLine.journalEntryId, isPosted: journal.isPosted })
       .from(journalLine)
+      .innerJoin(journal, eq(journal.id, journalLine.journalEntryId))
       .where(eq(journalLine.id, journalLineId));
     if (!bankLine) {
       throw new Error("Transaction not found.");
@@ -131,6 +145,7 @@ export const getTransactionIds = createServerFn({ method: "POST" })
         journalLineId: journalLine.id,
         accountId: account.id,
         accountName: account.name,
+        isReconciled: journalLine.isReconciled,
       })
       .from(journalLine)
       .innerJoin(account, eq(account.id, journalLine.accountId))
@@ -138,9 +153,58 @@ export const getTransactionIds = createServerFn({ method: "POST" })
       .orderBy(asc(journalLine.id));
     return {
       journalId: bankLine.journalId,
+      isPosted: bankLine.isPosted,
       clickedJournalLineId: journalLineId,
       lines,
     };
+  });
+
+// Marks a journal entry - and so every journal line in it, since posting is
+// per entry - as un-posted again, so it returns to the Allocate Accounts
+// list. Refused while any line is reconciled: reconciliation only counts
+// posted lines, so un-posting would silently change a reconciled balance;
+// the line has to be taken out of its reconciliation first. Administrators
+// only, checked here as well as in the dialog.
+export const unpostJournal = createServerFn({ method: "POST" })
+  .validator((journalLineId: number) => journalLineId)
+  .handler(async ({ data: journalLineId }) => {
+    const { id: userId } = await requireAdmin();
+    await db.transaction(async (tx) => {
+      // Lock the entry so this can't race a post or a reconciliation.
+      const [entry] = await tx
+        .select({ journalId: journal.id, isPosted: journal.isPosted })
+        .from(journalLine)
+        .innerJoin(journal, eq(journal.id, journalLine.journalEntryId))
+        .where(eq(journalLine.id, journalLineId))
+        .for("update", { of: journal });
+      if (!entry) {
+        throw new Error("Transaction not found.");
+      }
+      if (!entry.isPosted) {
+        throw new Error("This transaction is already un-posted.");
+      }
+
+      const [reconciled] = await tx
+        .select({ id: journalLine.id })
+        .from(journalLine)
+        .where(
+          and(
+            eq(journalLine.journalEntryId, entry.journalId),
+            or(eq(journalLine.isReconciled, true), isNotNull(journalLine.bankReconId)),
+          ),
+        )
+        .limit(1);
+      if (reconciled) {
+        throw new Error(
+          "This transaction is reconciled, so it can't be un-posted. Take it out of its reconciliation first.",
+        );
+      }
+
+      await tx
+        .update(journal)
+        .set(withUpdate(userId, { isPosted: false }))
+        .where(eq(journal.id, entry.journalId));
+    });
   });
 
 // Whether the signed-in user is an administrator, as the server sees them -

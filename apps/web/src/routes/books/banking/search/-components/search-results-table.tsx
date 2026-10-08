@@ -87,11 +87,14 @@ export function SearchResultsTable({
   results,
   amountFilter,
   isAdmin,
+  onChanged,
 }: {
   results: SearchResult[];
   amountFilter: string;
   /** Administrators can click a row to see its database ids. */
   isAdmin: boolean;
+  /** Called after an administrator changed a transaction, to refresh the results. */
+  onChanged: () => void;
 }) {
   const [idsFor, setIdsFor] = useState<number | null>(null);
   const [pageSize] = useTablePageSize();
@@ -197,7 +200,11 @@ export function SearchResultsTable({
       </Table>
       <TablePagination table={pagination} />
       {isAdmin ? (
-        <TransactionIdsDialog journalLineId={idsFor} onClose={() => setIdsFor(null)} />
+        <TransactionIdsDialog
+          journalLineId={idsFor}
+          onClose={() => setIdsFor(null)}
+          onChanged={onChanged}
+        />
       ) : null}
     </>
   );

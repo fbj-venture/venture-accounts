@@ -1,3 +1,4 @@
+import { formatDate } from "#/lib/dates.ts";
 import { Button } from "#/components/ui/button.tsx";
 import { Checkbox } from "#/components/ui/checkbox.tsx";
 import { TablePagination } from "#/components/table-pagination.tsx";
@@ -176,7 +177,7 @@ export function SearchResultsTable({
                     : undefined
                 }
               >
-                <TableCell>{row.date.toLocaleDateString("en-ZA")}</TableCell>
+                <TableCell>{formatDate(row.date)}</TableCell>
                 <TableCell>{row.bankAccountName}</TableCell>
                 <TableCell>{row.description}</TableCell>
                 <TableCell>{row.otherAccountNames.join(", ")}</TableCell>

@@ -13,7 +13,7 @@ import {
   withCreate,
   withUpdate,
 } from "@app/db/direct";
-import { and, asc, eq, ne, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, ne, sql } from "drizzle-orm";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -71,12 +71,25 @@ async function getEntryTotal(tx: Tx, journalId: number) {
   return Math.round(total * 100) / 100;
 }
 
+// The user's own note (already trimmed; "" = none) replaces the lines'
+// description. The entry's note keeps the original statement text.
+async function setDescription(tx: Tx, lineIds: number[], note: string, userId: string) {
+  if (note === "" || lineIds.length === 0) {
+    return;
+  }
+  await tx
+    .update(journalLine)
+    .set(withUpdate(userId, { description: note }))
+    .where(inArray(journalLine.id, lineIds));
+}
+
 export async function postToCategory(
   tx: Tx,
   journalLineId: number,
   bankLine: BankLine,
   categoryId: number,
   userId: string,
+  note: string,
 ) {
   const otherLines = await getOtherLines(tx, bankLine.journalId, journalLineId);
 
@@ -100,7 +113,7 @@ export async function postToCategory(
         journalEntryId: bankLine.journalId,
         accountId: categoryId,
         amount: balancingAmount,
-        description: bankLine.description ?? bankLine.note,
+        description: note || (bankLine.description ?? bankLine.note),
       }),
     );
   } else if (otherLines.length === 1 && balancingAmount === 0) {
@@ -113,6 +126,7 @@ export async function postToCategory(
         .set(withUpdate(userId, { accountId: categoryId }))
         .where(eq(journalLine.id, otherLine!.id));
     }
+    await setDescription(tx, [otherLine!.id], note, userId);
   } else {
     // Splits (or an entry left unbalanced some other way) can't be
     // safely reduced to a single account from this screen.
@@ -139,6 +153,7 @@ export async function postTransfer(
   bankLine: BankLine,
   target: { id: number; name: string },
   userId: string,
+  note: string,
 ) {
   if (target.id === bankLine.accountId) {
     throw new Error("A transfer must be to a different bank account.");
@@ -150,7 +165,8 @@ export async function postTransfer(
   if (otherLines.length === 1 && existing!.isBankLine) {
     if (existing!.accountId === target.id) {
       // Already matched with this bank - nothing to change; the caller
-      // still applies should_post.
+      // still applies should_post. A note overrides both sides.
+      await setDescription(tx, [journalLineId, existing!.id], note, userId);
       return;
     }
     throw new Error(
@@ -174,6 +190,7 @@ export async function postTransfer(
       journalId: journal.id,
       description: journalLine.description,
       note: journal.note,
+      date: journal.date,
     })
     .from(journalLine)
     .innerJoin(journal, eq(journal.id, journalLine.journalEntryId))
@@ -219,6 +236,10 @@ export async function postTransfer(
     .set(
       withUpdate(userId, {
         journalEntryId: bankLine.journalId,
+        // The other bank may date its side differently from this entry; its
+        // own date is about to be deleted with its entry - keep it on the
+        // line so that bank's reconciliation still finds it on its statement.
+        statementDate: counterpart.date,
         // Imported lines carry their text on the entry's note, which is about
         // to be deleted - keep it on the line.
         description: counterpart.description ?? counterpart.note,
@@ -226,6 +247,7 @@ export async function postTransfer(
     )
     .where(eq(journalLine.id, counterpart.lineId));
   await tx.delete(journal).where(eq(journal.id, counterpart.journalId));
+  await setDescription(tx, [journalLineId, counterpart.lineId], note, userId);
 
   if ((await getEntryTotal(tx, bankLine.journalId)) !== 0) {
     // Can't happen with the filters above - but never commit an

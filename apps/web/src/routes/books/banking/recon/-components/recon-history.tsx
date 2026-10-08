@@ -1,3 +1,4 @@
+import { formatDate } from "#/lib/dates.ts";
 import { Button } from "#/components/ui/button.tsx";
 import { ButtonGroup } from "#/components/ui/button-group.tsx";
 import {
@@ -171,7 +172,7 @@ function HistoryList({
             <TableCell>{formatDay(item.statementDate)}</TableCell>
             <TableCell className="text-right tabular-nums">{formatZar(item.openingBalance)}</TableCell>
             <TableCell className="text-right tabular-nums">{formatZar(item.closingBalance)}</TableCell>
-            <TableCell>{new Date(item.balancedAt).toLocaleDateString("en-ZA")}</TableCell>
+            <TableCell>{formatDate(item.balancedAt)}</TableCell>
             <TableCell onClick={(event) => event.stopPropagation()} onKeyDown={(event) => event.stopPropagation()}>
               <ButtonGroup>
                 {item.uploadId !== null ? (

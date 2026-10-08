@@ -1,7 +1,7 @@
 {
   "name": "venture-accounts",
-  "version": "0.5.4",
-  "description": "A simple Bank Account, web-based, management tool",
+  "version": "0.5.5",
+  "description": "A simple web-based Bank Account bookkeeping tool",
   "scripts": {
     "dev": "pnpm --filter web dev",
     "clean": "rimraf ./.output/",

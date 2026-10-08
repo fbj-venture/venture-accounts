@@ -1,3 +1,4 @@
+import { formatDateTime } from '#/lib/dates.ts';
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -24,7 +25,6 @@ import { APP_COMPANY } from "#/lib/app-company.ts";
 import { cn } from '#/lib/utils.ts';
 import { useSetBreadcrumbs } from '#/routes/books/-components/breadcrumbs';
 import { createFileRoute, notFound, useRouter } from '@tanstack/react-router';
-import { format } from 'date-fns';
 import { SaveIcon, Trash2Icon, UserCheckIcon, UserXIcon } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { SendVerificationLink } from './-components/send-verification-link.tsx';
@@ -52,8 +52,6 @@ export const Route = createFileRoute('/books/admin/users/$id')({
 // the pointer (same hover as the Edit button on the users table).
 const actionButton =
   'cursor-pointer hover:border-primary hover:bg-primary hover:text-primary-foreground dark:hover:bg-primary';
-
-const formatDateTime = (date: Date) => format(date, 'd MMM yyyy, HH:mm');
 
 function RouteComponent() {
   const router = useRouter();

@@ -14,7 +14,7 @@ export type ReconForm = Awaited<ReturnType<typeof getReconForm>>;
 export const getReconForm = createServerFn({ method: "GET" })
   .validator((bankAccountId: number) => bankAccountId)
   .handler(async ({ data: bankAccountId }) => {
-    const { openRecon, openingBalance, openingBalanceLocked } =
+    const { openRecon, openingBalance, openingBalanceLocked, previousStatementDate } =
       await resolveReconSetup(bankAccountId);
     // The statement the open reconciliation is linked to, if any.
     let upload: UploadSummary | null = null;
@@ -33,6 +33,7 @@ export const getReconForm = createServerFn({ method: "GET" })
       reconId: openRecon?.id ?? null,
       openingBalance,
       openingBalanceLocked,
+      previousStatementDate,
       closingBalance: openRecon?.closingBallance ?? null,
       // yyyy-MM-dd, as stored.
       statementDate: openRecon?.statementDate ?? null,

@@ -1,3 +1,4 @@
+import { formatDate } from "#/lib/dates.ts";
 import { Button } from "#/components/ui/button.tsx";
 import {
   Dialog,
@@ -15,7 +16,8 @@ import {
   TableRow,
 } from "#/components/ui/table.tsx";
 import { format, parseISO } from "date-fns";
-import { useEffect, useState } from "react";
+import { ArrowDownIcon, ArrowUpDownIcon, ArrowUpIcon } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { listUnlinkedUploads, type UploadSummary } from "./recon-fn.ts";
 
 // "statements/<account number>/2025-01-31.pdf" -> "Jan 2025"; a path that
@@ -24,6 +26,40 @@ const statementMonth = (path: string) => {
   const day = /(\d{4}-\d{2}-\d{2})\.pdf$/.exec(path)?.[1];
   return day ? format(parseISO(day), "MMM yyyy") : path;
 };
+
+// "2025-01-31" from a statement path, so months sort chronologically; a path
+// without a statement date sorts by the path itself.
+const statementDay = (path: string) => /(d{4}-d{2}-d{2}).pdf$/.exec(path)?.[1] ?? path;
+
+type SortKey = "description" | "statement" | "uploaded";
+type Sorting = { key: SortKey; direction: "asc" | "desc" } | null;
+
+const sortValues: Record<SortKey, (upload: PickerUpload) => string | number> = {
+  description: (upload) => upload.description.toLowerCase(),
+  statement: (upload) => statementDay(upload.path),
+  uploaded: (upload) => new Date(upload.uploadedAt).getTime(),
+};
+
+function SortableHeader({
+  title,
+  sortKey,
+  sorting,
+  onSort,
+}: {
+  title: string;
+  sortKey: SortKey;
+  sorting: Sorting;
+  onSort: (key: SortKey) => void;
+}) {
+  const direction = sorting?.key === sortKey ? sorting.direction : null;
+  const Icon = direction === "asc" ? ArrowUpIcon : direction === "desc" ? ArrowDownIcon : ArrowUpDownIcon;
+  return (
+    <Button variant="ghost" size="sm" className="-ml-2.5" onClick={() => onSort(sortKey)}>
+      {title}
+      <Icon className={direction ? undefined : "text-muted-foreground"} />
+    </Button>
+  );
+}
 
 type PickerUpload = Awaited<ReturnType<typeof listUnlinkedUploads>>[number];
 
@@ -43,6 +79,30 @@ export function UploadPickerDialog({
   onSelect: (upload: UploadSummary) => void;
 }) {
   const [uploads, setUploads] = useState<Uploads>({ status: "loading" });
+  const [sorting, setSorting] = useState<Sorting>(null);
+
+  // Ascending, then descending, then back to the order they came in.
+  const toggleSort = (key: SortKey) =>
+    setSorting((previous) =>
+      previous?.key !== key
+        ? { key, direction: "asc" }
+        : previous.direction === "asc"
+          ? { key, direction: "desc" }
+          : null,
+    );
+
+  const rows = useMemo(() => {
+    if (uploads.status !== "ready" || !sorting) {
+      return uploads.status === "ready" ? uploads.data : [];
+    }
+    const value = sortValues[sorting.key];
+    const sign = sorting.direction === "asc" ? 1 : -1;
+    return [...uploads.data].sort((a, b) => {
+      const left = value(a);
+      const right = value(b);
+      return (left < right ? -1 : left > right ? 1 : 0) * sign;
+    });
+  }, [uploads, sorting]);
 
   useEffect(() => {
     if (!open) {
@@ -86,20 +146,26 @@ export function UploadPickerDialog({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Statement Month</TableHead>
-                  <TableHead>Uploaded</TableHead>
+                  <TableHead>
+                    <SortableHeader title="Description" sortKey="description" sorting={sorting} onSort={toggleSort} />
+                  </TableHead>
+                  <TableHead>
+                    <SortableHeader title="Statement Month" sortKey="statement" sorting={sorting} onSort={toggleSort} />
+                  </TableHead>
+                  <TableHead>
+                    <SortableHeader title="Uploaded" sortKey="uploaded" sorting={sorting} onSort={toggleSort} />
+                  </TableHead>
                   <TableHead className="w-px">
                     <span className="sr-only">Select</span>
                   </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {uploads.data.map((upload) => (
+                {rows.map((upload) => (
                   <TableRow key={upload.id}>
                     <TableCell>{upload.description}</TableCell>
                     <TableCell className="break-all text-muted-foreground">{statementMonth(upload.path)}</TableCell>
-                    <TableCell>{new Date(upload.uploadedAt).toLocaleDateString("en-ZA")}</TableCell>
+                    <TableCell>{formatDate(upload.uploadedAt)}</TableCell>
                     <TableCell>
                       <Button
                         type="button"

@@ -20,19 +20,21 @@ import {
   inArray,
   isNotNull,
   isNull,
-  lte,
   ne,
   or,
   sql,
 } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
-import { findOpeningBalance } from "../../-components/opening-balance.server.ts";
+import { findOpeningBalanceEntry } from "../../-components/opening-balance.server.ts";
 
 // Where a reconciliation's opening balance comes from:
 //  - after a balanced reconciliation: its closing balance (locked) - the
 //    next statement starts where the last one ended;
 //  - the first one, with a take-on entry: the take-on amount (locked);
 //  - the first one, with neither: nothing yet, so the user types it.
+// previousStatementDate ("yyyy-MM-dd") is the day that opening balance is as
+// at: the last balanced statement's end date, or the take-on date; null when
+// there is neither.
 export async function resolveReconSetup(bankAccountId: number) {
   const [openRecon] = await db
     .select()
@@ -42,25 +44,36 @@ export async function resolveReconSetup(bankAccountId: number) {
     .limit(1);
 
   const [lastBalanced] = await db
-    .select({ closingBallance: recon.closingBallance })
+    .select({ closingBallance: recon.closingBallance, statementDate: recon.statementDate })
     .from(recon)
     .where(and(eq(recon.bankAccountId, bankAccountId), isNotNull(recon.ballancedAt)))
     .orderBy(desc(recon.ballancedAt), desc(recon.id))
     .limit(1);
 
   if (lastBalanced) {
-    return { openRecon, openingBalance: lastBalanced.closingBallance, openingBalanceLocked: true };
+    return {
+      openRecon,
+      openingBalance: lastBalanced.closingBallance,
+      openingBalanceLocked: true,
+      previousStatementDate: lastBalanced.statementDate,
+    };
   }
 
-  const takeOn = await findOpeningBalance(bankAccountId);
+  const takeOn = await findOpeningBalanceEntry(bankAccountId);
   if (takeOn !== null) {
-    return { openRecon, openingBalance: takeOn, openingBalanceLocked: true };
+    return {
+      openRecon,
+      openingBalance: takeOn.amount,
+      openingBalanceLocked: true,
+      previousStatementDate: takeOn.date,
+    };
   }
 
   return {
     openRecon,
     openingBalance: openRecon?.openingBallance ?? null,
     openingBalanceLocked: false,
+    previousStatementDate: null,
   };
 }
 
@@ -79,6 +92,11 @@ export type ReconRow = {
 // "yyyy-MM-dd" -> the Date a date column (mode: "date") compares against, on
 // the calendar date in UTC so time zones can't shift the day.
 const toDate = (day: string) => new Date(`${day}T00:00:00Z`);
+
+// The date a bank line has on its own bank's statement: the line's own date
+// when it has one (the other side of a matched Transfer, which that bank may
+// date differently from the entry), otherwise the entry's date.
+const lineDate = sql`coalesce(${journalLine.statementDate}, ${journal.date})`;
 
 // The lines a reconciliation shows: the bank account's posted lines that
 // were categorised to an Income or Expense account, or matched as a Transfer
@@ -110,13 +128,13 @@ export async function listReconLines(tx: Tx, row: ReconRow) {
   const stillUnreconciled = and(
     isNull(journalLine.bankReconId),
     eq(journalLine.isReconciled, false),
-    lte(journal.date, toDate(row.statementDate)),
+    sql`${lineDate} <= ${row.statementDate}::date`,
   );
 
   const lines = await tx
     .select({
       journalLineId: journalLine.id,
-      date: journal.date,
+      date: sql<string>`to_char(${lineDate}, 'YYYY-MM-DD')`,
       note: journal.note,
       description: journalLine.description,
       amount: journalLine.amount,
@@ -134,11 +152,11 @@ export async function listReconLines(tx: Tx, row: ReconRow) {
           : or(eq(journalLine.bankReconId, row.id), stillUnreconciled),
       ),
     )
-    .orderBy(asc(journal.date), asc(journalLine.id));
+    .orderBy(asc(lineDate), asc(journalLine.id));
 
   return lines.map(({ journalLineId, date, note, description, amount, included }) => ({
     journalLineId,
-    date,
+    date: toDate(date),
     description: description ?? note,
     amount,
     included,

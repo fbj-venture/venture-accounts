@@ -1,3 +1,4 @@
+import { formatDate } from "#/lib/dates.ts";
 import { Button } from "#/components/ui/button.tsx";
 import { Checkbox } from "#/components/ui/checkbox.tsx";
 import {
@@ -77,7 +78,7 @@ export function UsersTable({
       {
         accessorKey: "createdAt",
         header: ({ column }) => <SortableHeader column={column} title="Created" />,
-        cell: ({ getValue }) => getValue<Date>().toLocaleDateString("en-ZA"),
+        cell: ({ getValue }) => formatDate(getValue<Date>()),
       },
       {
         id: "actions",

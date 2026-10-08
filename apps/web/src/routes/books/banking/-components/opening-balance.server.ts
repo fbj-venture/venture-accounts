@@ -14,11 +14,19 @@ export const OPENING_BALANCE_EQUITY_ACCOUNT = "Opening Balance Equity";
 // Its amount (signed, as always - see journal-line.ts) is the take-on
 // balance; null means no opening balance has been set yet.
 export async function findOpeningBalance(accountId: number): Promise<number | null> {
+  return (await findOpeningBalanceEntry(accountId))?.amount ?? null;
+}
+
+// The same take-on entry with its date ("yyyy-MM-dd"), for when the balance
+// is as at a day.
+export async function findOpeningBalanceEntry(
+  accountId: number,
+): Promise<{ amount: number; date: string } | null> {
   const equityLine = alias(journalLine, "equity_line");
   const equityAccount = alias(account, "equity_account");
 
   const [row] = await db
-    .select({ amount: journalLine.amount })
+    .select({ amount: journalLine.amount, date: journal.date })
     .from(journalLine)
     .innerJoin(journal, eq(journal.id, journalLine.journalEntryId))
     .innerJoin(
@@ -36,5 +44,5 @@ export async function findOpeningBalance(accountId: number): Promise<number | nu
     )
     .limit(1);
 
-  return row?.amount ?? null;
+  return row ? { amount: row.amount, date: row.date.toISOString().slice(0, 10) } : null;
 }

@@ -14,20 +14,32 @@
 
 == v0.6
 
+* [ ] Add a note textbox before the amount in the post-transactions table
+* [ ] Admin
+** [ ] Accounts management
+* [ ] Fix collapsed main navigation
+* [ ] Transfers
+** [ ] Lookup transactions and display matches
+** [ ] Pre-select if there's only one line
+** [ ] Display if there's multiple lines and require a selection
+** [ ] Checkbox to auto-post in the dialog
+
 == Todo
 
-* [ ] Fix collapsed main navigation
+* [ ] Move away from ai-crafted vanilla JS to frameworks
+** [ ] Refactor for Tanstack Form + Zod
+** [ ] Refactor for Tanstack Query
+* [ ] Code audit
 * [ ] Personal preferences
 ** [ ] Link social login to an existing account
+* [ ] Split transaction over multiple Accounts
+** [ ] Select `split` from the Accounts drop-down to popup a dialog for adding split line
 * [ ] Security
 ** [ ] Two-factor authentication (authenticator)
 ** [ ] Run GStack audit (https://github.com/garrytan/gstack)
-* [ ] Admin
-** [ ] Accounts management
 * [ ] Uploads
 ** [ ] Upload + Link invoices/receipts to JournalLines
-* [ ] Split transaction over multiple accounts
-** [ ] Add a reversal Journal Line and new Line with the new Account
-** [ ] Manually add missing transactions
-* [ ] Reports
-* [ ] Code audit
+* [ ] Manually add missing transactions
+* [ ] Reports - What do auditors, bookkeepers, and users need?
+* [ ] Data
+** [ ] Backups (manual/automatic)

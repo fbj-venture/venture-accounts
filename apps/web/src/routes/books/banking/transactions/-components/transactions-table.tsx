@@ -1,3 +1,4 @@
+import { formatDate } from "#/lib/dates.ts";
 import type { AccountOptions } from "#/components/account-selector.tsx";
 import { TablePagination } from "#/components/table-pagination.tsx";
 import {
@@ -58,6 +59,7 @@ export function TransactionsTable({
   const [selections, setSelections] = useState<ReadonlyMap<number, number>>(new Map());
   // Stored as the exceptions so "Post?" is ticked by default for every row.
   const [unpostedLineIds, setUnpostedLineIds] = useState<ReadonlySet<number>>(new Set());
+  const [notes, setNotes] = useState<ReadonlyMap<number, string>>(new Map());
   // Saves in flight, applied optimistically: the row shows the result
   // straight away and the user can move on while the server catches up.
   const [pendingSaves, setPendingSaves] = useState<ReadonlyMap<number, PendingSave>>(new Map());
@@ -110,17 +112,24 @@ export function TransactionsTable({
             }
             return next;
           }),
+        notes,
+        onNoteChange: (journalLineId, note) =>
+          setNotes((previous) => new Map(previous).set(journalLineId, note)),
         onSave: async (transaction, accountId) => {
           const { journalLineId } = transaction;
           const shouldPost = !unpostedLineIds.has(journalLineId);
+          const note = (notes.get(journalLineId) ?? "").trim();
 
           setPendingSaves((previous) =>
             new Map(previous).set(journalLineId, { accountId, shouldPost }),
           );
           setSelections((previous) => withoutKey(previous, journalLineId));
+          setNotes((previous) => withoutKey(previous, journalLineId));
 
           try {
-            await postTransaction({ data: { journalLineId, accountId, should_post: shouldPost } });
+            await postTransaction({
+              data: { journalLineId, accountId, should_post: shouldPost, note },
+            });
             // Keep the optimistic row until fresh data has arrived, so it
             // doesn't flash back to its old state in between.
             await refreshTransactions();
@@ -141,7 +150,7 @@ export function TransactionsTable({
           }
         },
       }),
-    [accountOptions, selections, unpostedLineIds, savingLineIds, router],
+    [accountOptions, selections, unpostedLineIds, notes, savingLineIds, router],
   );
   const [pageSize, setPageSize] = useTablePageSize();
   const [requestedPageIndex, setPageIndex] = useState(0);
@@ -197,7 +206,7 @@ export function TransactionsTable({
             <AlertDialogDescription>
               {currentError && (
                 <>
-                  {currentError.transaction.date.toLocaleDateString("en-ZA")} ·{" "}
+                  {formatDate(currentError.transaction.date)} ·{" "}
                   {currentError.transaction.description ?? currentError.transaction.note} ·{" "}
                   {formatZar(currentError.transaction.amount)}
                   <br />

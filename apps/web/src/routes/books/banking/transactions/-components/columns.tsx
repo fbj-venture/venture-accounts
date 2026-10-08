@@ -1,6 +1,8 @@
+import { formatDate } from "#/lib/dates.ts";
 import { AccountSelector, type AccountOptions } from "#/components/account-selector.tsx";
 import { Button } from "#/components/ui/button.tsx";
 import { Checkbox } from "#/components/ui/checkbox.tsx";
+import { Input } from "#/components/ui/input.tsx";
 import { Label } from "#/components/ui/label.tsx";
 import { formatZar } from "#/lib/currency.ts";
 import type { LegacyColumnDef } from "@tanstack/react-table/legacy";
@@ -15,6 +17,9 @@ export type PostingState = {
   /** Rows whose "Post?" box is unticked - every other row posts on save. */
   unpostedLineIds: ReadonlySet<number>;
   onPostChange: (journalLineId: number, shouldPost: boolean) => void;
+  /** Note typed per row, keyed by journalLineId - saved with the row. */
+  notes: ReadonlyMap<number, string>;
+  onNoteChange: (journalLineId: number, note: string) => void;
   /** accountId is the row's current account - a new choice or the saved one. */
   onSave: (transaction: AccountTransaction, accountId: number) => void;
   /** Rows whose save is still in flight - other rows stay editable. */
@@ -30,6 +35,8 @@ export function getColumns({
   onSelect,
   unpostedLineIds,
   onPostChange,
+  notes,
+  onNoteChange,
   onSave,
   savingLineIds,
 }: PostingState): LegacyColumnDef<AccountTransaction>[] {
@@ -43,12 +50,26 @@ export function getColumns({
     {
       accessorKey: "date",
       header: "Date",
-      cell: ({ getValue }) => getValue<Date>().toLocaleDateString("en-ZA"),
+      cell: ({ getValue }) => formatDate(getValue<Date>()),
     },
     {
       id: "description",
       header: "Description",
       accessorFn: (row) => row.description ?? row.note,
+    },
+    {
+      id: "note",
+      header: "Note",
+      cell: ({ row }) => {
+        const { journalLineId } = row.original;
+        return (
+          <Input
+            aria-label="Note"
+            value={notes.get(journalLineId) ?? ""}
+            onChange={(event) => onNoteChange(journalLineId, event.target.value)}
+          />
+        );
+      },
     },
     {
       accessorKey: "amount",

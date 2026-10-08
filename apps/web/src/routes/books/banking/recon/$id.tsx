@@ -1,12 +1,12 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '#/components/ui/tabs.tsx';
 import { BankAccountCard } from '#/routes/books/-components/bank-account-card.tsx';
 import { createFileRoute, notFound } from '@tanstack/react-router';
+import { useState } from 'react';
 import { loadBankAccount } from '../-components/bank-accounts-cache.ts';
 import { useSetBreadcrumbs } from '../../-components/breadcrumbs';
 import { getReconForm } from './-components/recon-fn.ts';
 import { ReconForm } from './-components/recon-form.tsx';
 import { ReconHistory } from './-components/recon-history.tsx';
-import { useState } from 'react';
 
 export const Route = createFileRoute('/books/banking/recon/$id')({
    beforeLoad: async ({ params }) => {
@@ -20,6 +20,10 @@ export const Route = createFileRoute('/books/banking/recon/$id')({
       const reconForm = await getReconForm({ data: context.bankAccount.id });
       return { reconForm };
    },
+   // The form depends on the latest reconciliation, which changes whenever one
+   // is balanced - so never show a cached copy when coming back to this page.
+   staleTime: 0,
+   gcTime: 0,
    component: RouteComponent,
 });
 
@@ -50,7 +54,7 @@ function RouteComponent() {
 
    return (
       <>
-         <h2 className="pb-2">{bankAccount.name} Statement Recon</h2>
+         <h2 className="pb-2">{bankAccount.name} Bank Statement Recon</h2>
          <div className="max-w-sm">
             <BankAccountCard bankAccount={bankAccount} />
          </div>
@@ -61,6 +65,15 @@ function RouteComponent() {
             </TabsList>
             <TabsContent value="form" className="pt-4">
                <ReconForm
+                  // The form copies its starting values into state once, so a
+                  // fresh set of figures needs a fresh form.
+                  key={[
+                     reconForm.reconId,
+                     reconForm.openingBalance,
+                     reconForm.closingBalance,
+                     reconForm.statementDate,
+                     reconForm.upload?.id,
+                  ].join('|')}
                   bankAccountId={bankAccount.id}
                   initial={reconForm}
                />

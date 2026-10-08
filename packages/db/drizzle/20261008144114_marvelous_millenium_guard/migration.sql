@@ -1,0 +1,1 @@
+ALTER TABLE "journal_line" ADD COLUMN "statement_date" date;

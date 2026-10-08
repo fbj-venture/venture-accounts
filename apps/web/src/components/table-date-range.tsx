@@ -1,3 +1,4 @@
+import { currentYear } from "#/lib/dates.ts";
 import { Button } from "#/components/ui/button.tsx";
 import { Calendar } from "#/components/ui/calendar.tsx";
 import {
@@ -40,7 +41,7 @@ export function TableDateRange({
   years: number[];
 }) {
   const [open, setOpen] = useState(false);
-  const [selectedYear, setSelectedYear] = useState(() => String(new Date().getFullYear()));
+  const [selectedYear, setSelectedYear] = useState(() => String(currentYear()));
   // Picking dates/years only edits this draft; the table only re-filters
   // once "Apply" commits it via onRangeChange.
   const [draftRange, setDraftRange] = useState(range);

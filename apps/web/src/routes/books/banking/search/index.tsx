@@ -1,3 +1,4 @@
+import { yearsFromFirst } from "#/lib/years.ts";
 import { MultiSelect } from '#/components/multi-select.tsx';
 import { AmountFilterInput } from '#/components/amount-filter-input.tsx';
 import { TableDateRange } from '#/components/table-date-range.tsx';
@@ -70,7 +71,7 @@ const NO_CRITERIA: Criteria = {
 };
 
 // The years the date range's quick-select offers: this one and the ten before.
-const YEARS = Array.from({ length: 11 }, (_, index) => new Date().getFullYear() - index);
+const YEARS = yearsFromFirst();
 
 // Clicking cycles: either (dash) -> yes (tick) -> no (empty) -> either.
 function TriStateCheckbox({

@@ -1,4 +1,4 @@
-import { boolean, index, integer, numeric, pgTable, serial, text } from "drizzle-orm/pg-core";
+import { boolean, date, index, integer, numeric, pgTable, serial, text } from "drizzle-orm/pg-core";
 import { auditColumns } from "./audit.js";
 import { account } from "./account.js";
 import { recon } from "./bank-recon.js";
@@ -15,6 +15,12 @@ import { journal } from "./journal.js";
 export const journalLine = pgTable("journal_line", {
   id: serial("id").primaryKey(),
   description: text("description"),
+  // The date this line carries on its own bank's statement, when that
+  // differs from the entry's date. A matched Transfer is one entry holding a
+  // line for each bank, but the banks can date their sides a business day
+  // apart - the other bank's line keeps its own date here when it is moved
+  // into the entry. Null: the entry's date applies.
+  statementDate: date("statement_date", { mode: "date" }),
   journalEntryId: integer("journal_entry_id")
     .notNull()
     .references(() => journal.id),

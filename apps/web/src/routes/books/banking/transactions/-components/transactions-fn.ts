@@ -71,9 +71,12 @@ export const postTransaction = createServerFn({ method: "POST" })
     journalLineId: number;
     accountId: number,
     should_post: boolean;
+    /** The user's note for the line(s); blank leaves the descriptions as imported. */
+    note?: string;
   }) => data)
   .handler(async ({ data }) => {
     const { id: userId } = await requireUser();
+    const note = (data.note ?? "").trim();
     await db.transaction(async (tx) => {
       // Lock the entry so two saves on the same transaction can't both
       // add a balancing line, or race to change it.
@@ -108,9 +111,9 @@ export const postTransaction = createServerFn({ method: "POST" })
       }
 
       if (target.bankAccountId !== null) {
-        await postTransfer(tx, data.journalLineId, bankLine, target, userId);
+        await postTransfer(tx, data.journalLineId, bankLine, target, userId, note);
       } else {
-        await postToCategory(tx, data.journalLineId, bankLine, target.id, userId);
+        await postToCategory(tx, data.journalLineId, bankLine, target.id, userId, note);
       }
 
       if (data.should_post) {

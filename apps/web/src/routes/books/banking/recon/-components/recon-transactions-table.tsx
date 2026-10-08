@@ -1,3 +1,4 @@
+import { formatDate } from "#/lib/dates.ts";
 import { Button } from "#/components/ui/button.tsx";
 import { Checkbox } from "#/components/ui/checkbox.tsx";
 import {
@@ -10,13 +11,14 @@ import {
 } from "#/components/ui/table.tsx";
 import { formatZar } from "#/lib/currency.ts";
 import { useNavigate } from "@tanstack/react-router";
+import { SaveIcon, XIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { markReconBalanced, saveReconLines, type ReconDetails } from "./recon-fn.ts";
 
 const sameSet = (a: ReadonlySet<number>, b: ReadonlySet<number>) =>
   a.size === b.size && [...a].every((id) => b.has(id));
 
-// Ticking a line includes it in the running total, which starts from the
+// Every line starts ticked (see `included` below). Ticking a line includes it in the running total, which starts from the
 // statement's opening balance (shown as the first row) and adds each ticked
 // line in date order - so a ticked row shows the balance as at that line.
 // Unticked lines are skipped (their total cell is blank).
@@ -39,11 +41,18 @@ export function ReconTransactionsTable({
   transactions: ReconDetails["transactions"];
 }) {
   const navigate = useNavigate();
-  const [included, setIncluded] = useState<ReadonlySet<number>>(
+  // What the server holds, to know whether there is anything to save.
+  const [saved, setSaved] = useState<ReadonlySet<number>>(
     () => new Set(transactions.filter((t) => t.included).map((t) => t.journalLineId)),
   );
-  // What the server holds, to know whether there is anything to save.
-  const [saved, setSaved] = useState<ReadonlySet<number>>(included);
+  // Everything starts ticked, since most lines are expected to be on the
+  // statement - unless a selection was saved earlier, which wins. A fresh
+  // reconciliation therefore starts unsaved, so it can be saved as it stands.
+  const [included, setIncluded] = useState<ReadonlySet<number>>(() =>
+    saved.size > 0 || isBalanced
+      ? saved
+      : new Set(transactions.map((t) => t.journalLineId)),
+  );
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -132,7 +141,7 @@ export function ReconTransactionsTable({
                       aria-label={`Include ${transaction.description} in the running total`}
                     />
                   </TableCell>
-                  <TableCell>{transaction.date.toLocaleDateString("en-ZA")}</TableCell>
+                  <TableCell>{formatDate(transaction.date)}</TableCell>
                   <TableCell>{transaction.description}</TableCell>
                   <TableCell className="text-right tabular-nums">
                     {formatZar(transaction.amount)}
@@ -163,19 +172,32 @@ export function ReconTransactionsTable({
         </p>
       ) : (
       <div className="mt-4 flex items-end justify-between gap-4">
-        <Button
-          type="button"
-          variant="outline"
-          disabled={!canSave}
-          onClick={() =>
-            run(async () => {
-              await saveReconLines({ data: selection() });
-              setSaved(included);
-            })
-          }
-        >
-          Save
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            disabled={!canSave}
+            onClick={() =>
+              run(async () => {
+                await saveReconLines({ data: selection() });
+                setSaved(included);
+              })
+            }
+          >
+            <SaveIcon />
+            Save for later
+          </Button>
+          {/* Leaves without saving: the ticks made on this page are dropped. */}
+          <Button
+            type="button"
+            variant="ghost"
+            disabled={busy}
+            onClick={() => navigate({ to: "/books/banking/recon" })}
+          >
+            <XIcon />
+            Cancel
+          </Button>
+        </div>
         <div className="flex flex-col items-end gap-2">
           <p className="text-sm tabular-nums">
             <span className="text-muted-foreground">Difference: </span>
@@ -193,7 +215,7 @@ export function ReconTransactionsTable({
               })
             }
           >
-            Balanced
+            Mark as Balanced
           </Button>
         </div>
       </div>

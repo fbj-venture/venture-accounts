@@ -1,3 +1,4 @@
+import { currentYear } from "#/lib/dates.ts"
 import * as React from "react"
 import { cn } from "cn"
 import {
@@ -12,12 +13,16 @@ import {
 } from "react-day-picker"
 
 import { Button, buttonVariants } from "#/components/ui/button.tsx"
+import { FIRST_YEAR } from "#/lib/years.ts"
 
 function Calendar({
   className,
   classNames,
   showOutsideDays = true,
   captionLayout = "label",
+  // Bounds the year drop-down (captionLayout="dropdown").
+  startMonth = new Date(FIRST_YEAR, 0),
+  endMonth = new Date(currentYear(), 11),
   buttonVariant = "ghost",
   formatters,
   components,
@@ -37,6 +42,8 @@ function Calendar({
         className
       )}
       captionLayout={captionLayout}
+      startMonth={startMonth}
+      endMonth={endMonth}
       formatters={{
         formatMonthDropdown: (date) =>
           date.toLocaleString("default", { month: "short" }),

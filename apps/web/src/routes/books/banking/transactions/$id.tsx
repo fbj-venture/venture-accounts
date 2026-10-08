@@ -1,9 +1,11 @@
+import { yearsFromFirst } from "#/lib/years.ts";
 import { TableFilterBar } from "#/components/table-filter-bar.tsx";
 import { parseAmountFilter } from "#/lib/amount-filter.ts";
 import { formatZar } from "#/lib/currency.ts";
 import { useSetBreadcrumbs } from "#/routes/books/-components/breadcrumbs.ts";
 import { createFileRoute, getRouteApi, notFound, useRouter } from '@tanstack/react-router';
-import { endOfDay, isWithinInterval, startOfDay } from "date-fns";
+import { format } from "date-fns";
+import { currentYear, dayKey } from "#/lib/dates.ts";
 import { useMemo, useState } from "react";
 import type { DateRange } from "react-day-picker";
 import { loadBankAccount } from "../-components/bank-accounts-cache.ts";
@@ -54,23 +56,29 @@ function RouteComponent() {
   const [amountFilter, setAmountFilter] = useState("");
 
   const years = useMemo(() => {
-    const currentYear = new Date().getFullYear();
-    const transactionYears = transactions.map((transaction) => transaction.date.getFullYear());
-    const minYear = Math.min(currentYear, ...transactionYears);
-    const maxYear = Math.max(currentYear, ...transactionYears);
-    return Array.from({ length: maxYear - minYear + 1 }, (_, index) => maxYear - index);
+    const thisYear = currentYear();
+    const transactionYears = transactions.map((transaction) => Number(dayKey(transaction.date).slice(0, 4)));
+    return yearsFromFirst(Math.max(thisYear, ...transactionYears));
   }, [transactions]);
 
   const filteredTransactions = useMemo(() => {
+    // Compared as calendar days: the picker's days are the user's local
+    // ones, a transaction's is its South African day.
     const interval = range?.from
-      ? { start: startOfDay(range.from), end: endOfDay(range.to ?? range.from) }
+      ? {
+          from: format(range.from, "yyyy-MM-dd"),
+          to: format(range.to ?? range.from, "yyyy-MM-dd"),
+        }
       : null;
     const description = descriptionFilter.trim().toLowerCase();
     const amountPredicate = parseAmountFilter(amountFilter);
 
     return transactions.filter((transaction) => {
-      if (interval && !isWithinInterval(transaction.date, interval)) {
-        return false;
+      if (interval) {
+        const day = dayKey(transaction.date);
+        if (day < interval.from || day > interval.to) {
+          return false;
+        }
       }
       if (
         description &&

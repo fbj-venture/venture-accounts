@@ -1,3 +1,4 @@
+import { formatDateTime } from "#/lib/dates.ts";
 import { Button } from "#/components/ui/button.tsx";
 import {
   Table,
@@ -9,7 +10,6 @@ import {
 } from "#/components/ui/table.tsx";
 import { useSetBreadcrumbs } from "#/routes/books/-components/breadcrumbs.ts";
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import { format } from "date-fns";
 import { FileTextIcon } from "lucide-react";
 import { useState } from "react";
 import { loadBankAccount } from "../-components/bank-accounts-cache.ts";
@@ -86,7 +86,7 @@ function RouteComponent() {
               {uploads.map((upload) => (
                 <TableRow key={upload.id}>
                   <TableCell className="font-medium">{upload.description}</TableCell>
-                  <TableCell>{format(upload.uploadedAt, "d MMM yyyy HH:mm")}</TableCell>
+                  <TableCell>{formatDateTime(upload.uploadedAt)}</TableCell>
                   <TableCell>{upload.uploadedBy}</TableCell>
                   <TableCell>
                     <Button

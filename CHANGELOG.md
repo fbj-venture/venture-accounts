@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.5] - 2026-10-08
+
+### Changed
+
+- Starting years for drop-down is 2020
+- More sortable tables
+- Preselect all the items for recon
+  - Also make sure that the amounts are formatted
+- Make sure that the new recon screen refreshes properly
+- Make checkboxes in light mode more visible
+
 ## [0.5.4] - 2026-10-08
 
 ### Changed

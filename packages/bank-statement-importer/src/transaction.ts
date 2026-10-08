@@ -4,12 +4,6 @@ import type { ImportRow } from "./import-row.js";
 
 const STATEMENT_DATE_TEXT_PATTERN = /^(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})$/;
 
-// Africa/Johannesburg is a fixed UTC+2 year-round (South Africa doesn't
-// observe daylight saving), so the offset can be hard-coded rather than
-// requiring timezone data.
-const SOUTH_AFRICA_UTC_OFFSET_HOURS = 2;
-const SOUTH_AFRICA_UTC_OFFSET_MS = SOUTH_AFRICA_UTC_OFFSET_HOURS * 60 * 60 * 1000;
-
 // Amounts are decimal strings like "12,662.23" or "1,132.83-" (a trailing
 // "-" marks a negative value). Debits/credits are kept as non-negative
 // magnitudes - the debit/credit column already conveys direction, and
@@ -84,12 +78,12 @@ export function toTransaction(
   const day = Number.parseInt(dayText ?? "", 10);
   const year = resolveTransactionYear(month, statement);
 
-  // Interpret year/month/day as a calendar date in Africa/Johannesburg and
-  // resolve it to the correct UTC instant for midnight there (UTC+2), so
-  // the date is correct regardless of the host's local timezone.
-  const date = new Date(
-    Date.UTC(year, month - 1, day) - SOUTH_AFRICA_UTC_OFFSET_MS,
-  );
+  // The statement's day is a calendar date (Africa/Johannesburg), and the
+  // database stores such dates as UTC midnight of that same day - they are
+  // shown in Africa/Johannesburg, where that is 02:00 on the same day. (Not
+  // midnight in Johannesburg: that is 22:00 UTC the day before, and a date
+  // column keeps the UTC day, so every transaction would land a day early.)
+  const date = new Date(Date.UTC(year, month - 1, day));
 
   // Debits/credits are already mutually exclusive non-negative magnitudes
   // (see parseAmount above), so subtracting gives a single signed amount:

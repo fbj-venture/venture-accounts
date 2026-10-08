@@ -15,10 +15,13 @@ export function AboutDialog({
   onOpenChange: (open: boolean) => void;
 }) {
   const published = APP_INFO.publishedAt
-    ? new Date(APP_INFO.publishedAt).toLocaleDateString("en-ZA", {
+    ? new Date(APP_INFO.publishedAt).toLocaleString("en-ZA", {
         year: "numeric",
         month: "long",
         day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: "Africa/Johannesburg",
       })
     : "Not published (development build)";
 

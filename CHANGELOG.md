@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.4] - 2026-10-08
+
+### Changed
+
+- The User menu icon from an up-down to a right chevron
+
+### Added
+
+- An admin-only popup to indicate the current version and build time of the app
+
 ## [0.5.3] - 2026-10-08
 
 ### Added

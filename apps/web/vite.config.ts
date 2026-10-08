@@ -1,4 +1,5 @@
 import { devtools } from '@tanstack/devtools-vite';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { defineConfig, loadEnv } from 'vite';
 
@@ -20,8 +21,22 @@ const outputDir = fileURLToPath(new URL("../../.output", import.meta.url));
 // src/lib/app-company.ts. Mirrors the default in @app/env.
 const rootDir = fileURLToPath(new URL("../..", import.meta.url));
 
-const config = defineConfig(({ mode }) => ({
+// Name, description and version come from the workspace root package.json.
+// The publish date is stamped only by a production build (`vite build`), so
+// it stays fixed for a deployed build; the dev server leaves it null.
+// See src/lib/app-info.ts.
+const rootPackage = JSON.parse(
+  readFileSync(fileURLToPath(new URL("../../package.json", import.meta.url)), "utf8"),
+) as { name: string; description: string; version: string };
+
+const config = defineConfig(({ mode, command }) => ({
   define: {
+    __APP_INFO__: JSON.stringify({
+      name: rootPackage.name,
+      description: rootPackage.description,
+      version: rootPackage.version,
+      publishedAt: command === "build" ? new Date().toISOString() : null,
+    }),
     __APP_COMPANY__: JSON.stringify(loadEnv(mode, rootDir, "").APP_COMPANY || "Venture"),
   },
   resolve: { tsconfigPaths: true },

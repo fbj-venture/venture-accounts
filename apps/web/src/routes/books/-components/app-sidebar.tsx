@@ -21,6 +21,7 @@ import {
   SidebarRail,
 } from "#/components/ui/sidebar.tsx";
 import type { SessionUser } from "@app/models";
+import { AboutDialog } from "./about-dialog.tsx";
 import { NavAccounts } from "./nav-main.tsx";
 import { NavUsers } from "./nav-projects.tsx";
 import { NavUser } from "./nav-user.tsx";
@@ -84,16 +85,34 @@ export function AppSidebar({
   appCompany,
   ...props
 }: React.ComponentProps<typeof Sidebar> & { sessionUser: SessionUser; appCompany: string; }) {
+  const [aboutOpen, setAboutOpen] = React.useState(false);
+  const isAdmin = sessionUser.role === "admin";
+  const title = (
+    <>
+      <Wallet2Icon className="size-7 shrink-0 text-primary" />
+      <span className="pl-2 group-data-[collapsible=icon]:hidden">
+        <span className="font-semibold text-muted-foreground">{appCompany}</span>
+        &nbsp;
+        <span className="font-semibold text-primary">Accounts</span>
+      </span>
+    </>
+  );
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <h1 className='flex items-center'>
-          <Wallet2Icon className="size-7 text-primary" />
-          <span className="pl-2 group-data-[collapsible=icon]:hidden">
-            <span className="font-semibold text-muted-foreground">{appCompany}</span>
-            &nbsp;
-            <span className="font-semibold text-primary">Accounts</span>
-          </span>
+        <h1>
+          {isAdmin ? (
+            <button
+              type="button"
+              className="flex cursor-pointer items-center"
+              onClick={() => setAboutOpen(true)}
+            >
+              {title}
+            </button>
+          ) : (
+            <span className="flex items-center">{title}</span>
+          )}
         </h1>
       </SidebarHeader>
       <SidebarContent>
@@ -104,6 +123,7 @@ export function AppSidebar({
         <NavUser user={sessionUser} />
       </SidebarFooter>
       <SidebarRail />
+      {isAdmin && <AboutDialog open={aboutOpen} onOpenChange={setAboutOpen} />}
     </Sidebar>
   );
 }

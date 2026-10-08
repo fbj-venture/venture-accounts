@@ -1,6 +1,6 @@
 {
   "name": "venture-accounts",
-  "version": "0.2.0",
+  "version": "0.5.2",
   "description": "A simple Bank Account, web-based, management tool",
   "scripts": {
     "dev": "pnpm --filter web dev",
@@ -12,14 +12,6 @@
   "keywords": [],
   "author": "Francis Judge<fjudge7@gmail.com>",
   "license": "ISC",
-  "devEngines": {
-    "packageManager": {
-      "name": "pnpm",
-      "version": "12.5.1",
-      "onFail": "download"
-    }
-  },
-  "packageManager": "pnpm@12.5.1",
   "type": "module",
   "devDependencies": {
     "rimraf": "^6.1.3"

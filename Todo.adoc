@@ -1,35 +1,33 @@
-Venture Accounts Todo
-=====================
-Francis Judge <fjudge7@gmail.com>
-v1.0, 2026-09: Initial release
-ifndef::env-github[:icons: font]
-ifdef::env-github[]
-:status:
-:outfilesuffix: .adoc
-:caution-caption: :fire:
-:important-caption: :exclamation:
-:note-caption: :paperclip:
-:tip-caption: :bulb:
-:warning-caption: :warning:
-endif::[]
+= Venture Accounts Todo
+:author: Francis Judge <fjudge7@gmail.com>
+:description: A current ToDo list for the Venture Accounts web application
 :nofooter:
 
 == Deployment
 
+* [ ] Version update
+** [ ] Update `package.json`
+** [ ] Update the `CHANGELOG.md` file
 * [ ] Add new Environment variables
 * [ ] Migrate the database
 * [ ] Git push all changes
 
 == v0.6
 
-
 == Todo
 
+* [ ] Fix collapsed main navigation
 * [ ] Personal preferences
-** [ ] Link social login to an existing account 
+** [ ] Link social login to an existing account
+* [ ] Security
+** [ ] Two-factor authentication (authenticator)
+** [ ] Run GStack audit (https://github.com/garrytan/gstack)
+* [ ] Admin
+** [ ] Accounts management
 * [ ] Uploads
 ** [ ] Upload + Link invoices/receipts to JournalLines
 * [ ] Split transaction over multiple accounts
-* [ ] Enable emails for forgotten password/password reset
-* [ ] Fix collapsed main navigation
-* [ ] Manually add missing transactions
+** [ ] Add a reversal Journal Line and new Line with the new Account
+** [ ] Manually add missing transactions
+* [ ] Reports
+* [ ] Code audit

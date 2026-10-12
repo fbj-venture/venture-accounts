@@ -1,3 +1,4 @@
+/// <reference path="./pdfjs-worker.d.ts" />
 import type { Transaction } from "@app/models";
 import { isStorageConfigured, uploadFile } from "@app/storage";
 import { createHash } from "node:crypto";

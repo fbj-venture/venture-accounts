@@ -1,21 +1,21 @@
-import { formatDate } from "#/lib/dates.ts";
+import { TablePagination } from "#/components/table-pagination.tsx";
 import { Button } from "#/components/ui/button.tsx";
 import { Checkbox } from "#/components/ui/checkbox.tsx";
-import { TablePagination } from "#/components/table-pagination.tsx";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from "#/components/ui/table.tsx";
 import { useTablePageSize } from "#/hooks/use-table-page-size.ts";
 import { parseAmountFilter } from "#/lib/amount-filter.ts";
 import { formatZar } from "#/lib/currency.ts";
+import { formatDate } from "#/lib/dates.ts";
 import { ArrowDownIcon, ArrowUpDownIcon, ArrowUpIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import type { SearchResult } from "./search-fn.ts";
+import type { SearchResult } from "../-server/search.server.ts";
 import { TransactionIdsDialog } from "./transaction-ids-dialog.tsx";
 
 type SortKey = "date" | "bankAccount" | "description" | "account" | "amount" | "posted" | "reconciled";

@@ -1,12 +1,12 @@
 import { Button } from "#/components/ui/button.tsx";
 import { Calendar } from "#/components/ui/calendar.tsx";
 import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
 } from "#/components/ui/dialog.tsx";
 import { Field, FieldGroup, FieldLabel } from "#/components/ui/field.tsx";
 import { Input } from "#/components/ui/input.tsx";
@@ -14,12 +14,12 @@ import { Popover, PopoverContent, PopoverTrigger } from "#/components/ui/popover
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { useState } from "react";
-import { setOpeningBalance } from "../../-components/bank-accounts-fn.ts";
+import { setOpeningBalance } from "../../-server/bank-accounts.server.ts";
 
 const DEFAULT_NOTE = "Opening Balance Equity";
 
 // The Button that opens this is only shown once getOpeningBalance (see
-// ../../-components/bank-accounts-fn.ts) confirms the account has none yet.
+// ../../-server/bank-accounts-fn.ts) confirms the account has none yet.
 export function OpeningBalanceDialog({
   accountId,
   onSaved,

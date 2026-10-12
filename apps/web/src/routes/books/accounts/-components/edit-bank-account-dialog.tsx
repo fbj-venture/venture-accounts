@@ -1,31 +1,31 @@
 import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+    AlertDialog,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
 } from "#/components/ui/alert-dialog.tsx";
 import { Button } from "#/components/ui/button.tsx";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
 } from "#/components/ui/dialog.tsx";
 import { Field, FieldGroup, FieldLabel } from "#/components/ui/field.tsx";
 import { Input } from "#/components/ui/input.tsx";
 import { LoaderCircleIcon, SaveIcon, TriangleAlertIcon } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import {
-  MAX_ACCOUNT_NUMBER_LENGTH,
-  MAX_BANK_NAME_LENGTH,
-  updateBankAccount,
-  type AccountRow,
-} from "./accounts-fn.ts";
+    MAX_ACCOUNT_NUMBER_LENGTH,
+    MAX_BANK_NAME_LENGTH,
+    updateBankAccount,
+    type AccountRow,
+} from "../-server/accounts.server.ts";
 
 // Edits the bank details behind a bank Account. Mount it with a key on the
 // account so each one starts from its own details.

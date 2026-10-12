@@ -1,26 +1,27 @@
 import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+    AlertDialog,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
 } from "#/components/ui/alert-dialog.tsx";
 import { Button } from "#/components/ui/button.tsx";
+import { Checkbox } from "#/components/ui/checkbox.tsx";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
 } from "#/components/ui/dialog.tsx";
 import { Field, FieldLabel } from "#/components/ui/field.tsx";
 import { Input } from "#/components/ui/input.tsx";
 import { LoaderCircleIcon, SaveIcon, TriangleAlertIcon } from "lucide-react";
 import { useState, type FormEvent } from "react";
-import { MAX_ACCOUNT_NAME_LENGTH, renameAccount, type AccountRow } from "./accounts-fn.ts";
+import { MAX_ACCOUNT_NAME_LENGTH, renameAccount, type AccountRow } from "../-server/accounts.server.ts";
 
 // Edits just this account's own name - for a sub-account that's the part
 // after the "Parent:", the parent's name isn't touched. Mount it with a key
@@ -36,12 +37,15 @@ export function RenameAccountDialog({
   onRenamed: () => void | Promise<unknown>;
 }) {
   const [name, setName] = useState(account.name);
+  const [isArchived, setIsArchived] = useState(account.isArchived);
   const [confirming, setConfirming] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const trimmed = name.trim();
-  const canSave = trimmed !== "" && trimmed !== account.name && !saving;
+  const renaming = trimmed !== account.name;
+  const archiveChanged = isArchived !== account.isArchived;
+  const canSave = trimmed !== "" && (renaming || archiveChanged) && !saving;
 
   function askToConfirm(event: FormEvent) {
     event.preventDefault();
@@ -54,7 +58,7 @@ export function RenameAccountDialog({
     setSaving(true);
     setError(null);
     try {
-      await renameAccount({ data: { id: account.id, name: trimmed } });
+      await renameAccount({ data: { id: account.id, name: trimmed, isArchived } });
       await onRenamed();
       onClose();
     } catch (caught) {
@@ -89,6 +93,14 @@ export function RenameAccountDialog({
                 autoComplete="off"
               />
             </Field>
+            <Field orientation="horizontal">
+              <Checkbox
+                id="rename-account-archived"
+                checked={isArchived}
+                onCheckedChange={(checked) => setIsArchived(checked === true)}
+              />
+              <FieldLabel htmlFor="rename-account-archived">Archived</FieldLabel>
+            </Field>
             <p className="flex items-start gap-2 text-sm text-warning">
               <TriangleAlertIcon className="mt-0.5 size-4 shrink-0" />
               Changing the name affects past and future transactions that are linked to this
@@ -114,17 +126,23 @@ export function RenameAccountDialog({
       <AlertDialog open={confirming} onOpenChange={(open) => !saving && setConfirming(open)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Rename this account?</AlertDialogTitle>
+            <AlertDialogTitle>Save changes to this account?</AlertDialogTitle>
             <AlertDialogDescription>
-              "{account.name}" will be renamed to "{trimmed}". Every transaction linked to this
-              account, past and future, will show the new name.
+              {renaming
+                ? `"${account.name}" will be renamed to "${trimmed}". Every transaction linked to this account, past and future, will show the new name. `
+                : ""}
+              {archiveChanged
+                ? isArchived
+                  ? "The account will be archived."
+                  : "The account will be unarchived."
+                : ""}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={saving}>Cancel</AlertDialogCancel>
             <Button disabled={saving} onClick={save}>
               {saving ? <LoaderCircleIcon className="animate-spin" /> : null}
-              Yes, rename
+              Yes, save
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>

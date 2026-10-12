@@ -1,8 +1,8 @@
-// Server-only helpers for postTransaction (transactions-fn.ts). They live in
+// Server-only helpers for postTransaction (transactions.server.ts). They live in
 // their own module, imported only inside the server function's handler, so
 // TanStack Start strips them - and the @app/db/direct import - from the
 // browser bundle along with the handler. Module-level code next to a
-// createServerFn is NOT stripped: helpers kept in transactions-fn.ts pulled
+// createServerFn is NOT stripped: helpers kept in transactions.server.ts pulled
 // the database driver into the client and broke hydration app-wide.
 import { formatZar } from "#/lib/currency.ts";
 import {

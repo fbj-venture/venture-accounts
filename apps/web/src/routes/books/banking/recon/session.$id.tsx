@@ -3,7 +3,7 @@ import { BankAccountCard } from '#/routes/books/-components/bank-account-card.ts
 import { createFileRoute, notFound } from '@tanstack/react-router';
 import { format, parseISO } from 'date-fns';
 import { useSetBreadcrumbs } from '../../-components/breadcrumbs.ts';
-import { getReconDetails } from './-components/recon-fn.ts';
+import { getReconDetails } from './-components/recon.server.ts';
 import { ReconTransactionsTable } from './-components/recon-transactions-table.tsx';
 
 // $id is the bank_recon.id. The static "session" segment keeps this apart

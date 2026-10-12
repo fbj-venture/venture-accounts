@@ -1,19 +1,19 @@
-import { formatDateTime } from "#/lib/dates.ts";
 import { Button } from "#/components/ui/button.tsx";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from "#/components/ui/table.tsx";
+import { formatDateTime } from "#/lib/dates.ts";
 import { useSetBreadcrumbs } from "#/routes/books/-components/breadcrumbs.ts";
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { FileTextIcon } from "lucide-react";
 import { useState } from "react";
-import { loadBankAccount } from "../-components/bank-accounts-cache.ts";
-import { getBankUploads, getBankUploadUrl } from "./-components/uploads-fn.ts";
+import { loadBankAccount } from "../-server/bank-accounts-cache.ts";
+import { getBankUploads, getBankUploadUrl } from "./-server/uploads.server.ts";
 
 export const Route = createFileRoute("/books/banking/uploads/$id")({
   beforeLoad: async ({ params }) => {

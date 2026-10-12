@@ -14,7 +14,12 @@
 
 == v0.7
 
-
+* [x] Accounts
+** [x] Add an is_archived flag to the Account
+** [x] Set it on the Accounts page
+** [x] Filter the accounts list to non-archived Accounts
+* [ ] Move server functions into their own server folders
+* [ ] Add Tanstack Start
 
 == Reports
 

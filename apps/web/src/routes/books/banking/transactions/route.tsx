@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router';
-import { getAccountOptions } from "./-components/account-options-fn.ts";
+import { getAccountOptions } from "./-components/account-options.server.ts";
 
 // Layout route so the chart of accounts behind the AccountSelector loads
 // once and is shared by every bank account's transactions page, instead of

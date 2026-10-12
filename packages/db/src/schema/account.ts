@@ -1,4 +1,4 @@
-import { foreignKey, integer, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, foreignKey, integer, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
 import { accountType } from "./account-type.js";
 
 /**
@@ -16,6 +16,7 @@ export const account = pgTable("account", {
   id: serial("id").primaryKey(),
   name: text("name").notNull().unique(),
   description: text("description"),
+  isArchived: boolean().notNull().default(false),
   account_type: integer("account_type")
     .notNull()
     .references(() => accountType.id),

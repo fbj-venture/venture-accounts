@@ -1,25 +1,25 @@
-import { formatDate } from "#/lib/dates.ts";
+import { SortableHeader } from "#/components/sortable-header.tsx";
 import { Button } from "#/components/ui/button.tsx";
 import { Checkbox } from "#/components/ui/checkbox.tsx";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from "#/components/ui/table.tsx";
+import { formatDate } from "#/lib/dates.ts";
 import { flexRender, type SortingState } from "@tanstack/react-table";
 import {
-  getSortedRowModel,
-  useLegacyTable,
-  type LegacyColumnDef,
+    getSortedRowModel,
+    useLegacyTable,
+    type LegacyColumnDef,
 } from "@tanstack/react-table/legacy";
 import { PencilIcon } from "lucide-react";
 import { useMemo, useState } from "react";
-import { SortableHeader } from "#/components/sortable-header.tsx";
+import type { AppUser } from "../-server/users.server.ts";
 import { SendVerificationLink } from "./send-verification-link.tsx";
-import type { AppUser } from "./users-fn.ts";
 
 export function UsersTable({
   data,

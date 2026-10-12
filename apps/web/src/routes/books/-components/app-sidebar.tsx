@@ -58,7 +58,7 @@ const data = {
           url: "/books/banking/recon/"
         },
         {
-          title: "Accounts",
+          title: "Accounts List",
           icon: BoxesIcon,
           url: "/books/accounts/"
         },

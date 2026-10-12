@@ -1,0 +1,1 @@
+ALTER TABLE "account" ADD COLUMN "isArchived" boolean DEFAULT false NOT NULL;

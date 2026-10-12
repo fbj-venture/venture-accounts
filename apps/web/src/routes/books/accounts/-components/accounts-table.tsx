@@ -1,23 +1,24 @@
 import { SortableHeader } from "#/components/sortable-header.tsx";
 import { Button } from "#/components/ui/button.tsx";
+import { Checkbox } from "#/components/ui/checkbox.tsx";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from "#/components/ui/table.tsx";
+import { useRouter } from "@tanstack/react-router";
 import { flexRender, type SortingState } from "@tanstack/react-table";
 import {
-  getSortedRowModel,
-  useLegacyTable,
-  type LegacyColumnDef,
+    getSortedRowModel,
+    useLegacyTable,
+    type LegacyColumnDef,
 } from "@tanstack/react-table/legacy";
-import { useRouter } from "@tanstack/react-router";
 import { ArrowRightIcon } from "lucide-react";
 import { useMemo, useState } from "react";
-import type { AccountRow } from "./accounts-fn.ts";
+import type { AccountRow } from "../-server/accounts.server.ts";
 import { EditBankAccountDialog } from "./edit-bank-account-dialog.tsx";
 import { RenameAccountDialog } from "./rename-account-dialog.tsx";
 
@@ -64,6 +65,11 @@ function getColumns({
       id: "description",
       header: ({ column }) => <SortableHeader column={column} title="Description" />,
       accessorFn: (row) => row.description ?? "",
+    },
+    {
+      accessorKey: "isArchived",
+      header: ({ column }) => <SortableHeader column={column} title="Archived" />,
+      cell: ({ getValue }) => <Checkbox checked={getValue<boolean>()} disabled aria-label="Archived" />,
     },
     {
       id: "bank",

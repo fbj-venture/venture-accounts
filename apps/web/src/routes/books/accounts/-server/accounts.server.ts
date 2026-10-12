@@ -1,5 +1,5 @@
 import { requireUser } from "#/lib/require-user.server.ts";
-import { OPENING_BALANCE_EQUITY_ACCOUNT } from "#/routes/books/banking/-components/opening-balance.server.ts";
+import { OPENING_BALANCE_EQUITY_ACCOUNT } from "#/routes/books/banking/-server/opening-balance.server";
 import { account, accountType, bankAccount, db } from "@app/db/direct";
 import { createServerFn } from "@tanstack/react-start";
 import { and, asc, eq, ne, sql } from "drizzle-orm";
@@ -10,10 +10,10 @@ import { alias } from "drizzle-orm/pg-core";
 
 export const MAX_ACCOUNT_NAME_LENGTH = 100;
 
-// Renames one Account. Every Journal Line points at the account by id, so the
+// Renames one Account and/or archives it. Every Journal Line points at the account by id, so the
 // new name shows on past and future transactions alike - nothing is rewritten.
 export const renameAccount = createServerFn({ method: "POST" })
-  .validator((data: { id: number; name: string }) => data)
+  .validator((data: { id: number; name: string; isArchived: boolean }) => data)
   .handler(async ({ data }) => {
     await requireUser();
     const name = data.name.trim();
@@ -25,30 +25,36 @@ export const renameAccount = createServerFn({ method: "POST" })
     }
 
     const [existing] = await db
-      .select({ name: account.name })
+      .select({ name: account.name, isArchived: account.isArchived })
       .from(account)
       .where(eq(account.id, data.id));
     if (!existing) {
       throw new Error("Account not found.");
     }
+    const renaming = name !== existing.name;
     // Looked up by this name when an opening balance is set, so it can't change.
-    if (existing.name === OPENING_BALANCE_EQUITY_ACCOUNT) {
+    if (renaming && existing.name === OPENING_BALANCE_EQUITY_ACCOUNT) {
       throw new Error(`"${existing.name}" is used by the app by name, so it can't be renamed.`);
     }
-    if (name === existing.name) {
+    if (!renaming && data.isArchived === existing.isArchived) {
       return;
     }
 
     // Names are unique; "Salaries" and "salaries" would only be confusing.
-    const [clash] = await db
-      .select({ id: account.id })
-      .from(account)
-      .where(and(sql`lower(${account.name}) = lower(${name})`, ne(account.id, data.id)));
-    if (clash) {
-      throw new Error(`An account called "${name}" already exists.`);
+    if (renaming) {
+      const [clash] = await db
+        .select({ id: account.id })
+        .from(account)
+        .where(and(sql`lower(${account.name}) = lower(${name})`, ne(account.id, data.id)));
+      if (clash) {
+        throw new Error(`An account called "${name}" already exists.`);
+      }
     }
 
-    await db.update(account).set({ name, updatedAt: new Date() }).where(eq(account.id, data.id));
+    await db
+      .update(account)
+      .set({ name, isArchived: data.isArchived, updatedAt: new Date() })
+      .where(eq(account.id, data.id));
   });
 
 export const MAX_BANK_NAME_LENGTH = 100;
@@ -122,6 +128,7 @@ export const getAccounts = createServerFn({ method: "GET" }).handler(async () =>
       id: account.id,
       name: account.name,
       description: account.description,
+      isArchived: account.isArchived,
       parentName: parent.name,
       accountTypeId: accountType.id,
       accountType: accountType.name,

@@ -7,7 +7,7 @@ import { useSetBreadcrumbs } from '#/routes/books/-components/breadcrumbs';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { SaveIcon, UserIcon } from 'lucide-react';
 import { useRef, useState } from 'react';
-import { updateMyProfile } from './-components/my-account-fn.ts';
+import { updateMyProfile } from './-server/my-account.server.ts';
 
 export const Route = createFileRoute('/books/account/')({
   component: RouteComponent,

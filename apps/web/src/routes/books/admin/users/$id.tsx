@@ -1,13 +1,12 @@
-import { formatDateTime } from '#/lib/dates.ts';
 import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
+    AlertDialog,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
 } from '#/components/ui/alert-dialog.tsx';
 import { ButtonGroup } from '#/components/ui/button-group.tsx';
 import { Button } from '#/components/ui/button.tsx';
@@ -15,13 +14,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card.t
 import { Field, FieldLabel } from '#/components/ui/field.tsx';
 import { Input } from '#/components/ui/input.tsx';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from '#/components/ui/select.tsx';
 import { APP_COMPANY } from "#/lib/app-company.ts";
+import { formatDateTime } from '#/lib/dates.ts';
 import { cn } from '#/lib/utils.ts';
 import { useSetBreadcrumbs } from '#/routes/books/-components/breadcrumbs';
 import { createFileRoute, notFound, useRouter } from '@tanstack/react-router';
@@ -29,13 +29,13 @@ import { SaveIcon, Trash2Icon, UserCheckIcon, UserXIcon } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { SendVerificationLink } from './-components/send-verification-link.tsx';
 import {
-  USER_ROLES,
-  deactivateUser,
-  deleteUser,
-  getUser,
-  reactivateUser,
-  updateUser,
-} from './-components/users-fn.ts';
+    USER_ROLES,
+    deactivateUser,
+    deleteUser,
+    getUser,
+    reactivateUser,
+    updateUser,
+} from './-server/users.server.ts';
 
 export const Route = createFileRoute('/books/admin/users/$id')({
   loader: async ({ params }) => {

@@ -44,7 +44,7 @@ export function NavUsers({
           <SidebarMenuItem key={item.name}>
             <SidebarMenuButton asChild>
               <a href={item.url}>
-                <item.icon />
+                {item.icon ? <item.icon /> : null}
                 <span>{item.name}</span>
               </a>
             </SidebarMenuButton>

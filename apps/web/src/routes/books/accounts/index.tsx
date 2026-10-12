@@ -3,8 +3,8 @@ import { Field, FieldLabel } from '#/components/ui/field.tsx';
 import { useSetBreadcrumbs } from '#/routes/books/-components/breadcrumbs';
 import { createFileRoute } from '@tanstack/react-router';
 import { useMemo, useState } from 'react';
-import { getAccounts, getAccountTypes } from './-components/accounts-fn.ts';
 import { AccountsTable } from './-components/accounts-table.tsx';
+import { getAccounts, getAccountTypes } from './-server/accounts.server.ts';
 
 export const Route = createFileRoute('/books/accounts/')({
   loader: async () => {

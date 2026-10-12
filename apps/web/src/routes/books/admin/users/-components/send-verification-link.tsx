@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { sendUserVerificationEmail } from "./users-fn.ts";
+import { sendUserVerificationEmail } from "../-server/users.server.ts";
 
 // "No" for a user who hasn't verified their email - a link that emails them
 // a verification link (again).

@@ -3,7 +3,7 @@ import { db, user } from "@app/db/direct";
 import { createServerFn } from "@tanstack/react-start";
 import { eq } from "drizzle-orm";
 
-// Keep ALL database code inside handlers - see transactions-fn.ts for why.
+// Keep ALL database code inside handlers - see transactions.server.ts for why.
 
 // The avatar is a small square JPEG made in the browser and stored in
 // user.image as a data URL, so it needs no file storage and works anywhere

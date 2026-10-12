@@ -1,22 +1,22 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "#/components/ui/dialog.tsx";
 import { Button } from "#/components/ui/button.tsx";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "#/components/ui/dialog.tsx";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from "#/components/ui/table.tsx";
 import { useEffect, useState } from "react";
-import { getTransactionIds, unpostJournal, type TransactionIds } from "./search-fn.ts";
+import { getTransactionIds, unpostJournal, type TransactionIds } from "../-server/search.server.ts";
 
 type State =
   | { status: "loading" }

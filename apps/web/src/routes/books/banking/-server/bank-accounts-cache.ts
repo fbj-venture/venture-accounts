@@ -1,4 +1,4 @@
-import { getBankAccounts, type BankAccountDetails } from "./bank-accounts-fn.ts";
+import { getBankAccounts, type BankAccountDetails } from "./bank-accounts.server.ts";
 
 // The bank accounts are loaded once, the first time they're needed in the
 // browser, and that same list is reused by every page afterwards (until the

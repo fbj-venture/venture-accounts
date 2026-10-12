@@ -1,19 +1,19 @@
-import { useStartingYear } from "#/lib/starting-year.ts";
-import { yearsFromStart } from "#/lib/years.ts";
 import { TableFilterBar } from "#/components/table-filter-bar.tsx";
 import { parseAmountFilter } from "#/lib/amount-filter.ts";
 import { formatZar } from "#/lib/currency.ts";
+import { currentYear, dayKey } from "#/lib/dates.ts";
+import { useStartingYear } from "#/lib/starting-year.ts";
+import { yearsFromStart } from "#/lib/years.ts";
 import { useSetBreadcrumbs } from "#/routes/books/-components/breadcrumbs.ts";
 import { createFileRoute, getRouteApi, notFound, useRouter } from '@tanstack/react-router';
 import { format } from "date-fns";
-import { currentYear, dayKey } from "#/lib/dates.ts";
 import { useMemo, useState } from "react";
 import type { DateRange } from "react-day-picker";
-import { loadBankAccount } from "../-components/bank-accounts-cache.ts";
-import { getOpeningBalance } from "../-components/bank-accounts-fn.ts";
+import { loadBankAccount } from "../-server/bank-accounts-cache.ts";
+import { getOpeningBalance } from "../-server/bank-accounts.server.ts";
 import { OpeningBalanceDialog } from "./-components/opening-balance-dialog.tsx";
-import { getUnPostedAccountTransactions } from "./-components/transactions-fn.ts";
 import { TransactionsTable } from "./-components/transactions-table.tsx";
+import { getUnPostedAccountTransactions } from "./-server/transactions.server.ts";
 
 export const Route = createFileRoute('/books/banking/transactions/$id')({
   beforeLoad: async ({ params }) => {

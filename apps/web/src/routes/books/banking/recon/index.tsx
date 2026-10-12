@@ -2,7 +2,7 @@ import { cn } from '#/lib/utils.ts';
 import { BankAccountCard } from '#/routes/books/-components/bank-account-card.tsx';
 import { Link, createFileRoute, useRouterState } from '@tanstack/react-router';
 import { useEffect } from 'react';
-import { loadBankAccounts } from '../-components/bank-accounts-cache.ts';
+import { loadBankAccounts } from '../-server/bank-accounts-cache.ts';
 import { useSetBreadcrumbs } from '../../-components/breadcrumbs';
 
 export const Route = createFileRoute('/books/banking/recon/')({

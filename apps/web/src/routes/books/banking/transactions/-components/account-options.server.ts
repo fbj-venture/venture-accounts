@@ -6,7 +6,7 @@ import { alias } from "drizzle-orm/pg-core";
 
 // Everything a transaction can be posted against, split the way the
 // AccountSelector shows it: accounts with bankAccount details are Banks,
-// every other Account is a Category.
+// every other Account is a Category. Archived Accounts are left out.
 export const getAccountOptions = createServerFn({ method: "GET" }).handler(
   async (): Promise<AccountOptions> => {
     const parent = alias(account, "parent");
@@ -24,6 +24,7 @@ export const getAccountOptions = createServerFn({ method: "GET" }).handler(
       .innerJoin(accountType, eq(accountType.id, account.account_type))
       .leftJoin(parent, eq(parent.id, account.parentId))
       .leftJoin(bankAccount, eq(bankAccount.id, account.id))
+      .where(eq(account.isArchived, false))
       .orderBy(asc(account.name));
 
     // Order by Account Type, reversing the canonical order its fixed ids

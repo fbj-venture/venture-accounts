@@ -9,7 +9,7 @@ import { and, asc, eq } from "drizzle-orm";
 // The roles the admin plugin knows by default.
 export const USER_ROLES = ["admin", "user"] as const;
 
-// Keep ALL database code inside handlers - see transactions-fn.ts for why.
+// Keep ALL database code inside handlers - see transactions.server.ts for why.
 // Never select password hashes or session tokens here: this list is for
 // display, and only needs the user's own profile columns.
 export type AppUser = Awaited<ReturnType<typeof getUsers>>[number];

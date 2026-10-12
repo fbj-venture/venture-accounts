@@ -10,6 +10,7 @@
     "generate-routes": "tsr generate",
     "build": "vite build",
     "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
     "create-user": "tsx scripts/create-user.ts",
     "send-test-email": "tsx scripts/send-test-email.ts"
   },

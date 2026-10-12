@@ -4,6 +4,7 @@
   "description": "A simple web-based Bank Account bookkeeping tool",
   "scripts": {
     "dev": "pnpm --filter web dev",
+    "lint": "pnpm -r --no-bail typecheck",
     "clean": "rimraf ./.output/",
     "build": "pnpm --filter web build",
     "start": "node .output/server/index.mjs",

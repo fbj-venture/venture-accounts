@@ -1,9 +1,9 @@
-import { useSetBreadcrumbs } from '#/routes/books/-components/breadcrumbs';
 import { Button } from '#/components/ui/button.tsx';
+import { useSetBreadcrumbs } from '#/routes/books/-components/breadcrumbs';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { PlusIcon } from 'lucide-react';
 import { UsersTable } from './-components/users-table.tsx';
-import { getUsers } from './-components/users-fn.ts';
+import { getUsers } from './-server/users.server.ts';
 
 export const Route = createFileRoute('/books/admin/users/')({
   loader: async () => ({ users: await getUsers() }),

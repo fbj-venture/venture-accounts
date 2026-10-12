@@ -21,7 +21,7 @@ import { useSetBreadcrumbs } from '#/routes/books/-components/breadcrumbs';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { LoaderCircleIcon, MonitorIcon, MoonIcon, SaveIcon, SunIcon } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
-import { getMySettings, saveMySettings, startingYearProblem } from './-components/settings-fn.ts';
+import { getMySettings, saveMySettings, startingYearProblem } from './-server/settings.server.ts';
 
 export const Route = createFileRoute('/books/settings/')({
   loader: async () => ({ settings: await getMySettings() }),

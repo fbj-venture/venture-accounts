@@ -1,29 +1,29 @@
-import { useStartingYear } from "#/lib/starting-year.ts";
-import { yearsFromStart } from "#/lib/years.ts";
-import { MultiSelect } from '#/components/multi-select.tsx';
 import { AmountFilterInput } from '#/components/amount-filter-input.tsx';
+import { MultiSelect } from '#/components/multi-select.tsx';
 import { TableDateRange } from '#/components/table-date-range.tsx';
 import { Button } from '#/components/ui/button.tsx';
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card.tsx';
 import { Checkbox } from '#/components/ui/checkbox.tsx';
 import { Field, FieldLabel } from '#/components/ui/field.tsx';
 import { Input } from '#/components/ui/input.tsx';
+import { isValidAmountFilter } from '#/lib/amount-filter.ts';
+import { useStartingYear } from "#/lib/starting-year.ts";
+import { yearsFromStart } from "#/lib/years.ts";
 import { useSetBreadcrumbs } from '#/routes/books/-components/breadcrumbs';
 import { createFileRoute } from '@tanstack/react-router';
-import { SearchIcon, XIcon } from 'lucide-react';
 import { format } from 'date-fns';
+import { SearchIcon, XIcon } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
 import type { DateRange } from 'react-day-picker';
-import { loadBankAccounts } from '../-components/bank-accounts-cache.ts';
-import { isValidAmountFilter } from '#/lib/amount-filter.ts';
-import {
-  getIsAdmin,
-  searchTransactions,
-  type SearchCriteria,
-  type SearchResult,
-} from './-components/search-fn.ts';
+import { loadBankAccounts } from '../-server/bank-accounts-cache.ts';
+import { getAccountOptions } from '../transactions/-components/account-options.server.ts';
 import { SearchResultsTable } from './-components/search-results-table.tsx';
-import { getAccountOptions } from '../transactions/-components/account-options-fn.ts';
+import {
+    getIsAdmin,
+    searchTransactions,
+    type SearchCriteria,
+    type SearchResult,
+} from './-server/search.server.ts';
 
 export const Route = createFileRoute('/books/banking/search/')({
   // A bank account to start with, e.g. from the dashboard's Actions menu.

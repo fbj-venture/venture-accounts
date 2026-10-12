@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2026-10-12
+
+### Added
+
+- Accounts
+  - Add an is_archived flag to the Account
+  - Set it on the Accounts page
+  - Filter the accounts list to non-archived Accounts
+- Restructure files and folders for separation of concerns and update the `claude.md` memory
+  - Move server functions into their own server folders and rename to *.server.ts
+- Add Tanstack Query and make sub-pages client-side
+
 ## [0.6.0] - 2026-10-12
 
 ### Added

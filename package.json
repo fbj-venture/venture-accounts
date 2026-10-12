@@ -1,6 +1,6 @@
 {
   "name": "venture-accounts",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "A simple web-based Bank Account bookkeeping tool",
   "scripts": {
     "dev": "pnpm --filter web dev",

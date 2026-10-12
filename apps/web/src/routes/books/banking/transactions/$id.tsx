@@ -1,4 +1,5 @@
-import { yearsFromFirst } from "#/lib/years.ts";
+import { useStartingYear } from "#/lib/starting-year.ts";
+import { yearsFromStart } from "#/lib/years.ts";
 import { TableFilterBar } from "#/components/table-filter-bar.tsx";
 import { parseAmountFilter } from "#/lib/amount-filter.ts";
 import { formatZar } from "#/lib/currency.ts";
@@ -55,11 +56,12 @@ function RouteComponent() {
   const [descriptionFilter, setDescriptionFilter] = useState("");
   const [amountFilter, setAmountFilter] = useState("");
 
+  const startingYear = useStartingYear();
   const years = useMemo(() => {
     const thisYear = currentYear();
     const transactionYears = transactions.map((transaction) => Number(dayKey(transaction.date).slice(0, 4)));
-    return yearsFromFirst(Math.max(thisYear, ...transactionYears));
-  }, [transactions]);
+    return yearsFromStart(startingYear, Math.max(thisYear, ...transactionYears));
+  }, [transactions, startingYear]);
 
   const filteredTransactions = useMemo(() => {
     // Compared as calendar days: the picker's days are the user's local
@@ -82,7 +84,7 @@ function RouteComponent() {
       }
       if (
         description &&
-        !(transaction.description ?? transaction.note).toLowerCase().includes(description)
+        !`${transaction.note} ${transaction.description ?? ""}`.toLowerCase().includes(description)
       ) {
         return false;
       }

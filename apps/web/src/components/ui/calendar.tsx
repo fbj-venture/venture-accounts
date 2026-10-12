@@ -13,15 +13,16 @@ import {
 } from "react-day-picker"
 
 import { Button, buttonVariants } from "#/components/ui/button.tsx"
-import { FIRST_YEAR } from "#/lib/years.ts"
+import { useStartingYear } from "#/lib/starting-year.ts"
 
 function Calendar({
   className,
   classNames,
   showOutsideDays = true,
   captionLayout = "label",
-  // Bounds the year drop-down (captionLayout="dropdown").
-  startMonth = new Date(FIRST_YEAR, 0),
+  // Bounds the year drop-down (captionLayout="dropdown"); by default it
+  // starts at the user's starting year.
+  startMonth: startMonthProp,
   endMonth = new Date(currentYear(), 11),
   buttonVariant = "ghost",
   formatters,
@@ -31,6 +32,8 @@ function Calendar({
   buttonVariant?: React.ComponentProps<typeof Button>["variant"]
 }) {
   const defaultClassNames = getDefaultClassNames()
+  const startingYear = useStartingYear()
+  const startMonth = startMonthProp ?? new Date(startingYear, 0)
 
   return (
     <DayPicker
@@ -79,7 +82,7 @@ function Calendar({
           defaultClassNames.dropdowns
         ),
         dropdown_root: cn(
-          "relative rounded-md border border-input shadow-xs has-focus:border-ring has-focus:ring-[3px] has-focus:ring-ring/50",
+          "relative rounded-md border border-control-border shadow-xs has-focus:border-ring has-focus:ring-[3px] has-focus:ring-ring/50",
           defaultClassNames.dropdown_root
         ),
         dropdown: cn(

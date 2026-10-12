@@ -13,29 +13,13 @@ import { flexRender, type SortingState } from "@tanstack/react-table";
 import {
   getSortedRowModel,
   useLegacyTable,
-  type LegacyColumn,
   type LegacyColumnDef,
 } from "@tanstack/react-table/legacy";
-import { ArrowDownIcon, ArrowUpDownIcon, ArrowUpIcon, PencilIcon } from "lucide-react";
+import { PencilIcon } from "lucide-react";
 import { useMemo, useState } from "react";
+import { SortableHeader } from "#/components/sortable-header.tsx";
 import { SendVerificationLink } from "./send-verification-link.tsx";
 import type { AppUser } from "./users-fn.ts";
-
-function SortableHeader({ column, title }: { column: LegacyColumn<AppUser>; title: string }) {
-  const sorted = column.getIsSorted();
-  const Icon = sorted === "asc" ? ArrowUpIcon : sorted === "desc" ? ArrowDownIcon : ArrowUpDownIcon;
-  return (
-    <Button
-      variant="ghost"
-      size="sm"
-      className="-ml-2.5"
-      onClick={column.getToggleSortingHandler()}
-    >
-      {title}
-      <Icon className={sorted ? undefined : "text-muted-foreground"} />
-    </Button>
-  );
-}
 
 export function UsersTable({
   data,

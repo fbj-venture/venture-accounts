@@ -58,9 +58,11 @@ body {
   --color-chart-1: var(--chart-1);
   --color-ring: var(--ring);
   --color-input: var(--input);
+  --color-control-border: var(--control-border);
   --color-border: var(--border);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-destructive: var(--destructive);
+  --color-warning: var(--warning);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -101,8 +103,15 @@ body {
   --accent-foreground: oklch(0.3791 0.1378 265.5222);
   --destructive: oklch(0.6368 0.2078 25.3313);
   --destructive-foreground: oklch(1 0 0);
+  /* Cautions that aren't errors (text and icons), e.g. "this affects past
+     transactions". Amber, dark enough to read on the light background. */
+  --warning: oklch(0.55 0.15 60);
   --border: oklch(0.9022 0.0052 247.8822);
   --input: oklch(0.97 0.0029 264.542);
+  /* The outline of form controls (text inputs, selects, checkboxes). --input
+     is a near-white fill colour, too faint to see as a border on the light
+     background, so controls take this instead. */
+  --control-border: color-mix(in oklab, var(--muted-foreground) 70%, transparent);
   --ring: oklch(0.6397 0.172 36.4421);
   --chart-1: oklch(0.7156 0.0605 248.6845);
   --chart-2: oklch(0.7875 0.0917 35.9616);
@@ -162,8 +171,10 @@ body {
   --accent-foreground: oklch(0.8823 0.0571 254.1284);
   --destructive: oklch(0.6368 0.2078 25.3313);
   --destructive-foreground: oklch(1 0 0);
+  --warning: oklch(0.83 0.16 85);
   --border: oklch(0.3843 0.0301 269.7337);
   --input: oklch(0.3843 0.0301 269.7337);
+  --control-border: var(--input);
   --ring: oklch(0.6397 0.172 36.4421);
   --chart-1: oklch(0.7156 0.0605 248.6845);
   --chart-2: oklch(0.7693 0.0876 34.1875);

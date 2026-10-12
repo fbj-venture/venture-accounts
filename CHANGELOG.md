@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-10-12
+
+### Added
+
+- Settings
+  - Create Schema
+  - Auto-create for user on login
+  - Starting year for drop-downs (defaults to 2024)
+  - Create a page on the users menu that sets it
+  - Move the Theme selector into the Settings page
+- Add a note textbox before the amount in the post-transactions table
+- Admin
+  - Create Accounts section
+  - List all accounts
+  - Rename Accounts & Bank Accounts
+
+### Fixed
+
+- Fix collapsed main navigation
+- Transfers
+  - Lookup transactions and display matches
+  - Pre-select if there's only one line
+  - Display if there's multiple lines and require a selection
+
 ## [0.5.5] - 2026-10-08
 
 ### Changed

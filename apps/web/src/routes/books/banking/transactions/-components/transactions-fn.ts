@@ -3,7 +3,12 @@ import { account, bankAccount, db, journal, journalLine, withUpdate } from "@app
 import { createServerFn } from "@tanstack/react-start";
 import { and, asc, eq, ne } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
-import { postToCategory, postTransfer } from "./posting.server.ts";
+import {
+  findTransferCandidates,
+  postToCategory,
+  postTransfer,
+  transferMatchRange,
+} from "./posting.server.ts";
 
 // Keep ALL database code inside handlers (or in posting.server.ts, used only
 // from a handler). This file is imported by the route tree, so it's in the
@@ -60,6 +65,63 @@ export const getUnPostedAccountTransactions = createServerFn({ method: "GET" })
     });
   });
 
+// The other bank's transactions a Transfer from this bank line to
+// `accountId` could be matched with (see findTransferCandidates). Read-only:
+// the Select dialog lists them, and the user's pick goes back with Save.
+export type TransferMatches = Awaited<ReturnType<typeof findTransferMatches>>;
+
+export const findTransferMatches = createServerFn({ method: "POST" })
+  .validator((data: { journalLineId: number; accountId: number }) => data)
+  .handler(async ({ data }) => {
+    await requireUser();
+    return await db.transaction(async (tx) => {
+      const [bankLine] = await tx
+        .select({
+          journalId: journal.id,
+          accountId: journalLine.accountId,
+          amount: journalLine.amount,
+          date: journal.date,
+          isPosted: journal.isPosted,
+        })
+        .from(journalLine)
+        .innerJoin(journal, eq(journal.id, journalLine.journalEntryId))
+        .where(eq(journalLine.id, data.journalLineId));
+      if (!bankLine) {
+        throw new Error("Transaction not found.");
+      }
+      if (bankLine.isPosted) {
+        throw new Error("Transaction has already been posted.");
+      }
+
+      const [target] = await tx
+        .select({ id: account.id, name: account.name, bankAccountId: bankAccount.id })
+        .from(account)
+        .leftJoin(bankAccount, eq(bankAccount.id, account.id))
+        .where(eq(account.id, data.accountId));
+      if (!target || target.bankAccountId === null) {
+        throw new Error("That is not a bank account.");
+      }
+      if (target.id === bankLine.accountId) {
+        throw new Error("A transfer must be to a different bank account.");
+      }
+
+      const candidates = await findTransferCandidates(tx, bankLine, target.id, {
+        limit: 20,
+        lock: false,
+      });
+      return {
+        accountName: target.name,
+        range: transferMatchRange(bankLine.date),
+        matches: candidates.map((candidate) => ({
+          lineId: candidate.lineId,
+          date: candidate.date,
+          description: candidate.description ?? candidate.note,
+          amount: candidate.amount,
+        })),
+      };
+    });
+  });
+
 // Saves the other side of a bank transaction - the second half of its
 // double entry. Picking a Category adds (or moves) a balancing line on that
 // Category; picking a Bank matches it up as a Transfer (see postTransfer in
@@ -73,6 +135,8 @@ export const postTransaction = createServerFn({ method: "POST" })
     should_post: boolean;
     /** The user's note for the line(s); blank leaves the descriptions as imported. */
     note?: string;
+    /** For a Transfer: the other bank's line picked in the Select dialog. */
+    counterpartLineId?: number;
   }) => data)
   .handler(async ({ data }) => {
     const { id: userId } = await requireUser();
@@ -111,7 +175,15 @@ export const postTransaction = createServerFn({ method: "POST" })
       }
 
       if (target.bankAccountId !== null) {
-        await postTransfer(tx, data.journalLineId, bankLine, target, userId, note);
+        await postTransfer(
+          tx,
+          data.journalLineId,
+          bankLine,
+          target,
+          userId,
+          note,
+          data.counterpartLineId,
+        );
       } else {
         await postToCategory(tx, data.journalLineId, bankLine, target.id, userId, note);
       }

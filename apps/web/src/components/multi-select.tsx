@@ -16,6 +16,7 @@ export function MultiSelect({
   onValueChange,
   placeholder,
   className,
+  showAllButton = false,
 }: {
   id?: string;
   options: MultiSelectOption[];
@@ -23,6 +24,8 @@ export function MultiSelect({
   onValueChange: (value: number[]) => void;
   placeholder: string;
   className?: string;
+  /** Adds an "All" button that ticks every option (not just those the search shows). */
+  showAllButton?: boolean;
 }) {
   const [search, setSearch] = useState("");
 
@@ -88,16 +91,32 @@ export function MultiSelect({
             ))
           )}
         </div>
-        {value.length > 0 ? (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="mt-2 w-full"
-            onClick={() => onValueChange([])}
-          >
-            Clear selection
-          </Button>
+        {showAllButton || value.length > 0 ? (
+          <div className="mt-2 flex gap-2">
+            {showAllButton ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="flex-1"
+                disabled={options.length === 0 || value.length === options.length}
+                onClick={() => onValueChange(options.map((option) => option.value))}
+              >
+                All
+              </Button>
+            ) : null}
+            {value.length > 0 ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="flex-1"
+                onClick={() => onValueChange([])}
+              >
+                Clear selection
+              </Button>
+            ) : null}
+          </div>
         ) : null}
       </PopoverContent>
     </Popover>

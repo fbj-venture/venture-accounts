@@ -1,4 +1,5 @@
-import { yearsFromFirst } from "#/lib/years.ts";
+import { useStartingYear } from "#/lib/starting-year.ts";
+import { yearsFromStart } from "#/lib/years.ts";
 import { MultiSelect } from '#/components/multi-select.tsx';
 import { AmountFilterInput } from '#/components/amount-filter-input.tsx';
 import { TableDateRange } from '#/components/table-date-range.tsx';
@@ -70,9 +71,6 @@ const NO_CRITERIA: Criteria = {
   accountIds: [],
 };
 
-// The years the date range's quick-select offers: this one and the ten before.
-const YEARS = yearsFromFirst();
-
 // Clicking cycles: either (dash) -> yes (tick) -> no (empty) -> either.
 function TriStateCheckbox({
   label,
@@ -104,6 +102,10 @@ function TriStateCheckbox({
 function RouteComponent() {
   useSetBreadcrumbs([{ title: 'Dashboard', url: '/books' }, { title: 'Find transactions' }]);
   const { bankAccounts, accountOptions, isAdmin } = Route.useLoaderData();
+  // The years the date range's quick-select offers: from the user's
+  // starting year to this one.
+  const startingYear = useStartingYear();
+  const years = useMemo(() => yearsFromStart(startingYear), [startingYear]);
   const { bankAccountId } = Route.useSearch();
 
   const [criteria, setCriteria] = useState<Criteria>(() => ({
@@ -217,6 +219,7 @@ function RouteComponent() {
                   value={criteria.bankAccountIds}
                   onValueChange={(bankAccountIds) => update({ bankAccountIds })}
                   placeholder="All bank accounts"
+                  showAllButton
                 />
               </Field>
               <Field>
@@ -235,7 +238,7 @@ function RouteComponent() {
                   <TableDateRange
                     range={criteria.range}
                     onRangeChange={(range) => update({ range })}
-                    years={YEARS}
+                    years={years}
                   />
                 </div>
               </Field>

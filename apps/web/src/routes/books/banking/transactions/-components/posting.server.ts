@@ -22,7 +22,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 // everything from the weekday (Mon-Fri) before the transaction to the
 // weekday after it, both included - so weekend days in between count.
 // Computed in UTC on the calendar date, so time zones can't shift the day.
-function transferMatchRange(date: Date): { from: string; to: string } {
+export function transferMatchRange(date: Date): { from: string; to: string } {
   const isWeekend = (time: number) => [0, 6].includes(new Date(time).getUTCDay());
   const own = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
 
@@ -69,6 +69,48 @@ async function getEntryTotal(tx: Tx, journalId: number) {
   // numeric(14,2) sums come back exact, but round anyway so float noise
   // from mapWith(Number) can't leave the entry a fraction of a cent out.
   return Math.round(total * 100) / 100;
+}
+
+// The other bank's imported lines a Transfer from `bankLine` into `targetId`
+// could be matched with: the opposite amount, dated from the weekday before to
+// the weekday after, not yet posted, and alone in their entry (so not already
+// categorised or matched with something else). `lineId` narrows it to one
+// chosen line; `lock` also locks the candidates' entries, so they can't be
+// matched (or categorised) by someone else at the same moment.
+export async function findTransferCandidates(
+  tx: Tx,
+  bankLine: Pick<BankLine, "journalId" | "amount" | "date">,
+  targetId: number,
+  { lineId, limit, lock }: { lineId?: number; limit: number; lock: boolean },
+) {
+  const matchRange = transferMatchRange(bankLine.date);
+  const query = tx
+    .select({
+      lineId: journalLine.id,
+      journalId: journal.id,
+      description: journalLine.description,
+      note: journal.note,
+      date: journal.date,
+      amount: journalLine.amount,
+    })
+    .from(journalLine)
+    .innerJoin(journal, eq(journal.id, journalLine.journalEntryId))
+    .where(
+      and(
+        eq(journalLine.accountId, targetId),
+        eq(journalLine.amount, -bankLine.amount),
+        eq(journal.isPosted, false),
+        ne(journal.id, bankLine.journalId),
+        sql`${journal.date} between ${matchRange.from}::date and ${matchRange.to}::date`,
+        // Only its own imported bank line - not already categorised or
+        // matched with something else.
+        sql`(select count(*) from journal_line entry_lines where entry_lines.journal_entry_id = ${journal.id}) = 1`,
+        lineId === undefined ? undefined : eq(journalLine.id, lineId),
+      ),
+    )
+    .orderBy(asc(journal.date), asc(journalLine.id))
+    .limit(limit);
+  return lock ? await query.for("update", { of: journal }) : await query;
 }
 
 // The user's own note (already trimmed; "" = none) replaces the lines'
@@ -134,6 +176,11 @@ export async function postToCategory(
       "This transaction is split across several accounts or doesn't balance, so it can't be changed here.",
     );
   }
+
+  // The bank line carries the note too - it's the line the transaction
+  // lists and the search show, and it's what the Note box is refilled from
+  // while the transaction is saved but not yet posted.
+  await setDescription(tx, [journalLineId], note, userId);
 }
 
 // A Transfer is imported twice - once from each bank's statement - as two
@@ -154,6 +201,9 @@ export async function postTransfer(
   target: { id: number; name: string },
   userId: string,
   note: string,
+  // The matching line the user picked in the Select dialog. Without one, the
+  // match is found here: it must be the only candidate.
+  counterpartLineId?: number,
 ) {
   if (target.id === bankLine.accountId) {
     throw new Error("A transfer must be to a different bank account.");
@@ -181,36 +231,21 @@ export async function postTransfer(
 
   const matchRange = transferMatchRange(bankLine.date);
 
-  // Lock the candidates' entries too, so they can't be matched (or
-  // categorised) by someone else at the same moment. Two rows is enough to
-  // tell "one match" from "several".
-  const counterparts = await tx
-    .select({
-      lineId: journalLine.id,
-      journalId: journal.id,
-      description: journalLine.description,
-      note: journal.note,
-      date: journal.date,
-    })
-    .from(journalLine)
-    .innerJoin(journal, eq(journal.id, journalLine.journalEntryId))
-    .where(
-      and(
-        eq(journalLine.accountId, target.id),
-        eq(journalLine.amount, -bankLine.amount),
-        eq(journal.isPosted, false),
-        ne(journal.id, bankLine.journalId),
-        sql`${journal.date} between ${matchRange.from}::date and ${matchRange.to}::date`,
-        // Only its own imported bank line - not already categorised or
-        // matched with something else.
-        sql`(select count(*) from journal_line entry_lines where entry_lines.journal_entry_id = ${journal.id}) = 1`,
-      ),
-    )
-    .orderBy(asc(journalLine.id))
-    .limit(2)
-    .for("update", { of: journal });
+  // Two rows is enough to tell "one match" from "several". A line the user
+  // picked is checked against the same rules again - it may have been matched
+  // or posted by someone else since the dialog listed it.
+  const counterparts = await findTransferCandidates(tx, bankLine, target.id, {
+    lineId: counterpartLineId,
+    limit: 2,
+    lock: true,
+  });
 
   const expected = `${formatZar(-bankLine.amount)} in ${target.name}`;
+  if (counterpartLineId !== undefined && counterparts.length === 0) {
+    throw new Error(
+      "The transaction you chose to match with is no longer available - it may have been matched or posted already. Choose the account again to pick another.",
+    );
+  }
   if (counterparts.length > 1) {
     throw new Error(
       `More than one transaction matches ${expected} between ${matchRange.from} and ${matchRange.to}, so it can't be chosen automatically. ` +

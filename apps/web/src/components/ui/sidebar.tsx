@@ -24,7 +24,9 @@ import {
 } from "#/components/ui/tooltip.tsx"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
-const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
+// A year, so the saved position survives being away for a while. The cookie
+// is what the server reads to draw the sidebar right (see use-sidebar-open.ts).
+const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 365
 const SIDEBAR_WIDTH = "16rem"
 const SIDEBAR_WIDTH_MOBILE = "18rem"
 const SIDEBAR_WIDTH_ICON = "3rem"

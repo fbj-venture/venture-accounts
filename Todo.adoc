@@ -3,7 +3,7 @@
 :description: A current ToDo list for the Venture Accounts web application
 :nofooter:
 
-== Deployment
+== Deployment Procedure 
 
 * [ ] Version update
 ** [ ] Update `package.json`
@@ -12,20 +12,26 @@
 * [ ] Migrate the database
 * [ ] Git push all changes
 
-== v0.6
+== v0.7
 
-* [ ] Add a note textbox before the amount in the post-transactions table
-* [ ] Admin
-** [ ] Accounts management
-* [ ] Fix collapsed main navigation
-* [ ] Transfers
-** [ ] Lookup transactions and display matches
-** [ ] Pre-select if there's only one line
-** [ ] Display if there's multiple lines and require a selection
-** [ ] Checkbox to auto-post in the dialog
+
+
+== Reports
+
+* [ ] User
+** [ ] Trial ballance
+** [ ] Profit and loss
+** [ ] Cash flow
+* [ ] Bookkeeper
+** [ ] Trial ballance
+** [ ] General ledge
+** [ ] Income statement
+** [ ] Ballance sheet
 
 == Todo
 
+* [ ] Railway
+** [ ] Custom domain: accounts.venturechurch.org.za
 * [ ] Move away from ai-crafted vanilla JS to frameworks
 ** [ ] Refactor for Tanstack Form + Zod
 ** [ ] Refactor for Tanstack Query
@@ -43,3 +49,14 @@
 * [ ] Reports - What do auditors, bookkeepers, and users need?
 * [ ] Data
 ** [ ] Backups (manual/automatic)
+
+== Investigation
+
+* [ ] Budget tracking for a Goal (eg Events)
+** [ ] Create a Goal
+** [ ] Add Goal-Items (eg People coming to the Event)
+** [ ] Allocate payments and expenses to the Goal-Items with Date
+** [ ] Write off expenses explicitly
+** [ ] Display current ballance
+** [ ] Report of current state
+** [ ] Close/Lock Event

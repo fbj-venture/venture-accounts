@@ -5,6 +5,7 @@ import {
   LogOut,
   Monitor,
   Moon,
+  Settings,
   Sun,
   User as UserIcon
 } from "lucide-react";
@@ -136,6 +137,12 @@ export function NavUser({
                 <Link to="/books/account">
                   <BadgeCheck />
                   My Account
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/books/settings">
+                  <Settings />
+                  Settings
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={changePassword}>

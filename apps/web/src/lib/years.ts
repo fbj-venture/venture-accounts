@@ -1,9 +1,9 @@
-// Earliest year offered by any year drop-down.
-export const FIRST_YEAR = 2020;
+import { currentYear } from "./dates.ts";
 
-// FIRST_YEAR up to lastYear (default: this year), newest first.
-export function yearsFromFirst(lastYear: number = currentYear()): number[] {
-  const last = Math.max(lastYear, FIRST_YEAR);
-  return Array.from({ length: last - FIRST_YEAR + 1 }, (_, index) => last - index);
-}import { currentYear } from "./dates.ts";
-
+// startingYear (the user's app_settings.starting_year, see useStartingYear)
+// up to lastYear (default: this year), newest first. Never empty: a
+// lastYear before the starting year still yields the starting year.
+export function yearsFromStart(startingYear: number, lastYear: number = currentYear()): number[] {
+  const last = Math.max(lastYear, startingYear);
+  return Array.from({ length: last - startingYear + 1 }, (_, index) => last - index);
+}

@@ -1,13 +1,15 @@
 "use client";
 
 import {
-  GaugeIcon,
+  BoxesIcon,
+  HomeIcon,
   ImportIcon,
   LandmarkIcon,
   LayoutDashboardIcon,
   ListPlusIcon,
   ListTodoIcon,
   SearchIcon,
+  SummaryIcon,
   UsersRoundIcon,
   Wallet2Icon
 } from "lucide-react";
@@ -30,9 +32,9 @@ import { NavUser } from "./nav-user.tsx";
 const data = {
   accounts: [
     {
-      title: "Accounts",
+      title: "Home",
       url: "#",
-      icon: GaugeIcon,
+      icon: HomeIcon,
       isActive: true,
       items: [
         {
@@ -55,6 +57,11 @@ const data = {
           icon: ListTodoIcon,
           url: "/books/banking/recon/"
         },
+        {
+          title: "Accounts",
+          icon: BoxesIcon,
+          url: "/books/accounts/"
+        },
       ],
     },
     {
@@ -69,6 +76,13 @@ const data = {
           url: "/books/banking/import/",
         },
       ],
+    },
+    {
+      title: "Reports",
+      url: "#",
+      isActive: true,
+      icon: SummaryIcon,
+      items: [],
     }
   ],
   admin: [

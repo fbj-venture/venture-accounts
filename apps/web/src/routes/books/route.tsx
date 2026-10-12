@@ -3,7 +3,7 @@ import { APP_COMPANY } from '#/lib/app-company.ts';
 import { sidebarOpenFromCookieHeader, useSidebarOpen } from '#/hooks/use-sidebar-open.ts';
 import { getOrCreateSettings } from '#/lib/app-settings.server.ts';
 import { StartingYearContext } from '#/lib/starting-year.ts';
-import { AppSidebar } from "#/routes/books/-components/app-sidebar";
+import { AppSidebar } from "#/routes/books/-lib/app-sidebar";
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -23,7 +23,7 @@ import { createFileRoute, Link, Outlet, redirect } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start';
 import { getRequest } from '@tanstack/react-start/server';
 import { Fragment } from 'react';
-import { useBreadcrumbs } from './-components/breadcrumbs.ts';
+import { useBreadcrumbs } from './-lib/breadcrumbs.ts';
 
 // The signed-in user and their app settings, in one round trip. The settings
 // row is created with its default values the first time a user gets here

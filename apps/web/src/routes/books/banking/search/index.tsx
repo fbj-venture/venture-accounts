@@ -9,15 +9,15 @@ import { Input } from '#/components/ui/input.tsx';
 import { isValidAmountFilter } from '#/lib/amount-filter.ts';
 import { useStartingYear } from "#/lib/starting-year.ts";
 import { yearsFromStart } from "#/lib/years.ts";
-import { useSetBreadcrumbs } from '#/routes/books/-components/breadcrumbs';
+import { useSetBreadcrumbs } from '#/routes/books/-lib/breadcrumbs';
 import { createFileRoute } from '@tanstack/react-router';
 import { format } from 'date-fns';
 import { SearchIcon, XIcon } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
 import type { DateRange } from 'react-day-picker';
 import { loadBankAccounts } from '../-server/bank-accounts-cache.ts';
-import { getAccountOptions } from '../transactions/-components/account-options.server.ts';
-import { SearchResultsTable } from './-components/search-results-table.tsx';
+import { getAccountOptions } from '../transactions/-server/account-options.server.ts';
+import { SearchResultsTable } from './-lib/search-results-table.tsx';
 import {
     getIsAdmin,
     searchTransactions,

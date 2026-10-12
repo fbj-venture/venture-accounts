@@ -3,7 +3,7 @@ import { Button } from '#/components/ui/button.tsx';
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card.tsx';
 import { Field, FieldDescription, FieldLabel } from '#/components/ui/field.tsx';
 import { Input } from '#/components/ui/input.tsx';
-import { useSetBreadcrumbs } from '#/routes/books/-components/breadcrumbs';
+import { useSetBreadcrumbs } from '#/routes/books/-lib/breadcrumbs';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { SaveIcon, UserIcon } from 'lucide-react';
 import { useRef, useState } from 'react';

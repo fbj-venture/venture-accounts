@@ -3,7 +3,7 @@ import { account, bankAccount, db, journal, journalLine, withCreate } from "@app
 import { createServerFn } from "@tanstack/react-start";
 import { and, eq, ne } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
-import { findOpeningBalance, OPENING_BALANCE_EQUITY_ACCOUNT } from "./opening-balance.server.ts";
+import { findOpeningBalance, OPENING_BALANCE_EQUITY_ACCOUNT } from "./internal/opening-balance.server.ts";
 
 // Joins the ledger Account with its real-world bankAccount details (see
 // docs/Ledger Ubiquitous Language.md - "Account" is overloaded) into one

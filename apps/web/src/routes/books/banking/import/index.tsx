@@ -9,7 +9,7 @@ import {
 import { Input } from "#/components/ui/input.tsx";
 import { Progress } from "#/components/ui/progress";
 import type { UploadEvent } from "#/routes/api/books/import.ts";
-import { useSetBreadcrumbs } from "#/routes/books/-components/breadcrumbs.ts";
+import { useSetBreadcrumbs } from "#/routes/books/-lib/breadcrumbs.ts";
 import { createFileRoute } from "@tanstack/react-router";
 import { AlertCircleIcon, CheckCircle2Icon } from "lucide-react";
 import { useState } from "react";

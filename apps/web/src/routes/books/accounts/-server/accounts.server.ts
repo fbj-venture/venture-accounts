@@ -1,5 +1,5 @@
 import { requireUser } from "#/lib/require-user.server.ts";
-import { OPENING_BALANCE_EQUITY_ACCOUNT } from "#/routes/books/banking/-server/opening-balance.server";
+import { OPENING_BALANCE_EQUITY_ACCOUNT } from "#/routes/books/banking/-server/internal/opening-balance.server";
 import { account, accountType, bankAccount, db } from "@app/db/direct";
 import { createServerFn } from "@tanstack/react-start";
 import { and, asc, eq, ne, sql } from "drizzle-orm";

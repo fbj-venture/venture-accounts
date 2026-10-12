@@ -1,7 +1,7 @@
-import { BankAccountCard } from '#/routes/books/-components/bank-account-card.tsx';
-import { BankAccountMenu } from '#/routes/books/-components/bank-account-menu.tsx';
-import { useSetBreadcrumbs } from '#/routes/books/-components/breadcrumbs';
-import { getBankAccountBalances } from '#/routes/books/-server/bank-account-balances.server';
+import { BankAccountCard } from '#/routes/books/-lib/bank-account-card.tsx';
+import { BankAccountMenu } from '#/routes/books/-lib/bank-account-menu.tsx';
+import { useSetBreadcrumbs } from '#/routes/books/-lib/breadcrumbs';
+import { getBankAccountBalances } from '#/routes/books/-server/bank-account-balances.server.ts';
 import { createFileRoute } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/books/')({

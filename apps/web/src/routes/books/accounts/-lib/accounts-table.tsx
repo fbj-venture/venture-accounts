@@ -9,6 +9,7 @@ import {
     TableHeader,
     TableRow,
 } from "#/components/ui/table.tsx";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { flexRender, type SortingState } from "@tanstack/react-table";
 import {
@@ -19,6 +20,7 @@ import {
 import { ArrowRightIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { AccountRow } from "../-server/accounts.server.ts";
+import { accountKeys } from "./accounts-queries.ts";
 import { EditBankAccountDialog } from "./edit-bank-account-dialog.tsx";
 import { RenameAccountDialog } from "./rename-account-dialog.tsx";
 
@@ -94,9 +96,18 @@ function getColumns({
 
 export function AccountsTable({ data }: { data: AccountRow[] }) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [sorting, setSorting] = useState<SortingState>([]);
   const [renaming, setRenaming] = useState<AccountRow | null>(null);
   const [editingBank, setEditingBank] = useState<AccountRow | null>(null);
+
+  // Resolves once the reloaded list has arrived, so a dialog doesn't close on
+  // the old values. The router is refreshed too: the account selectors on the
+  // transactions pages are still route-loader data, not queries.
+  const refresh = async () => {
+    await queryClient.invalidateQueries({ queryKey: accountKeys.all });
+    await router.invalidate({ sync: true });
+  };
 
   // The state setters never change, so neither do the columns.
   const columns = useMemo(
@@ -154,9 +165,7 @@ export function AccountsTable({ data }: { data: AccountRow[] }) {
           key={renaming.id}
           account={renaming}
           onClose={() => setRenaming(null)}
-          // sync: resolves once the reloaded list has arrived, so the dialog
-          // doesn't close on the old name.
-          onRenamed={() => router.invalidate({ sync: true })}
+          onRenamed={refresh}
         />
       ) : null}
       {editingBank ? (
@@ -164,7 +173,7 @@ export function AccountsTable({ data }: { data: AccountRow[] }) {
           key={editingBank.id}
           account={editingBank}
           onClose={() => setEditingBank(null)}
-          onSaved={() => router.invalidate({ sync: true })}
+          onSaved={refresh}
         />
       ) : null}
     </>

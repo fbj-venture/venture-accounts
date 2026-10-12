@@ -47,7 +47,15 @@ const config = defineConfig(({ mode, command }) => ({
       rollupConfig: { external: [/^@sentry\//] },
     }),
     tailwindcss(),
-    tanstackStart(),
+    tanstackStart({
+      // Client code calls the server functions in <route>/-server/*.server.ts;
+      // the compiler swaps their handlers for RPC stubs in the browser build.
+      // Server-only helpers live in <route>/-server/internal/ (and src/lib), and
+      // stay blocked from the browser.
+      importProtection: {
+        client: { excludeFiles: ["**/routes/**/-server/*.server.ts"] },
+      },
+    }),
     viteReact(),
   ],
 }))

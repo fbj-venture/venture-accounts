@@ -18,8 +18,9 @@
 ** [x] Add an is_archived flag to the Account
 ** [x] Set it on the Accounts page
 ** [x] Filter the accounts list to non-archived Accounts
-* [ ] Move server functions into their own server folders
-* [ ] Add Tanstack Start
+* [x] Move server functions into their own server folders and rename to *.server.ts
+* [x] Add Tanstack Query and make sub-pages client-side
+* [x] Restructure files and folders for separation of concerns and update the `claude.md` memory
 
 == Reports
 

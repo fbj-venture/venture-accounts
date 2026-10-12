@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from '#/components/ui/select.tsx';
 import { useTheme, type Theme } from '#/hooks/use-theme.ts';
-import { useSetBreadcrumbs } from '#/routes/books/-components/breadcrumbs';
+import { useSetBreadcrumbs } from '#/routes/books/-lib/breadcrumbs';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { LoaderCircleIcon, MonitorIcon, MoonIcon, SaveIcon, SunIcon } from 'lucide-react';
 import { useState, type FormEvent } from 'react';

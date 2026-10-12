@@ -1,16 +1,23 @@
 import { MultiSelect } from '#/components/multi-select.tsx';
 import { Field, FieldLabel } from '#/components/ui/field.tsx';
-import { useSetBreadcrumbs } from '#/routes/books/-components/breadcrumbs';
+import { useSetBreadcrumbs } from '#/routes/books/-lib/breadcrumbs';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { useMemo, useState } from 'react';
-import { AccountsTable } from './-components/accounts-table.tsx';
-import { getAccounts, getAccountTypes } from './-server/accounts.server.ts';
+import { AccountsTable } from './-lib/accounts-table.tsx';
+import { accountsQuery, accountTypesQuery } from './-lib/accounts-queries.ts';
 
 export const Route = createFileRoute('/books/accounts/')({
-  loader: async () => {
-    const [accounts, accountTypes] = await Promise.all([getAccounts(), getAccountTypes()]);
-    return { accounts, accountTypes };
+  // Rendered in the browser only: the loader fills the query cache (instantly
+  // when it is still fresh) and the page reads it with useSuspenseQuery.
+  ssr: false,
+  loader: async ({ context: { queryClient } }) => {
+    await Promise.all([
+      queryClient.ensureQueryData(accountsQuery),
+      queryClient.ensureQueryData(accountTypesQuery),
+    ]);
   },
+  pendingComponent: () => <p className="py-2 text-sm text-muted-foreground">Loading accounts...</p>,
   component: RouteComponent,
 });
 
@@ -19,7 +26,8 @@ const DEFAULT_TYPES = ['Expense', 'Income'];
 
 function RouteComponent() {
   useSetBreadcrumbs([{ title: 'Dashboard', url: '/books' }, { title: 'Accounts' }]);
-  const { accounts, accountTypes } = Route.useLoaderData();
+  const { data: accounts } = useSuspenseQuery(accountsQuery);
+  const { data: accountTypes } = useSuspenseQuery(accountTypesQuery);
 
   // Ticked Account Type ids; none ticked shows every type, as with the
   // other filters.

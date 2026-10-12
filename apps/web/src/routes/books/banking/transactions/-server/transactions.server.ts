@@ -8,7 +8,7 @@ import {
   postToCategory,
   postTransfer,
   transferMatchRange,
-} from "./posting.server.ts";
+} from "./internal/posting.server.ts";
 
 // Keep ALL database code inside handlers (or in posting.server.ts, used only
 // from a handler). This file is imported by the route tree, so it's in the

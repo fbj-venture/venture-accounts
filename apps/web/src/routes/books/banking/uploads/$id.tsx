@@ -8,7 +8,7 @@ import {
     TableRow,
 } from "#/components/ui/table.tsx";
 import { formatDateTime } from "#/lib/dates.ts";
-import { useSetBreadcrumbs } from "#/routes/books/-components/breadcrumbs.ts";
+import { useSetBreadcrumbs } from "#/routes/books/-lib/breadcrumbs.ts";
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { FileTextIcon } from "lucide-react";
 import { useState } from "react";

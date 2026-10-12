@@ -4,15 +4,15 @@ import { formatZar } from "#/lib/currency.ts";
 import { currentYear, dayKey } from "#/lib/dates.ts";
 import { useStartingYear } from "#/lib/starting-year.ts";
 import { yearsFromStart } from "#/lib/years.ts";
-import { useSetBreadcrumbs } from "#/routes/books/-components/breadcrumbs.ts";
+import { useSetBreadcrumbs } from "#/routes/books/-lib/breadcrumbs.ts";
 import { createFileRoute, getRouteApi, notFound, useRouter } from '@tanstack/react-router';
 import { format } from "date-fns";
 import { useMemo, useState } from "react";
 import type { DateRange } from "react-day-picker";
 import { loadBankAccount } from "../-server/bank-accounts-cache.ts";
 import { getOpeningBalance } from "../-server/bank-accounts.server.ts";
-import { OpeningBalanceDialog } from "./-components/opening-balance-dialog.tsx";
-import { TransactionsTable } from "./-components/transactions-table.tsx";
+import { OpeningBalanceDialog } from "./-lib/opening-balance-dialog.tsx";
+import { TransactionsTable } from "./-lib/transactions-table.tsx";
 import { getUnPostedAccountTransactions } from "./-server/transactions.server.ts";
 
 export const Route = createFileRoute('/books/banking/transactions/$id')({

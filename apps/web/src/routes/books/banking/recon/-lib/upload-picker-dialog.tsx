@@ -18,7 +18,7 @@ import {
 import { format, parseISO } from "date-fns";
 import { ArrowDownIcon, ArrowUpDownIcon, ArrowUpIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { listUnlinkedUploads, type UploadSummary } from "./recon.server.ts";
+import { listUnlinkedUploads, type UploadSummary } from "../-server/recon.server.ts";
 
 // "statements/<account number>/2025-01-31.pdf" -> "Jan 2025"; a path that
 // doesn't end in a statement date is shown as it is.

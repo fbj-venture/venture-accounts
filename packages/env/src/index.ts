@@ -34,6 +34,18 @@ export const env = createEnv({
     DATABASE_URL_UNPOOLED: z.url(),
     NEON_BRANCH: z.string().optional(),
     BETTER_AUTH_URL: z.url(),
+    // Extra origins the app may be served from (e.g. the *.up.railway.app URL
+    // alongside the custom domain), comma-separated. BETTER_AUTH_URL is
+    // always trusted.
+    BETTER_AUTH_TRUSTED_ORIGINS: z
+      .string()
+      .optional()
+      .transform((value) =>
+        (value ?? "")
+          .split(",")
+          .map((origin) => origin.trim())
+          .filter(Boolean),
+      ),
     BETTER_AUTH_SECRET: z.string().min(1),
     APP_COMPANY: z.string().min(1).default("Venture"),
     PDF_PASSWORD: z.string().optional(),

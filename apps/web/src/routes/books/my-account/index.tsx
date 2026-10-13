@@ -9,7 +9,7 @@ import { SaveIcon, UserIcon } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { updateMyProfile } from './-server/my-account.server.ts';
 
-export const Route = createFileRoute('/books/account/')({
+export const Route = createFileRoute('/books/my-account/')({
   component: RouteComponent,
 });
 

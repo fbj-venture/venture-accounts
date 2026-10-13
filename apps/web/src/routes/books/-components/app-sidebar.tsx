@@ -67,7 +67,7 @@ const mainNav: NavItem[] = [
     icon: LandmarkIcon,
     items: [
       {
-        title: "Import",
+        title: "Import Documents",
         icon: ImportIcon,
         url: "/books/banking/import",
       },

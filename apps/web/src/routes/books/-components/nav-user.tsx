@@ -134,7 +134,7 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuGroup>
               <DropdownMenuItem asChild>
-                <Link to="/books/account">
+                <Link to="/books/my-account">
                   <BadgeCheck />
                   My Account
                 </Link>

@@ -1,7 +1,7 @@
 import { requireUser } from "#/lib/require-user.server.ts";
 import { account, bankAccount, db, journal, journalLine, withUpdate } from "@app/db/direct";
 import { createServerFn } from "@tanstack/react-start";
-import { and, asc, eq, ne } from "drizzle-orm";
+import { and, asc, desc, eq, ne } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import {
   findTransferCandidates,
@@ -50,7 +50,9 @@ export const getUnPostedAccountTransactions = createServerFn({ method: "GET" })
           eq(journal.isPosted, false)
         )
       )
-      .orderBy(asc(journal.date), asc(journalLine.id), asc(otherLine.id));
+      // Newest first. otherLine.id stays ascending so the de-duplication below keeps
+      // the first of a split entry's lines.
+      .orderBy(desc(journal.date), desc(journalLine.id), asc(otherLine.id));
 
     // Saving only ever adds one other line, but an entry split across
     // several would repeat the bank line once per split - keep the first so

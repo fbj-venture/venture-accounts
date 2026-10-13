@@ -17,12 +17,16 @@ import { toDisplayLines, toProgressValue } from "./-import-events.ts";
 
 const DEFAULT_DESCRIPTION = "Uploading bank statement";
 
-export const Route = createFileRoute("/books/banking/import/")({
+export const Route = createFileRoute("/books/banking/import/sb-statement")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  useSetBreadcrumbs([{ title: "Import" }]);
+  useSetBreadcrumbs([
+    { title: "Dashboard", url: "/books" },
+    { title: "Kind of Import", url: "/books/banking/import" },
+    { title: "PDF Import from Standard Bank" },
+  ]);
 
   const [events, setEvents] = useState<UploadEvent[]>([]);
   const [pending, setPending] = useState(false);
@@ -83,7 +87,7 @@ function RouteComponent() {
 
   return (
     <>
-      <h2>Import Bank Statements</h2>
+      <h2>PDF Import from Standard Bank</h2>
       <p className='py-2'>
         The import feature currently only supports uploading Standard 
         Bank statements in PDF format, and without passwords. 

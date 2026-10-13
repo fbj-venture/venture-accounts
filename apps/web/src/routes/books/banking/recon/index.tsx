@@ -1,9 +1,9 @@
 import { cn } from '#/lib/utils.ts';
-import { BankAccountCard } from '#/routes/books/-lib/bank-account-card.tsx';
+import { BankAccountCard } from '#/routes/books/-components/bank-account-card.tsx';
 import { Link, createFileRoute, useRouterState } from '@tanstack/react-router';
 import { useEffect } from 'react';
 import { loadBankAccounts } from '../-server/bank-accounts-cache.ts';
-import { useSetBreadcrumbs } from '../../-lib/breadcrumbs';
+import { useSetBreadcrumbs } from '../../-lib/breadcrumbs.ts';
 
 export const Route = createFileRoute('/books/banking/recon/')({
   beforeLoad: async () => {

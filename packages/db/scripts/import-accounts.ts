@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { eq } from "drizzle-orm";
-import { account, accountType, db } from "../src/index.js";
-import { runScript } from "./harness.js";
+import { account, accountType, db, withCreate } from "../src/index.js";
+import { getScriptUserId, runScript } from "./harness.js";
 
 // Imports the chart of accounts from accounts.json (next to this script).
 // Each entry names its Account Type and, optionally, its parent Account by
@@ -17,6 +17,7 @@ type AccountEntry = {
 const ACCOUNTS_FILE = new URL("./accounts.json", import.meta.url);
 
 await runScript("import-accounts", async () => {
+  const userId = await getScriptUserId();
   const raw = JSON.parse(await readFile(ACCOUNTS_FILE, "utf8")) as AccountEntry[];
 
   // Names in the source data carry stray whitespace ("Meals and entertainment ").
@@ -88,12 +89,14 @@ await runScript("import-accounts", async () => {
 
       const [created] = await db
         .insert(account)
-        .values({
-          name: entry.name,
-          description: entry.description,
-          account_type: accountTypeIds.get(entry.accountType)!,
-          parentId: entry.parent ? accountIds.get(entry.parent)! : null,
-        })
+        .values(
+          withCreate(userId, {
+            name: entry.name,
+            description: entry.description,
+            account_type: accountTypeIds.get(entry.accountType)!,
+            parentId: entry.parent ? accountIds.get(entry.parent)! : null,
+          }),
+        )
         .onConflictDoNothing({ target: account.name })
         .returning({ id: account.id });
 

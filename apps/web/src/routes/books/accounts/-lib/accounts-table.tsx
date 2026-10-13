@@ -10,7 +10,7 @@ import {
     TableRow,
 } from "#/components/ui/table.tsx";
 import { useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "@tanstack/react-router";
+import { Link, useRouter } from "@tanstack/react-router";
 import { flexRender, type SortingState } from "@tanstack/react-table";
 import {
     getSortedRowModel,
@@ -21,17 +21,14 @@ import { ArrowRightIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { AccountRow } from "../-server/accounts.server.ts";
 import { accountKeys } from "./accounts-queries.ts";
-import { EditBankAccountDialog } from "./edit-bank-account-dialog.tsx";
 import { RenameAccountDialog } from "./rename-account-dialog.tsx";
 
 // Built once (see the useMemo below): the cells render as components, so
 // columns that were rebuilt on every render would remount them each time.
 function getColumns({
   onRename,
-  onEditBank,
 }: {
   onRename: (account: AccountRow) => void;
-  onEditBank: (account: AccountRow) => void;
 }): LegacyColumnDef<AccountRow>[] {
   return [
     {
@@ -77,17 +74,14 @@ function getColumns({
       id: "bank",
       header: ({ column }) => <SortableHeader column={column} title="Bank account" />,
       // Only the accounts that are real bank accounts have these; the text
-      // is a link that opens the bank details dialog.
+      // is a link to the bank account's page.
       accessorFn: (row) => (row.bankName ? `${row.bankName} · ${row.accountNumber}` : ""),
       cell: ({ row, getValue }) =>
         row.original.bankName ? (
-          <Button
-            type="button"
-            variant="link"
-            className="h-auto p-0 text-left whitespace-normal"
-            onClick={() => onEditBank(row.original)}
-          >
-            {getValue<string>()}
+          <Button asChild variant="link" className="h-auto p-0 text-left whitespace-normal">
+            <Link to="/books/bank-account/$id" params={{ id: String(row.original.id) }}>
+              {getValue<string>()}
+            </Link>
           </Button>
         ) : null,
     },
@@ -99,7 +93,6 @@ export function AccountsTable({ data }: { data: AccountRow[] }) {
   const queryClient = useQueryClient();
   const [sorting, setSorting] = useState<SortingState>([]);
   const [renaming, setRenaming] = useState<AccountRow | null>(null);
-  const [editingBank, setEditingBank] = useState<AccountRow | null>(null);
 
   // Resolves once the reloaded list has arrived, so a dialog doesn't close on
   // the old values. The router is refreshed too: the account selectors on the
@@ -110,10 +103,7 @@ export function AccountsTable({ data }: { data: AccountRow[] }) {
   };
 
   // The state setters never change, so neither do the columns.
-  const columns = useMemo(
-    () => getColumns({ onRename: setRenaming, onEditBank: setEditingBank }),
-    [],
-  );
+  const columns = useMemo(() => getColumns({ onRename: setRenaming }), []);
 
   const table = useLegacyTable({
     data,
@@ -166,14 +156,6 @@ export function AccountsTable({ data }: { data: AccountRow[] }) {
           account={renaming}
           onClose={() => setRenaming(null)}
           onRenamed={refresh}
-        />
-      ) : null}
-      {editingBank ? (
-        <EditBankAccountDialog
-          key={editingBank.id}
-          account={editingBank}
-          onClose={() => setEditingBank(null)}
-          onSaved={refresh}
         />
       ) : null}
     </>

@@ -1,6 +1,6 @@
 import { requireUser } from "#/lib/require-user.server.ts";
 import { OPENING_BALANCE_EQUITY_ACCOUNT } from "#/routes/books/banking/-server/internal/opening-balance.server";
-import { account, accountType, bankAccount, db } from "@app/db/direct";
+import { account, accountType, bankAccount, db, withCreate, withUpdate } from "@app/db/direct";
 import { createServerFn } from "@tanstack/react-start";
 import { and, asc, eq, ne, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
@@ -15,7 +15,7 @@ export const MAX_ACCOUNT_NAME_LENGTH = 100;
 export const renameAccount = createServerFn({ method: "POST" })
   .validator((data: { id: number; name: string; isArchived: boolean }) => data)
   .handler(async ({ data }) => {
-    await requireUser();
+    const { id: userId } = await requireUser();
     const name = data.name.trim();
     if (name === "") {
       throw new Error("The name can't be empty.");
@@ -53,56 +53,71 @@ export const renameAccount = createServerFn({ method: "POST" })
 
     await db
       .update(account)
-      .set({ name, isArchived: data.isArchived, updatedAt: new Date() })
+      .set(withUpdate(userId, { name, isArchived: data.isArchived }))
       .where(eq(account.id, data.id));
+  });
+
+// Adds a new Account. A sub-account takes its parent's Account Type, so
+// accountTypeId is only used when there is no parent. Only an Account that is not
+// itself a sub-account can be a parent (a sub-account is shown as "Parent:Child").
+export const createAccount = createServerFn({ method: "POST" })
+  .validator(
+    (data: { name: string; isArchived: boolean; accountTypeId: number; parentId: number | null }) => data,
+  )
+  .handler(async ({ data }) => {
+    const { id: userId } = await requireUser();
+    const name = data.name.trim();
+    if (name === "") {
+      throw new Error("The name can't be empty.");
+    }
+    if (name.length > MAX_ACCOUNT_NAME_LENGTH) {
+      throw new Error(`The name can be at most ${MAX_ACCOUNT_NAME_LENGTH} characters.`);
+    }
+
+    let accountTypeId = data.accountTypeId;
+    if (data.parentId !== null) {
+      const [parent] = await db
+        .select({ accountType: account.account_type, parentId: account.parentId })
+        .from(account)
+        .where(eq(account.id, data.parentId));
+      if (!parent) {
+        throw new Error("The parent account was not found.");
+      }
+      if (parent.parentId !== null) {
+        throw new Error("A sub-account can't have sub-accounts of its own.");
+      }
+      accountTypeId = parent.accountType;
+    } else {
+      const [type] = await db
+        .select({ id: accountType.id })
+        .from(accountType)
+        .where(eq(accountType.id, accountTypeId));
+      if (!type) {
+        throw new Error("Choose an account type.");
+      }
+    }
+
+    // Names are unique; "Salaries" and "salaries" would only be confusing.
+    const [clash] = await db
+      .select({ id: account.id })
+      .from(account)
+      .where(sql`lower(${account.name}) = lower(${name})`);
+    if (clash) {
+      throw new Error(`An account called "${name}" already exists.`);
+    }
+
+    await db.insert(account).values(
+      withCreate(userId, {
+        name,
+        isArchived: data.isArchived,
+        account_type: accountTypeId,
+        parentId: data.parentId,
+      }),
+    );
   });
 
 export const MAX_BANK_NAME_LENGTH = 100;
 export const MAX_ACCOUNT_NUMBER_LENGTH = 30;
-
-// Changes the real-world details behind a bank Account: the bank's name and
-// the account number. Statement imports find the Account by the number printed
-// on the statement (digits only, spaces removed - see extractAccountNumber in
-// the importer), so a number that isn't digits could never be matched.
-export const updateBankAccount = createServerFn({ method: "POST" })
-  .validator((data: { id: number; bankName: string; accountNumber: string }) => data)
-  .handler(async ({ data }) => {
-    await requireUser();
-    const bankName = data.bankName.trim();
-    const accountNumber = data.accountNumber.replace(/\s+/g, "");
-    if (bankName === "") {
-      throw new Error("The bank name can't be empty.");
-    }
-    if (bankName.length > MAX_BANK_NAME_LENGTH) {
-      throw new Error(`The bank name can be at most ${MAX_BANK_NAME_LENGTH} characters.`);
-    }
-    if (!/^\d+$/.test(accountNumber) || accountNumber.length > MAX_ACCOUNT_NUMBER_LENGTH) {
-      throw new Error(
-        `The account number must be digits only, as printed on the statement (at most ${MAX_ACCOUNT_NUMBER_LENGTH}).`,
-      );
-    }
-
-    const [existing] = await db
-      .select({ id: bankAccount.id })
-      .from(bankAccount)
-      .where(eq(bankAccount.id, data.id));
-    if (!existing) {
-      throw new Error("Bank account not found.");
-    }
-
-    const [clash] = await db
-      .select({ id: bankAccount.id })
-      .from(bankAccount)
-      .where(and(eq(bankAccount.accountNumber, accountNumber), ne(bankAccount.id, data.id)));
-    if (clash) {
-      throw new Error(`Another bank account already has the number ${accountNumber}.`);
-    }
-
-    await db
-      .update(bankAccount)
-      .set({ bankName, accountNumber, updatedAt: new Date() })
-      .where(eq(bankAccount.id, data.id));
-  });
 
 // Every Account Type, in its canonical order (Asset, Liability, Equity,
 // Income, Expense) - the choices for the page's type filter. It comes from the
@@ -129,11 +144,13 @@ export const getAccounts = createServerFn({ method: "GET" }).handler(async () =>
       name: account.name,
       description: account.description,
       isArchived: account.isArchived,
+      parentId: account.parentId,
       parentName: parent.name,
       accountTypeId: accountType.id,
       accountType: accountType.name,
       bankName: bankAccount.bankName,
       accountNumber: bankAccount.accountNumber,
+      bankIsArchived: bankAccount.isArchived,
     })
     .from(account)
     .innerJoin(accountType, eq(accountType.id, account.account_type))

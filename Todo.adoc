@@ -14,7 +14,26 @@
 
 == 0.8
 
-* [ ] 
+* [x] Add audit fields to Account creation and changes
+* [x] Lists section: Accounts & Bank Accounts
+** [x] Update the nav components bar and add a type for adding new links
+* [x] Bank account Management
+** [x] List bank accounts
+** [x] Add an is_archived & audit columns
+** [x] Edit Bank Account details
+* [ ] Accounts
+** [ ] Add an add dialog with a parent drop-down list
+** [ ] Button and dialog for adding a new Account with an optional parent
+* [ ] Dashboard
+** [ ] Make the uploads list from the Dashboard more useful!
+* [ ] Bank Recons
+** [ ] Make the grid sortable and paginated
+** [ ] Upload and link a statement in the Recon history list
+* [ ] Import
+** [ ] Add an index page where you select the kind of import you want to make
+** [ ] After uploading redirect this this page
+** [ ] Update the current loader to be titled: Standard Bank Statement Uploader
+** [ ] Add a new CSV/TSV importer for current Standard Bank items (Check the hash is the same as for a statement)
 
 == Reports
 
@@ -30,11 +49,8 @@
 
 == Todo
 
-* [ ] Railway
-** [ ] Custom domain: accounts.venturechurch.org.za
 * [ ] Move away from ai-crafted vanilla JS to frameworks
 ** [ ] Refactor for Tanstack Form + Zod
-** [ ] Refactor for Tanstack Query
 * [ ] Code audit
 * [ ] Personal preferences
 ** [ ] Link social login to an existing account

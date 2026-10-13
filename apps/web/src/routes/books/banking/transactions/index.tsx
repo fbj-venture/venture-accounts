@@ -1,5 +1,5 @@
 import { cn } from "#/lib/utils.ts";
-import { BankAccountCard } from "#/routes/books/-lib/bank-account-card.tsx";
+import { BankAccountCard } from "#/routes/books/-components/bank-account-card.tsx";
 import { useSetBreadcrumbs } from "#/routes/books/-lib/breadcrumbs.ts";
 import { Link, createFileRoute, useRouterState } from '@tanstack/react-router';
 import { useEffect } from 'react';

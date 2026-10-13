@@ -8,6 +8,7 @@ import {
   LayoutDashboardIcon,
   ListPlusIcon,
   ListTodoIcon,
+  LogsIcon,
   SearchIcon,
   SummaryIcon,
   UsersRoundIcon,
@@ -22,83 +23,100 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "#/components/ui/sidebar.tsx";
+import type { NavSectionsOpen } from "#/hooks/use-nav-sections-open.ts";
 import type { SessionUser } from "@app/models";
+import type { NavItem } from "../-lib/nav-item.ts";
 import { AboutDialog } from "./about-dialog.tsx";
 import { NavAccounts } from "./nav-main.tsx";
 import { NavUsers } from "./nav-projects.tsx";
 import { NavUser } from "./nav-user.tsx";
 
 // This is sample data.
-const data = {
-  accounts: [
-    {
-      title: "Home",
-      url: "#",
-      icon: HomeIcon,
-      isActive: true,
-      items: [
-        {
-          title: "Dashboard",
-          icon: LayoutDashboardIcon,
-          url: "/books"
-        },
-        {
-          title: "Find Transactions",
-          icon: SearchIcon,
-          url: "/books/banking/search/"
-        },
-        {
-          title: "Post Transactions",
-          icon: ListPlusIcon,
-          url: "/books/banking/transactions/"
-        },
-        {
-          title: "Bank Account Recon",
-          icon: ListTodoIcon,
-          url: "/books/banking/recon/"
-        },
-        {
-          title: "Accounts List",
-          icon: BoxesIcon,
-          url: "/books/accounts/"
-        },
-      ],
-    },
-    {
-      title: "Banking",
-      url: "#",
-      isActive: true,
-      icon: LandmarkIcon,
-      items: [
-        {
-          title: "Import",
-          icon: ImportIcon,
-          url: "/books/banking/import/",
-        },
-      ],
-    },
-    {
-      title: "Reports",
-      url: "#",
-      isActive: true,
-      icon: SummaryIcon,
-      items: [],
-    }
-  ],
-  admin: [
-    {
-      name: "Users",
-      url: "/books/admin/users/",
-      icon: UsersRoundIcon
-    }
-  ]
-};
+const mainNav: NavItem[] = [
+  {
+    title: "Home",
+    icon: HomeIcon,
+    isActive: true,
+    items: [
+      {
+        title: "Dashboard",
+        icon: LayoutDashboardIcon,
+        url: "/books"
+      },
+      {
+        title: "Find Transactions",
+        icon: SearchIcon,
+        url: "/books/banking/search"
+      },
+      {
+        title: "Post Transactions",
+        icon: ListPlusIcon,
+        url: "/books/banking/transactions"
+      },
+      {
+        title: "Bank Account Recon",
+        icon: ListTodoIcon,
+        url: "/books/banking/recon"
+      },
+      
+    ],
+  },
+  {
+    title: "Banking",
+    isActive: true,
+    icon: LandmarkIcon,
+    items: [
+      {
+        title: "Import",
+        icon: ImportIcon,
+        url: "/books/banking/import",
+      },
+    ],
+  },
+  {
+    title:"Manage",
+    isActive: false,
+    icon: LogsIcon,
+    items: [
+      {
+        title: "Accounts List",
+        icon: BoxesIcon,
+        url: "/books/accounts"
+      },
+      {
+        title:"Bank Accounts",
+        icon: LandmarkIcon,
+        url: "/books/bank-account"
+      }
+    ]
+  },
+  {
+    title: "Reports",
+    isActive: false,
+    icon: SummaryIcon,
+    items: [],
+  }
+];
+
+const adminNav: NavItem[] = [
+  {
+    title: "Users",
+    url: "/books/admin/users",
+    icon: UsersRoundIcon
+  }
+];
 
 export function AppSidebar({
   sessionUser,
   appCompany,
+  navSections,
   ...props
-}: React.ComponentProps<typeof Sidebar> & { sessionUser: SessionUser; appCompany: string; }) {
+}: React.ComponentProps<typeof Sidebar> & {
+  sessionUser: SessionUser;
+  appCompany: string;
+  /** Which nav sections are open, as the server read them from the cookie. */
+  navSections: NavSectionsOpen;
+}) {
   const [aboutOpen, setAboutOpen] = React.useState(false);
   const isAdmin = sessionUser.role === "admin";
   const title = (
@@ -130,8 +148,8 @@ export function AppSidebar({
         </h1>
       </SidebarHeader>
       <SidebarContent>
-        <NavAccounts items={data.accounts} />
-        {sessionUser.role === "admin" && <NavUsers users={data.admin} />}
+        <NavAccounts items={mainNav} savedSections={navSections} />
+        {sessionUser.role === "admin" && <NavUsers users={adminNav} />}
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={sessionUser} />
@@ -141,7 +159,3 @@ export function AppSidebar({
     </Sidebar>
   );
 }
-
-/*
-        <TeamSwitcher teams={data.teams} />
- */

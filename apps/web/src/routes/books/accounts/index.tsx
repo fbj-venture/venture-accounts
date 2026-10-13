@@ -1,11 +1,16 @@
 import { MultiSelect } from '#/components/multi-select.tsx';
+import { Button } from '#/components/ui/button.tsx';
 import { Field, FieldLabel } from '#/components/ui/field.tsx';
-import { useSetBreadcrumbs } from '#/routes/books/-lib/breadcrumbs';
-import { useSuspenseQuery } from '@tanstack/react-query';
-import { createFileRoute } from '@tanstack/react-router';
+import { Input } from '#/components/ui/input.tsx';
+import { Separator } from '#/components/ui/separator.tsx';
+import { useSetBreadcrumbs } from '#/routes/books/-lib/breadcrumbs.ts';
+import { useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
+import { createFileRoute, useRouter } from '@tanstack/react-router';
+import { PlusIcon } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { AddAccountDialog } from './-lib/add-account-dialog.tsx';
+import { accountKeys, accountsQuery, accountTypesQuery } from './-lib/accounts-queries.ts';
 import { AccountsTable } from './-lib/accounts-table.tsx';
-import { accountsQuery, accountTypesQuery } from './-lib/accounts-queries.ts';
 
 export const Route = createFileRoute('/books/accounts/')({
   // Rendered in the browser only: the loader fills the query cache (instantly
@@ -28,6 +33,25 @@ function RouteComponent() {
   useSetBreadcrumbs([{ title: 'Dashboard', url: '/books' }, { title: 'Accounts' }]);
   const { data: accounts } = useSuspenseQuery(accountsQuery);
   const { data: accountTypes } = useSuspenseQuery(accountTypesQuery);
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const [adding, setAdding] = useState(false);
+
+  // The Accounts that can be a parent: every one that isn't a sub-account itself.
+  const parents = useMemo(() => {
+    return accounts
+      .filter((row) => row.parentId === null)
+      .map((row) => ({ id: row.id, name: row.fullName, accountTypeId: row.accountTypeId }))
+      .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+  }, [accounts]);
+
+  // Resolves once the reloaded list has arrived, so the dialog doesn't close
+  // on the old list. The router is refreshed too: the account selectors on the
+  // transactions pages are still route-loader data, not queries.
+  const refresh = async () => {
+    await queryClient.invalidateQueries({ queryKey: accountKeys.all });
+    await router.invalidate({ sync: true });
+  };
 
   // Ticked Account Type ids; none ticked shows every type, as with the
   // other filters.
@@ -38,16 +62,36 @@ function RouteComponent() {
     () => accountTypes.map((type) => ({ value: type.id, label: type.name })),
     [accountTypes],
   );
-  const shown = useMemo(
-    () => (typeIds.length ? accounts.filter((row) => typeIds.includes(row.accountTypeId)) : accounts),
-    [accounts, typeIds],
-  );
+  // Matched anywhere in the name (a sub-account's includes its parent's) or
+  // the description, ignoring case.
+  const [search, setSearch] = useState('');
+  const shown = useMemo(() => {
+    const needle = search.trim().toLowerCase();
+    return accounts.filter(
+      (row) =>
+        (typeIds.length === 0 || typeIds.includes(row.accountTypeId)) &&
+        (needle === '' ||
+          row.fullName.toLowerCase().includes(needle) ||
+          (row.description ?? '').toLowerCase().includes(needle)),
+    );
+  }, [accounts, typeIds, search]);
 
   return (
     <>
       <h2 className="pb-2">Accounts</h2>
-      <div className="mt-2 max-w-xs">
-        <Field>
+      <div className="mt-2 flex items-end gap-4">
+        <Field className="max-w-xs">
+          <FieldLabel htmlFor="accounts-search">Search</FieldLabel>
+          <Input
+            id="accounts-search"
+            type="search"
+            placeholder="Search name or description..."
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            autoComplete="off"
+          />
+        </Field>
+        <Field className="max-w-xs">
           <FieldLabel htmlFor="accounts-types">Account types</FieldLabel>
           <MultiSelect
             id="accounts-types"
@@ -57,7 +101,20 @@ function RouteComponent() {
             placeholder="All account types"
           />
         </Field>
+        <Separator orientation="vertical" className="data-[orientation=vertical]:h-9" />
+        <Button type="button" onClick={() => setAdding(true)}>
+          <PlusIcon />
+          Add
+        </Button>
       </div>
+      {adding ? (
+        <AddAccountDialog
+          accountTypes={accountTypes}
+          parents={parents}
+          onClose={() => setAdding(false)}
+          onAdded={refresh}
+        />
+      ) : null}
       <p className="py-2 text-sm text-muted-foreground">
         {shown.length === 1 ? '1 account.' : `${shown.length} accounts.`}
       </p>

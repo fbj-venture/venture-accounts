@@ -1,0 +1,1 @@
+ALTER TABLE "bank_account" RENAME COLUMN "isArchived" TO "is_archived";

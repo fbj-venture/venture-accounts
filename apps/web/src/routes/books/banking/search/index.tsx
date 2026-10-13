@@ -9,7 +9,7 @@ import { Input } from '#/components/ui/input.tsx';
 import { isValidAmountFilter } from '#/lib/amount-filter.ts';
 import { useStartingYear } from "#/lib/starting-year.ts";
 import { yearsFromStart } from "#/lib/years.ts";
-import { useSetBreadcrumbs } from '#/routes/books/-lib/breadcrumbs';
+import { useSetBreadcrumbs } from '#/routes/books/-lib/breadcrumbs.ts';
 import { createFileRoute } from '@tanstack/react-router';
 import { format } from 'date-fns';
 import { SearchIcon, XIcon } from 'lucide-react';

@@ -1,4 +1,5 @@
-import { ChevronRight, type LucideIcon } from "lucide-react";
+import { setNavSectionOpen, useNavSectionsOpen, type NavSectionsOpen } from "#/hooks/use-nav-sections-open.ts";
+import { ChevronRight } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import {
@@ -25,18 +26,7 @@ import {
   SidebarMenuSubItem,
   useSidebar,
 } from "#/components/ui/sidebar.tsx";
-
-type NavItem = {
-  title: string;
-  url: string;
-  icon?: LucideIcon;
-  isActive?: boolean;
-  items?: {
-    title: string;
-    icon?: LucideIcon;
-    url: string;
-  }[];
-};
+import type { NavItem } from "#/routes/books/-lib/nav-item.ts";
 
 // How long the menu stays open after the pointer leaves, so it can cross the
 // small gap between the icon and the menu.
@@ -102,7 +92,16 @@ function CollapsedCategoryMenu({ item }: { item: NavItem }) {
   );
 }
 
-export function NavAccounts({ items }: { items: NavItem[] }) {
+// savedSections: the open/closed state of the sections the server drew the
+// page with (see useNavSectionsOpen).
+export function NavAccounts({
+  items,
+  savedSections,
+}: {
+  items: NavItem[];
+  savedSections: NavSectionsOpen;
+}) {
+  const sections = useNavSectionsOpen(savedSections);
   const { state, isMobile } = useSidebar();
   const collapsed = state === "collapsed" && !isMobile;
 
@@ -117,7 +116,8 @@ export function NavAccounts({ items }: { items: NavItem[] }) {
           <Collapsible
             key={item.title}
             asChild
-            defaultOpen={item.isActive}
+            open={sections[item.title] ?? item.isActive ?? false}
+            onOpenChange={(open) => setNavSectionOpen(item.title, open)}
             className="group/collapsible"
           >
             <SidebarMenuItem>

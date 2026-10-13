@@ -8,7 +8,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '#/components/ui/select.tsx';
-import { useSetBreadcrumbs } from '#/routes/books/-lib/breadcrumbs';
+import { useSetBreadcrumbs } from '#/routes/books/-lib/breadcrumbs.ts';
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
 import { UserPlusIcon } from 'lucide-react';
 import { useState } from 'react';

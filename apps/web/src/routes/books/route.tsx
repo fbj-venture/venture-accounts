@@ -1,22 +1,23 @@
-import { auth } from '#/lib/auth.ts';
-import { APP_COMPANY } from '#/lib/app-company.ts';
+import { navSectionsFromCookieHeader } from '#/hooks/use-nav-sections-open.ts';
 import { sidebarOpenFromCookieHeader, useSidebarOpen } from '#/hooks/use-sidebar-open.ts';
+import { APP_COMPANY } from '#/lib/app-company.ts';
 import { getOrCreateSettings } from '#/lib/app-settings.server.ts';
+import { auth } from '#/lib/auth.ts';
 import { StartingYearContext } from '#/lib/starting-year.ts';
-import { AppSidebar } from "#/routes/books/-lib/app-sidebar";
+import { AppSidebar } from "#/routes/books/-components/app-sidebar.tsx";
 import {
-    Breadcrumb,
-    BreadcrumbItem,
-    BreadcrumbLink,
-    BreadcrumbList,
-    BreadcrumbPage,
-    BreadcrumbSeparator,
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import {
-    SidebarInset,
-    SidebarProvider,
-    SidebarTrigger,
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import type { SessionUser } from '@app/models';
 import { createFileRoute, Link, Outlet, redirect } from '@tanstack/react-router';
@@ -36,8 +37,11 @@ const getAuthSession = createServerFn({ method: 'GET' }).handler(async () => {
   const { startingYear } = await getOrCreateSettings(authSession.user.id);
   // The sidebar's saved position comes with the cookie the browser sent, so
   // the page is drawn that way from the first paint (see use-sidebar-open.ts).
-  const sidebarOpen = sidebarOpenFromCookieHeader(getRequest().headers.get('cookie'));
-  return { user: authSession.user, startingYear, sidebarOpen };
+  const cookieHeader = getRequest().headers.get('cookie');
+  const sidebarOpen = sidebarOpenFromCookieHeader(cookieHeader);
+  // Likewise for which sections of the nav are open (use-nav-sections-open.ts).
+  const navSections = navSectionsFromCookieHeader(cookieHeader);
+  return { user: authSession.user, startingYear, sidebarOpen, navSections };
 });
 
 export const Route = createFileRoute('/books')({
@@ -54,13 +58,20 @@ export const Route = createFileRoute('/books')({
       appCompany: APP_COMPANY,
       startingYear: authSession.startingYear,
       sidebarOpen: authSession.sidebarOpen,
+      navSections: authSession.navSections,
     };
   },
   component: BooksLayout,
 });
 
 function BooksLayout() {
-  const { user, appCompany, startingYear, sidebarOpen: savedSidebarOpen } = Route.useRouteContext();
+  const {
+    user,
+    appCompany,
+    startingYear,
+    sidebarOpen: savedSidebarOpen,
+    navSections,
+  } = Route.useRouteContext();
   const crumbs = useBreadcrumbs();
   // Expanded or collapsed, remembered between pages and sign-ins.
   const [sidebarOpen, setSidebarOpen] = useSidebarOpen(savedSidebarOpen);
@@ -68,7 +79,7 @@ function BooksLayout() {
   return (
     <StartingYearContext.Provider value={startingYear}>
     <SidebarProvider open={sidebarOpen} onOpenChange={setSidebarOpen}>
-      <AppSidebar sessionUser={user} appCompany={appCompany} />
+      <AppSidebar sessionUser={user} appCompany={appCompany} navSections={navSections} />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
           <div className="flex items-center gap-2 px-4">

@@ -5,7 +5,6 @@ import {
   Forward,
   MoreHorizontal,
   Trash2,
-  type LucideIcon,
 } from "lucide-react";
 
 import {
@@ -24,16 +23,9 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "#/components/ui/sidebar.tsx";
+import type { NavItem } from "#/routes/books/-lib/nav-item.ts";
 
-export function NavUsers({
-  users: projects,
-}: {
-  users: {
-    name: string
-    url: string
-    icon?: LucideIcon
-  }[]
-}) {
+export function NavUsers({ users: projects }: { users: NavItem[] }) {
   const { isMobile } = useSidebar()
 
   return (
@@ -41,11 +33,11 @@ export function NavUsers({
       <SidebarGroupLabel>Admin</SidebarGroupLabel>
       <SidebarMenu>
         {projects.map((item) => (
-          <SidebarMenuItem key={item.name}>
+          <SidebarMenuItem key={item.title}>
             <SidebarMenuButton asChild>
               <a href={item.url}>
                 {item.icon ? <item.icon /> : null}
-                <span>{item.name}</span>
+                <span>{item.title}</span>
               </a>
             </SidebarMenuButton>
             <DropdownMenu>

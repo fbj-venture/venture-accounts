@@ -1,5 +1,5 @@
 import { Button } from '#/components/ui/button.tsx';
-import { useSetBreadcrumbs } from '#/routes/books/-lib/breadcrumbs';
+import { useSetBreadcrumbs } from '#/routes/books/-lib/breadcrumbs.ts';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { PlusIcon } from 'lucide-react';
 import { UsersTable } from './-lib/users-table.tsx';

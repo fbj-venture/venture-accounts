@@ -1,5 +1,6 @@
-import { integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, integer, snakeCase, text } from "drizzle-orm/pg-core";
 import { account } from "./account.js";
+import { auditColumns } from "./audit.js";
 
 /**
  * Bank account details
@@ -8,7 +9,7 @@ import { account } from "./account.js";
  * separate from `account` on purpose (see docs/Ledger Ubiquitous Language.md,
  * "Account" is overloaded). 1:1 with an `account` row via accountId.
  */
-export const bankAccount = pgTable("bank_account", {
+export const bankAccount = snakeCase.table("bank_account", {
   id: integer("id")
     .notNull()
     .primaryKey()
@@ -16,6 +17,6 @@ export const bankAccount = pgTable("bank_account", {
   bankName: text("bank_name").notNull(),
   description: text("description").notNull(),
   accountNumber: text("account_number").notNull().unique(),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  isArchived: boolean().notNull().default(false),
+  ...auditColumns,
 });

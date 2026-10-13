@@ -23,7 +23,7 @@ import {
 import { APP_COMPANY } from "#/lib/app-company.ts";
 import { formatDateTime } from '#/lib/dates.ts';
 import { cn } from '#/lib/utils.ts';
-import { useSetBreadcrumbs } from '#/routes/books/-lib/breadcrumbs';
+import { useSetBreadcrumbs } from '#/routes/books/-lib/breadcrumbs.ts';
 import { createFileRoute, notFound, useRouter } from '@tanstack/react-router';
 import { SaveIcon, Trash2Icon, UserCheckIcon, UserXIcon } from 'lucide-react';
 import { useState, type ReactNode } from 'react';

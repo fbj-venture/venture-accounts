@@ -1,5 +1,6 @@
-import { boolean, foreignKey, integer, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, foreignKey, integer, pgTable, serial, text } from "drizzle-orm/pg-core";
 import { accountType } from "./account-type.js";
+import { auditColumns } from "./audit.js";
 
 /**
  * Account ("Ledger account" in docs/Ledger Ubiquitous Language.md)
@@ -22,8 +23,7 @@ export const account = pgTable("account", {
     .references(() => accountType.id),
   parentId: integer(),
 
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  ...auditColumns,
 },
   (table) => [
     foreignKey({

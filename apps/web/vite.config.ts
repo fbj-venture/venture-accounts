@@ -5,7 +5,7 @@ import { defineConfig, loadEnv } from 'vite';
 
 import { tanstackStart } from '@tanstack/react-start/plugin/vite';
 
-import { nitroV2Plugin } from '@tanstack/nitro-v2-vite-plugin';
+import { nitro } from 'nitro/vite';
 import tailwindcss from '@tailwindcss/vite';
 import viteReact from '@vitejs/plugin-react';
 
@@ -42,7 +42,7 @@ const config = defineConfig(({ mode, command }) => ({
   resolve: { tsconfigPaths: true },
   plugins: [
     devtools({ eventBusConfig: { port: 6206 } }),
-    nitroV2Plugin({
+    nitro({
       output: { dir: outputDir },
       rollupConfig: { external: [/^@sentry\//] },
     }),

@@ -12,15 +12,17 @@
 * [ ] Migrate the database
 * [ ] Git push all changes
 
-== 0.9
+== 0.10
 
 * [ ] Import
-** [ ] Add a new CSV/TSV importer for current Standard Bank items (Check the hash is the same as for a statement)
+** [ ] Version 2 Hash algorithm for transaction importing      
+** [ ] Add a new PDF importer for current Standard Bank items (Check the hash is the same as for a statement)
 
 == Reports
 
 * [ ] User
 ** [ ] Trial ballance
+*** [x] Investigation
 ** [ ] Profit and loss
 ** [ ] Cash flow
 * [ ] Bookkeeper

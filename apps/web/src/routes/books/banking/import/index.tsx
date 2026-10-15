@@ -1,13 +1,13 @@
-import { Card, CardDescription, CardHeader, CardTitle } from "#/components/ui/card.tsx";
-import { Input } from "#/components/ui/input.tsx";
-import { useSetBreadcrumbs } from "#/routes/books/-lib/breadcrumbs.ts";
-import { Link, createFileRoute } from "@tanstack/react-router";
-import { FileTextIcon } from "lucide-react";
-import { useMemo, useState } from "react";
+import { Card, CardDescription, CardHeader, CardTitle } from "#/components/ui/card.tsx"
+import { Input } from "#/components/ui/input.tsx"
+import { useSetBreadcrumbs } from "#/routes/books/-lib/breadcrumbs.ts"
+import { Link, createFileRoute } from "@tanstack/react-router"
+import { FileTextIcon } from "lucide-react"
+import { useMemo, useState } from "react"
 
 export const Route = createFileRoute("/books/banking/import/")({
   component: RouteComponent,
-});
+})
 
 // The ways of importing bank transactions. Add an entry here (and its page
 // next to this file) for each new importer.
@@ -20,21 +20,20 @@ const IMPORTERS = [
   },
   {
     title: "Standard Bank Transactions TSV",
-    description:
-      "Upload a tab-separated (.tsv) file of transactions exported from Standard Bank.",
+    description: "Upload a tab-separated (.tsv) file of transactions exported from Standard Bank.",
     to: "/books/banking/import/sb-csv",
   },
-] as const;
+] as const
 
 function RouteComponent() {
-  useSetBreadcrumbs([{ title: "Dashboard", url: "/books" }, { title: "Kind of Import" }]);
+  useSetBreadcrumbs([{ title: "Dashboard", url: "/books" }, { title: "Kind of Import" }])
 
   // Matched anywhere in a title, ignoring case.
-  const [filter, setFilter] = useState("");
+  const [filter, setFilter] = useState("")
   const shown = useMemo(() => {
-    const needle = filter.trim().toLowerCase();
-    return IMPORTERS.filter((importer) => importer.title.toLowerCase().includes(needle));
-  }, [filter]);
+    const needle = filter.trim().toLowerCase()
+    return IMPORTERS.filter((importer) => importer.title.toLowerCase().includes(needle))
+  }, [filter])
 
   return (
     <>
@@ -68,5 +67,5 @@ function RouteComponent() {
         ))}
       </div>
     </>
-  );
+  )
 }

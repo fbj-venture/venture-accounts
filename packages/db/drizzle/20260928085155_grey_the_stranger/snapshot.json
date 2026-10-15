@@ -1,8 +1,6 @@
 {
   "id": "381945a3-a31c-497e-87cf-ae62d09a0a6d",
-  "prevIds": [
-    "26190cd3-154f-42e0-8621-fc01e1ba5309"
-  ],
+  "prevIds": ["26190cd3-154f-42e0-8621-fc01e1ba5309"],
   "version": "8",
   "dialect": "postgres",
   "ddl": [
@@ -17,9 +15,7 @@
       "entityType": "tables"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "account_type_pkey",
       "schema": "public",
@@ -106,9 +102,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "name"
-      ],
+      "columns": ["name"],
       "nullsNotDistinct": false,
       "name": "account_type_name_unique",
       "schema": "public",
@@ -122,9 +116,7 @@
       "entityType": "tables"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "account_pkey",
       "schema": "public",
@@ -224,9 +216,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "name"
-      ],
+      "columns": ["name"],
       "nullsNotDistinct": false,
       "name": "account_name_unique",
       "schema": "public",
@@ -235,14 +225,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "account_type"
-      ],
+      "columns": ["account_type"],
       "schemaTo": "public",
       "tableTo": "account_type",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "account_account_type_account_type_id_fk",
@@ -252,14 +238,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "parentId"
-      ],
+      "columns": ["parentId"],
       "schemaTo": "public",
       "tableTo": "account",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "account_parentId_account_id_fk",
@@ -274,9 +256,7 @@
       "entityType": "tables"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "account_pkey",
       "schema": "auth",
@@ -454,14 +434,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "schemaTo": "auth",
       "tableTo": "user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "account_user_id_user_id_fk",
@@ -476,9 +452,7 @@
       "entityType": "tables"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "session_pkey",
       "schema": "auth",
@@ -591,9 +565,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "token"
-      ],
+      "columns": ["token"],
       "nullsNotDistinct": false,
       "name": "session_token_unique",
       "schema": "auth",
@@ -602,14 +574,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "schemaTo": "auth",
       "tableTo": "user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "session_user_id_user_id_fk",
@@ -624,9 +592,7 @@
       "entityType": "tables"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "user_pkey",
       "schema": "auth",
@@ -726,9 +692,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "email"
-      ],
+      "columns": ["email"],
       "nullsNotDistinct": false,
       "name": "user_email_unique",
       "schema": "auth",
@@ -742,9 +706,7 @@
       "entityType": "tables"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "verification_pkey",
       "schema": "auth",
@@ -836,9 +798,7 @@
       "entityType": "tables"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "bank_account_pkey",
       "schema": "public",
@@ -925,9 +885,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "account_number"
-      ],
+      "columns": ["account_number"],
       "nullsNotDistinct": false,
       "name": "bank_account_account_number_unique",
       "schema": "public",
@@ -936,14 +894,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "schemaTo": "public",
       "tableTo": "account",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "bank_account_id_account_id_fk",
@@ -958,9 +912,7 @@
       "entityType": "tables"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "journal_line_pkey",
       "schema": "public",
@@ -1073,14 +1025,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "journal_entry_id"
-      ],
+      "columns": ["journal_entry_id"],
       "schemaTo": "public",
       "tableTo": "journal",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "journal_line_journal_entry_id_journal_id_fk",
@@ -1090,14 +1038,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "account_id"
-      ],
+      "columns": ["account_id"],
       "schemaTo": "public",
       "tableTo": "account",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "journal_line_account_id_account_id_fk",
@@ -1112,9 +1056,7 @@
       "entityType": "tables"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "journal_pkey",
       "schema": "public",
@@ -1213,10 +1155,7 @@
       "entityType": "columns"
     },
     {
-      "values": [
-        "debit",
-        "credit"
-      ],
+      "values": ["debit", "credit"],
       "name": "normal_balance",
       "schema": "public",
       "entityType": "enums"

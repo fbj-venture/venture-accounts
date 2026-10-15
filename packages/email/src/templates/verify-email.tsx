@@ -1,15 +1,29 @@
-import { Body, Button, Column, Container, Head, Heading, Html, Img, Preview, Row, Section, Tailwind, Text } from "@react-email/components";
-import { barebonesBoxedTailwindConfig } from './theme';
-import { BarebonesFonts } from './theme-fonts';
+import {
+  Body,
+  Button,
+  Column,
+  Container,
+  Head,
+  Heading,
+  Html,
+  Img,
+  Preview,
+  Row,
+  Section,
+  Tailwind,
+  Text,
+} from "@react-email/components"
+import { barebonesBoxedTailwindConfig } from "./theme"
+import { BarebonesFonts } from "./theme-fonts"
 
 export interface VerifyEmailProps {
-  name: string;
+  name: string
   /** Company name shown in the copy, e.g. "Venture Church". */
-  company: string;
+  company: string
   /** Single-use verification link from Better-Auth. */
-  url: string;
+  url: string
   /** Absolute public URL of the logo image shown in the header. */
-  logoUrl: string;
+  logoUrl: string
 }
 
 export function VerifyEmail({ name, company, url, logoUrl }: VerifyEmailProps) {
@@ -47,10 +61,16 @@ export function VerifyEmail({ name, company, url, logoUrl }: VerifyEmailProps) {
 
                   <Text>Hi {name},</Text>
                   <Text>
-                    Please confirm your email address to finish setting up your {company} Accounts login:
+                    Please confirm your email address to finish setting up your {company} Accounts
+                    login:
                   </Text>
                   <Section className="mb-6 text-center">
-                    <Button href={url} className="bg-brand font-16 text-fg-inverted inline-block rounded-lg px-7 py-4 text-center font-sans leading-6">Verify my email address</Button>
+                    <Button
+                      href={url}
+                      className="bg-brand font-16 text-fg-inverted inline-block rounded-lg px-7 py-4 text-center font-sans leading-6"
+                    >
+                      Verify my email address
+                    </Button>
                   </Section>
 
                   <Text className="font-13 text-fg-3 mx-auto mt-8 mb-0 max-w-[400px] text-center font-sans">
@@ -65,7 +85,7 @@ export function VerifyEmail({ name, company, url, logoUrl }: VerifyEmailProps) {
         </Body>
       </Html>
     </Tailwind>
-  );
+  )
 }
 
 VerifyEmail.PreviewProps = {
@@ -73,6 +93,6 @@ VerifyEmail.PreviewProps = {
   company: "Venture Church",
   url: "https://example.com/api/auth/verify-email?token=abc123",
   logoUrl: "https://example.com/img/venture-church.png",
-} satisfies VerifyEmailProps;
+} satisfies VerifyEmailProps
 
-export default VerifyEmail;
+export default VerifyEmail

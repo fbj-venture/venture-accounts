@@ -1,5 +1,5 @@
-import { boolean, text, timestamp } from "drizzle-orm/pg-core";
-import { authSchema } from "./schemas.js";
+import { boolean, text, timestamp } from "drizzle-orm/pg-core"
+import { authSchema } from "./schemas.js"
 
 // Mirrors better-auth's core schema exactly (packages/core/src/db/get-tables.ts
 // upstream) - hand-written rather than CLI-generated, so keep it in sync if
@@ -18,7 +18,7 @@ export const user = authSchema.table("user", {
   banExpires: timestamp("ban_expires"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+})
 
 export const session = authSchema.table("session", {
   id: text("id").primaryKey(),
@@ -33,7 +33,7 @@ export const session = authSchema.table("session", {
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
-});
+})
 
 // Named authAccount (not account) to avoid colliding with the ledger
 // Account table in ./account.ts - this is better-auth's OAuth/credential
@@ -54,7 +54,7 @@ export const authAccount = authSchema.table("account", {
   password: text("password"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+})
 
 export const verification = authSchema.table("verification", {
   id: text("id").primaryKey(),
@@ -63,4 +63,4 @@ export const verification = authSchema.table("verification", {
   expiresAt: timestamp("expires_at").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+})

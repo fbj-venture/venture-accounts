@@ -1,5 +1,5 @@
-import { text, timestamp } from "drizzle-orm/pg-core";
-import { user } from "./auth.js";
+import { text, timestamp } from "drizzle-orm/pg-core"
+import { user } from "./auth.js"
 
 /**
  * Audit trail columns - spread into a table: `...auditColumns`.
@@ -27,7 +27,7 @@ export const auditColumns = {
   updatedBy: text("updated_by")
     .notNull()
     .references(() => user.id),
-};
+}
 
 /** Values for an insert, stamped with the user creating the row(s). */
 // The array overload must come first: an array is also an `object`, so it
@@ -35,19 +35,19 @@ export const auditColumns = {
 export function withCreate<T extends object>(
   userId: string,
   values: readonly T[],
-): (T & { createdBy: string; updatedBy: string })[];
+): (T & { createdBy: string; updatedBy: string })[]
 export function withCreate<T extends object>(
   userId: string,
   values: T,
-): T & { createdBy: string; updatedBy: string };
+): T & { createdBy: string; updatedBy: string }
 export function withCreate<T extends object>(userId: string, values: T | readonly T[]) {
-  const stamp = { createdBy: userId, updatedBy: userId };
+  const stamp = { createdBy: userId, updatedBy: userId }
   return Array.isArray(values)
     ? values.map((row) => ({ ...row, ...stamp }))
-    : { ...(values as T), ...stamp };
+    : { ...(values as T), ...stamp }
 }
 
 /** Values for an update's .set(), stamped with the user changing the row(s). */
 export function withUpdate<T extends object>(userId: string, values: T): T & { updatedBy: string } {
-  return { ...values, updatedBy: userId };
+  return { ...values, updatedBy: userId }
 }

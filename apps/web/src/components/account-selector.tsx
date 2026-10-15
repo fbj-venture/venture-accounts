@@ -1,12 +1,8 @@
-import { Button } from "#/components/ui/button.tsx";
-import { Input } from "#/components/ui/input.tsx";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "#/components/ui/popover.tsx";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "#/components/ui/tabs.tsx";
-import { cn } from "cn";
+import { Button } from "#/components/ui/button.tsx"
+import { Input } from "#/components/ui/input.tsx"
+import { Popover, PopoverContent, PopoverTrigger } from "#/components/ui/popover.tsx"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "#/components/ui/tabs.tsx"
+import { cn } from "cn"
 import {
   ArrowLeftRightIcon,
   CheckIcon,
@@ -14,31 +10,31 @@ import {
   CornerDownRightIcon,
   SearchIcon,
   TagIcon,
-} from "lucide-react";
-import { useMemo, useState } from "react";
+} from "lucide-react"
+import { useMemo, useState } from "react"
 
 export type AccountOption = {
-  id: number;
-  name: string;
+  id: number
+  name: string
   /** Parent account's name, for sub-accounts (e.g. "Charitable giving"). */
-  parentName?: string | null;
+  parentName?: string | null
   /** Bank account number, for Banks - shown in parentheses after the name. */
-  accountNumber?: string | null;
+  accountNumber?: string | null
   /** Account Type name (e.g. "Expense") - the list is grouped under these. */
-  accountType?: string | null;
-};
+  accountType?: string | null
+}
 
 export type AccountOptions = {
   /** Income/expense etc. ledger accounts - the "Accounts" tab in the UI. */
-  categories: AccountOption[];
+  categories: AccountOption[]
   /** Accounts backed by a real bank account - the "Transfers" tab; picking one is a transfer. */
-  banks: AccountOption[];
-};
+  banks: AccountOption[]
+}
 
-type Tab = keyof AccountOptions;
+type Tab = keyof AccountOptions
 
 // The keys are internal; these are what the user sees on the tabs.
-const TAB_LABELS: Record<Tab, string> = { categories: "Accounts", banks: "Transfers" };
+const TAB_LABELS: Record<Tab, string> = { categories: "Accounts", banks: "Transfers" }
 
 // Shared picker for the ledger account something posts to: a search box
 // filtering whichever tab (Accounts / Transfers) is showing.
@@ -48,43 +44,43 @@ export function AccountSelector({
   onValueChange,
   className,
 }: {
-  options: AccountOptions;
-  value: number | null;
-  onValueChange: (accountId: number) => void;
-  className?: string;
+  options: AccountOptions
+  value: number | null
+  onValueChange: (accountId: number) => void
+  className?: string
 }) {
-  const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const [tab, setTab] = useState<Tab>("categories");
+  const [open, setOpen] = useState(false)
+  const [search, setSearch] = useState("")
+  const [tab, setTab] = useState<Tab>("categories")
 
   // Which tab the current value lives on - a Bank means it's a Transfer.
   const selected = useMemo(() => {
     for (const key of ["categories", "banks"] as const) {
-      const option = options[key].find((candidate) => candidate.id === value);
+      const option = options[key].find((candidate) => candidate.id === value)
       if (option) {
-        return { option, tab: key };
+        return { option, tab: key }
       }
     }
-    return undefined;
-  }, [options, value]);
-  const isTransfer = selected?.tab === "banks";
+    return undefined
+  }, [options, value])
+  const isTransfer = selected?.tab === "banks"
 
   function select(accountId: number) {
-    onValueChange(accountId);
-    setOpen(false);
+    onValueChange(accountId)
+    setOpen(false)
   }
 
   return (
     <Popover
       open={open}
       onOpenChange={(next) => {
-        setOpen(next);
+        setOpen(next)
         if (next) {
           // Open where the current choice is, so a Transfer shows the Banks
           // tab with its bank ticked rather than an unticked Accounts list.
-          setTab(selected?.tab ?? "categories");
+          setTab(selected?.tab ?? "categories")
         } else {
-          setSearch("");
+          setSearch("")
         }
       }}
     >
@@ -101,16 +97,19 @@ export function AccountSelector({
               : "Account"
           }
           title={
-            selected ? `${isTransfer ? "Transfer with" : "Account:"} ${selected.option.name}` : undefined
+            selected
+              ? `${isTransfer ? "Transfer with" : "Account:"} ${selected.option.name}`
+              : undefined
           }
           className={cn("w-[200px] justify-between font-normal", className)}
         >
           <span
-            className={cn("flex min-w-0 items-center gap-1.5", !selected && "text-muted-foreground")}
-          >
-            {isTransfer && (
-              <ArrowLeftRightIcon className="size-4 shrink-0 text-muted-foreground" />
+            className={cn(
+              "flex min-w-0 items-center gap-1.5",
+              !selected && "text-muted-foreground",
             )}
+          >
+            {isTransfer && <ArrowLeftRightIcon className="size-4 shrink-0 text-muted-foreground" />}
             {selected && !isTransfer && (
               <TagIcon className="size-4 shrink-0 text-muted-foreground" />
             )}
@@ -137,18 +136,13 @@ export function AccountSelector({
           </TabsList>
           {(["categories", "banks"] as const).map((key) => (
             <TabsContent key={key} value={key}>
-              <AccountList
-                options={options[key]}
-                search={search}
-                value={value}
-                onSelect={select}
-              />
+              <AccountList options={options[key]} search={search} value={value} onSelect={select} />
             </TabsContent>
           ))}
         </Tabs>
       </PopoverContent>
     </Popover>
-  );
+  )
 }
 
 function AccountList({
@@ -157,29 +151,31 @@ function AccountList({
   value,
   onSelect,
 }: {
-  options: AccountOption[];
-  search: string;
-  value: number | null;
-  onSelect: (accountId: number) => void;
+  options: AccountOption[]
+  search: string
+  value: number | null
+  onSelect: (accountId: number) => void
 }) {
   // Matches on the parent name too, so searching "charitable" also finds
   // its sub-accounts - and on the account number, for Banks.
   const filtered = useMemo(() => {
-    const term = search.trim().toLowerCase();
+    const term = search.trim().toLowerCase()
     if (!term) {
-      return options;
+      return options
     }
     return options.filter((option) =>
       `${option.parentName ?? ""} ${option.name} ${option.accountNumber ?? ""}`
         .toLowerCase()
         .includes(term),
-    );
-  }, [options, search]);
+    )
+  }, [options, search])
 
-  const groups = useMemo(() => groupByAccountType(filtered), [filtered]);
+  const groups = useMemo(() => groupByAccountType(filtered), [filtered])
 
   if (filtered.length === 0) {
-    return <div className="px-2 py-6 text-center text-sm text-muted-foreground">No accounts found.</div>;
+    return (
+      <div className="px-2 py-6 text-center text-sm text-muted-foreground">No accounts found.</div>
+    )
   }
 
   return (
@@ -197,58 +193,58 @@ function AccountList({
             // parent or a sibling. A search can hide the parent, though -
             // then the parent's name is kept, so the row isn't left
             // without context.
-            const previous = group.options[index - 1];
+            const previous = group.options[index - 1]
             const needsParentName =
               option.parentName &&
               previous?.name !== option.parentName &&
-              previous?.parentName !== option.parentName;
+              previous?.parentName !== option.parentName
             return (
-            <div key={option.id} role="option" aria-selected={option.id === value}>
-              <button
-                type="button"
-                onClick={() => onSelect(option.id)}
-                title={option.parentName ? `${option.parentName} › ${option.name}` : undefined}
-                className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:outline-none"
-              >
-                <span className="min-w-0 flex-1 truncate">
-                  {option.parentName && (
-                    <span className="text-muted-foreground">
-                      {needsParentName && `${option.parentName} `}
-                      <CornerDownRightIcon className="mr-1 ml-1 inline size-3.5 align-text-bottom" />
-                    </span>
-                  )}
-                  {option.name}
-                  {option.accountNumber && (
-                    <span className="text-muted-foreground"> ({option.accountNumber})</span>
-                  )}
-                </span>
-                <CheckIcon className={cn("size-4", option.id !== value && "invisible")} />
-              </button>
-            </div>
-            );
+              <div key={option.id} role="option" aria-selected={option.id === value}>
+                <button
+                  type="button"
+                  onClick={() => onSelect(option.id)}
+                  title={option.parentName ? `${option.parentName} › ${option.name}` : undefined}
+                  className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:outline-none"
+                >
+                  <span className="min-w-0 flex-1 truncate">
+                    {option.parentName && (
+                      <span className="text-muted-foreground">
+                        {needsParentName && `${option.parentName} `}
+                        <CornerDownRightIcon className="mr-1 ml-1 inline size-3.5 align-text-bottom" />
+                      </span>
+                    )}
+                    {option.name}
+                    {option.accountNumber && (
+                      <span className="text-muted-foreground"> ({option.accountNumber})</span>
+                    )}
+                  </span>
+                  <CheckIcon className={cn("size-4", option.id !== value && "invisible")} />
+                </button>
+              </div>
+            )
           })}
         </div>
       ))}
     </div>
-  );
+  )
 }
 
 // Groups keep the order in which each type first appears, so the caller
 // decides the type order (e.g. Expense, Income, Equity, Liability, Asset).
 // Options without an accountType form one group with no heading.
 function groupByAccountType(options: AccountOption[]) {
-  const groups = new Map<string | null, AccountOption[]>();
+  const groups = new Map<string | null, AccountOption[]>()
   for (const option of options) {
-    const key = option.accountType ?? null;
-    const group = groups.get(key);
+    const key = option.accountType ?? null
+    const group = groups.get(key)
     if (group) {
-      group.push(option);
+      group.push(option)
     } else {
-      groups.set(key, [option]);
+      groups.set(key, [option])
     }
   }
   return [...groups].map(([accountType, groupOptions]) => ({
     accountType,
     options: groupOptions,
-  }));
+  }))
 }

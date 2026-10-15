@@ -1,5 +1,5 @@
-import { boolean, date, pgTable, serial, text } from "drizzle-orm/pg-core";
-import { auditColumns } from "./audit.js";
+import { boolean, date, pgTable, serial, text } from "drizzle-orm/pg-core"
+import { auditColumns } from "./audit.js"
 
 /**
  * Journal entry
@@ -19,4 +19,4 @@ export const journal = pgTable("journal", {
   note: text("note").notNull(),
   isPosted: boolean("is_posted").notNull().default(false),
   ...auditColumns,
-});
+})

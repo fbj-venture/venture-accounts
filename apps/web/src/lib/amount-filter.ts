@@ -1,11 +1,11 @@
 // Tolerance for comparing stored amounts (numeric(14,2)) against
 // user-typed thresholds, to absorb floating point noise.
-const EPSILON = 0.005;
+const EPSILON = 0.005
 
-export type AmountPredicate = (amount: number) => boolean;
+export type AmountPredicate = (amount: number) => boolean
 
-const RANGE_PATTERN = /^(-?\d+(?:\.\d+)?)\s*(<=|<|>=|>)\s*(-?\d+(?:\.\d+)?)$/;
-const BOUND_PATTERN = /^(<=|<|>=|>|=)\s*(-?\d+(?:\.\d+)?)$/;
+const RANGE_PATTERN = /^(-?\d+(?:\.\d+)?)\s*(<=|<|>=|>)\s*(-?\d+(?:\.\d+)?)$/
+const BOUND_PATTERN = /^(<=|<|>=|>|=)\s*(-?\d+(?:\.\d+)?)$/
 
 /**
  * Parses a free-text amount filter into a predicate. Supports:
@@ -26,72 +26,72 @@ export function parseAmountFilter(input: string): AmountPredicate | null {
   const alternatives = input
     .split("|")
     .map(parseConjunction)
-    .filter((predicate): predicate is AmountPredicate => predicate !== null);
+    .filter((predicate): predicate is AmountPredicate => predicate !== null)
 
   if (alternatives.length === 0) {
-    return null;
+    return null
   }
 
-  return (amount) => alternatives.some((predicate) => predicate(amount));
+  return (amount) => alternatives.some((predicate) => predicate(amount))
 }
 
 function parseConjunction(input: string): AmountPredicate | null {
   const predicates = input
     .split("&")
     .map(parseSingleExpression)
-    .filter((predicate): predicate is AmountPredicate => predicate !== null);
+    .filter((predicate): predicate is AmountPredicate => predicate !== null)
 
   if (predicates.length === 0) {
-    return null;
+    return null
   }
 
-  return (amount) => predicates.every((predicate) => predicate(amount));
+  return (amount) => predicates.every((predicate) => predicate(amount))
 }
 
 function parseSingleExpression(input: string): AmountPredicate | null {
-  const trimmed = input.trim();
+  const trimmed = input.trim()
   if (!trimmed) {
-    return null;
+    return null
   }
 
-  const rangeMatch = trimmed.match(RANGE_PATTERN);
+  const rangeMatch = trimmed.match(RANGE_PATTERN)
   if (rangeMatch) {
-    const [, leftText, operator, rightText] = rangeMatch;
-    const left = Number(leftText);
-    const right = Number(rightText);
-    const ascending = operator === "<" || operator === "<=";
-    const inclusive = operator === "<=" || operator === ">=";
-    const lower = ascending ? left : right;
-    const upper = ascending ? right : left;
+    const [, leftText, operator, rightText] = rangeMatch
+    const left = Number(leftText)
+    const right = Number(rightText)
+    const ascending = operator === "<" || operator === "<="
+    const inclusive = operator === "<=" || operator === ">="
+    const lower = ascending ? left : right
+    const upper = ascending ? right : left
     return inclusive
       ? (amount) => amount >= lower - EPSILON && amount <= upper + EPSILON
-      : (amount) => amount > lower + EPSILON && amount < upper - EPSILON;
+      : (amount) => amount > lower + EPSILON && amount < upper - EPSILON
   }
 
-  const boundMatch = trimmed.match(BOUND_PATTERN);
+  const boundMatch = trimmed.match(BOUND_PATTERN)
   if (boundMatch) {
-    const [, operator, valueText] = boundMatch;
-    const value = Number(valueText);
+    const [, operator, valueText] = boundMatch
+    const value = Number(valueText)
     switch (operator) {
       case "<":
-        return (amount) => amount < value - EPSILON;
+        return (amount) => amount < value - EPSILON
       case "<=":
-        return (amount) => amount <= value + EPSILON;
+        return (amount) => amount <= value + EPSILON
       case ">":
-        return (amount) => amount > value + EPSILON;
+        return (amount) => amount > value + EPSILON
       case ">=":
-        return (amount) => amount >= value - EPSILON;
+        return (amount) => amount >= value - EPSILON
       default:
-        return (amount) => Math.abs(amount - value) <= EPSILON;
+        return (amount) => Math.abs(amount - value) <= EPSILON
     }
   }
 
-  const plain = Number(trimmed);
+  const plain = Number(trimmed)
   if (!Number.isNaN(plain)) {
-    return (amount) => Math.abs(amount - plain) <= EPSILON;
+    return (amount) => Math.abs(amount - plain) <= EPSILON
   }
 
-  return null;
+  return null
 }
 
 /**
@@ -108,5 +108,5 @@ export function isValidAmountFilter(input: string): boolean {
       .every((alternative) =>
         alternative.split("&").every((part) => parseSingleExpression(part) !== null),
       )
-  );
+  )
 }

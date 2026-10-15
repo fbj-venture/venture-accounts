@@ -1,42 +1,42 @@
-import { Button } from '#/components/ui/button.tsx';
-import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card.tsx';
-import { Field, FieldLabel } from '#/components/ui/field.tsx';
-import { Input } from '#/components/ui/input.tsx';
-import { authClient } from '#/lib/auth-client.ts';
-import { Link, createFileRoute } from '@tanstack/react-router';
-import { useState } from 'react';
+import { Button } from "#/components/ui/button.tsx"
+import { Card, CardContent, CardHeader, CardTitle } from "#/components/ui/card.tsx"
+import { Field, FieldLabel } from "#/components/ui/field.tsx"
+import { Input } from "#/components/ui/input.tsx"
+import { authClient } from "#/lib/auth-client.ts"
+import { Link, createFileRoute } from "@tanstack/react-router"
+import { useState } from "react"
 
 // Public. Asks for the account's email and has better-auth email a reset
 // link, which lands on /set-password. The answer is the same whether or not
 // the address has an account, so the form can't be used to find out who does.
 // The endpoint is rate limited per IP, and each address per hour, on the
 // server - see lib/auth.ts.
-export const Route = createFileRoute('/forgot-password')({
+export const Route = createFileRoute("/forgot-password")({
   component: RouteComponent,
-});
+})
 
 function RouteComponent() {
-  const [email, setEmail] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [sent, setSent] = useState(false);
+  const [email, setEmail] = useState("")
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [sent, setSent] = useState(false)
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setBusy(true);
-    setError(null);
+    event.preventDefault()
+    setBusy(true)
+    setError(null)
     const { error: requestError } = await authClient.requestPasswordReset({
       email: email.trim(),
-      redirectTo: '/set-password',
-    });
+      redirectTo: "/set-password",
+    })
     if (requestError?.status === 429) {
-      setError('Too many requests. Please wait a few minutes and try again.');
+      setError("Too many requests. Please wait a few minutes and try again.")
     } else if (requestError) {
-      setError(requestError.message ?? "Couldn't send the email.");
+      setError(requestError.message ?? "Couldn't send the email.")
     } else {
-      setSent(true);
+      setSent(true)
     }
-    setBusy(false);
+    setBusy(false)
   }
 
   return (
@@ -72,8 +72,8 @@ function RouteComponent() {
                   {error}
                 </p>
               ) : null}
-              <Button type="submit" disabled={busy || email.trim() === ''}>
-                {busy ? 'Sending...' : 'Send reset link'}
+              <Button type="submit" disabled={busy || email.trim() === ""}>
+                {busy ? "Sending..." : "Send reset link"}
               </Button>
             </form>
           )}
@@ -83,5 +83,5 @@ function RouteComponent() {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

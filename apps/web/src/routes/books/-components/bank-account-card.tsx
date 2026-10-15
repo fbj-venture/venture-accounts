@@ -5,33 +5,33 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "#/components/ui/card.tsx";
-import { formatZar } from "#/lib/currency.ts";
-import { cn } from "#/lib/utils.ts";
-import type { ReactNode } from "react";
+} from "#/components/ui/card.tsx"
+import { formatZar } from "#/lib/currency.ts"
+import { cn } from "#/lib/utils.ts"
+import type { ReactNode } from "react"
 
 // The union of fields any page might have for a bank account - each page
 // passes whatever subset it fetched. Passing `balance` takes priority over
 // `bankName`/`accountNumber` for the card's description line, since a page
 // showing balances (see books/index.tsx) has no use for showing both.
 export type BankAccountCardData = {
-  id: number;
-  name: string;
-  description?: string | null;
-  bankName?: string;
-  accountNumber?: string;
-  balance?: number;
-};
+  id: number
+  name: string
+  description?: string | null
+  bankName?: string
+  accountNumber?: string
+  balance?: number
+}
 
 export function BankAccountCard({
   bankAccount,
   className,
   footer,
 }: {
-  bankAccount: BankAccountCardData;
-  className?: string;
+  bankAccount: BankAccountCardData
+  className?: string
   /** Rendered in the card's footer, e.g. an actions menu. */
-  footer?: ReactNode;
+  footer?: ReactNode
 }) {
   return (
     <Card className={cn(className)}>
@@ -54,5 +54,5 @@ export function BankAccountCard({
       ) : null}
       {footer ? <CardFooter>{footer}</CardFooter> : null}
     </Card>
-  );
+  )
 }

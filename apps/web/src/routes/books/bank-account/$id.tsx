@@ -1,96 +1,96 @@
-import { Button } from '#/components/ui/button.tsx';
-import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card.tsx';
-import { Checkbox } from '#/components/ui/checkbox.tsx';
-import { Field, FieldLabel } from '#/components/ui/field.tsx';
-import { Input } from '#/components/ui/input.tsx';
-import { formatDateTime } from '#/lib/dates.ts';
-import { useSetBreadcrumbs } from '#/routes/books/-lib/breadcrumbs.ts';
-import { accountKeys } from '#/routes/books/accounts/-lib/accounts-queries.ts';
+import { Button } from "#/components/ui/button.tsx"
+import { Card, CardContent, CardHeader, CardTitle } from "#/components/ui/card.tsx"
+import { Checkbox } from "#/components/ui/checkbox.tsx"
+import { Field, FieldLabel } from "#/components/ui/field.tsx"
+import { Input } from "#/components/ui/input.tsx"
+import { formatDateTime } from "#/lib/dates.ts"
+import { useSetBreadcrumbs } from "#/routes/books/-lib/breadcrumbs.ts"
+import { accountKeys } from "#/routes/books/accounts/-lib/accounts-queries.ts"
 import {
   MAX_ACCOUNT_NAME_LENGTH,
   MAX_ACCOUNT_NUMBER_LENGTH,
   MAX_BANK_NAME_LENGTH,
-} from '#/routes/books/accounts/-server/accounts.server.ts';
-import { useQueryClient } from '@tanstack/react-query';
-import { createFileRoute, Link, notFound, useRouter } from '@tanstack/react-router';
-import { ChevronLeft, SaveIcon, TriangleAlertIcon } from 'lucide-react';
-import { useState, type FormEvent } from 'react';
-import { bankAccountKeys } from './-lib/bank-accounts-queries.ts';
+} from "#/routes/books/accounts/-server/accounts.server.ts"
+import { useQueryClient } from "@tanstack/react-query"
+import { createFileRoute, Link, notFound, useRouter } from "@tanstack/react-router"
+import { ChevronLeft, SaveIcon, TriangleAlertIcon } from "lucide-react"
+import { useState, type FormEvent } from "react"
+import { bankAccountKeys } from "./-lib/bank-accounts-queries.ts"
 import {
   getBankAccount,
   MAX_DESCRIPTION_LENGTH,
   updateBankAccountDetails,
-} from './-server/bank-accounts.server.ts';
+} from "./-server/bank-accounts.server.ts"
 
-export const Route = createFileRoute('/books/bank-account/$id')({
+export const Route = createFileRoute("/books/bank-account/$id")({
   loader: async ({ params }) => {
-    const id = Number(params.id);
-    const bankAccount = Number.isInteger(id) ? await getBankAccount({ data: id }) : null;
+    const id = Number(params.id)
+    const bankAccount = Number.isInteger(id) ? await getBankAccount({ data: id }) : null
     if (!bankAccount) {
-      throw notFound();
+      throw notFound()
     }
-    return { bankAccount };
+    return { bankAccount }
   },
   component: RouteComponent,
-});
+})
 
 function RouteComponent() {
-  const router = useRouter();
-  const queryClient = useQueryClient();
-  const { bankAccount } = Route.useLoaderData();
+  const router = useRouter()
+  const queryClient = useQueryClient()
+  const { bankAccount } = Route.useLoaderData()
   useSetBreadcrumbs([
-    { title: 'Dashboard', url: '/books' },
-    { title: 'Bank accounts', url: '/books/bank-account' },
+    { title: "Dashboard", url: "/books" },
+    { title: "Bank accounts", url: "/books/bank-account" },
     { title: bankAccount.accountName },
-  ]);
+  ])
 
-  const [accountName, setAccountName] = useState(bankAccount.accountName);
-  const [accountDescription, setAccountDescription] = useState(bankAccount.accountDescription ?? '');
-  const [bankName, setBankName] = useState(bankAccount.bankName);
-  const [bankDescription, setBankDescription] = useState(bankAccount.bankDescription);
-  const [accountNumber, setAccountNumber] = useState(bankAccount.accountNumber);
+  const [accountName, setAccountName] = useState(bankAccount.accountName)
+  const [accountDescription, setAccountDescription] = useState(bankAccount.accountDescription ?? "")
+  const [bankName, setBankName] = useState(bankAccount.bankName)
+  const [bankDescription, setBankDescription] = useState(bankAccount.bankDescription)
+  const [accountNumber, setAccountNumber] = useState(bankAccount.accountNumber)
   // One flag for both: the Account and its bank details are always archived together.
-  const [isArchived, setIsArchived] = useState(bankAccount.bankIsArchived);
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [isArchived, setIsArchived] = useState(bankAccount.bankIsArchived)
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const newAccountName = accountName.trim();
-  const newAccountDescription = accountDescription.trim();
-  const newBankName = bankName.trim();
-  const newBankDescription = bankDescription.trim();
-  const newNumber = accountNumber.replace(/\s+/g, '');
+  const newAccountName = accountName.trim()
+  const newAccountDescription = accountDescription.trim()
+  const newBankName = bankName.trim()
+  const newBankDescription = bankDescription.trim()
+  const newNumber = accountNumber.replace(/\s+/g, "")
   const isChanged =
     newAccountName !== bankAccount.accountName ||
-    newAccountDescription !== (bankAccount.accountDescription ?? '') ||
+    newAccountDescription !== (bankAccount.accountDescription ?? "") ||
     isArchived !== bankAccount.accountIsArchived ||
     newBankName !== bankAccount.bankName ||
     newBankDescription !== bankAccount.bankDescription ||
     newNumber !== bankAccount.accountNumber ||
-    isArchived !== bankAccount.bankIsArchived;
+    isArchived !== bankAccount.bankIsArchived
   const canSave =
     isChanged &&
     !saving &&
-    newAccountName !== '' &&
-    newBankName !== '' &&
-    newBankDescription !== '' &&
-    newNumber !== '';
+    newAccountName !== "" &&
+    newBankName !== "" &&
+    newBankDescription !== "" &&
+    newNumber !== ""
 
   // Wraps a field's setter so editing it clears the "Saved." note.
   const edited =
     <T,>(set: (value: T) => void) =>
     (value: T) => {
-      set(value);
-      setSaved(false);
-    };
+      set(value)
+      setSaved(false)
+    }
 
   async function save(event: FormEvent) {
-    event.preventDefault();
+    event.preventDefault()
     if (!canSave) {
-      return;
+      return
     }
-    setSaving(true);
-    setError(null);
+    setSaving(true)
+    setError(null)
     try {
       await updateBankAccountDetails({
         data: {
@@ -103,24 +103,24 @@ function RouteComponent() {
           accountNumber: newNumber,
           bankIsArchived: isArchived,
         },
-      });
+      })
       // The list, the Accounts page and the account selectors (still route
       // loader data) all show these details.
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: bankAccountKeys.all }),
         queryClient.invalidateQueries({ queryKey: accountKeys.all }),
-      ]);
-      await router.invalidate({ sync: true });
-      setAccountName(newAccountName);
-      setAccountDescription(newAccountDescription);
-      setBankName(newBankName);
-      setBankDescription(newBankDescription);
-      setAccountNumber(newNumber);
-      setSaved(true);
+      ])
+      await router.invalidate({ sync: true })
+      setAccountName(newAccountName)
+      setAccountDescription(newAccountDescription)
+      setBankName(newBankName)
+      setBankDescription(newBankDescription)
+      setAccountNumber(newNumber)
+      setSaved(true)
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Couldn't save the bank account.");
+      setError(caught instanceof Error ? caught.message : "Couldn't save the bank account.")
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
   }
 
@@ -227,8 +227,8 @@ function RouteComponent() {
         <div className="flex items-end justify-between gap-4">
           <Button asChild variant="ghost">
             <Link to="/books/bank-account">
-            <ChevronLeft />
-            Back to bank accounts
+              <ChevronLeft />
+              Back to bank accounts
             </Link>
           </Button>
           <div className="grid justify-items-end gap-4">
@@ -242,11 +242,11 @@ function RouteComponent() {
             </Field>
             <Button type="submit" disabled={!canSave}>
               <SaveIcon />
-              {saving ? 'Saving...' : 'Save'}
+              {saving ? "Saving..." : "Save"}
             </Button>
           </div>
         </div>
       </form>
     </>
-  );
+  )
 }

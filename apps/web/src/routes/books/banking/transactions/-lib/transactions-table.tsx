@@ -1,56 +1,56 @@
-import type { AccountOptions } from "#/components/account-selector.tsx";
-import { TablePagination } from "#/components/table-pagination.tsx";
+import type { AccountOptions } from "#/components/account-selector.tsx"
+import { TablePagination } from "#/components/table-pagination.tsx"
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "#/components/ui/alert-dialog.tsx";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "#/components/ui/alert-dialog.tsx"
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "#/components/ui/table.tsx";
-import { useTablePageSize } from "#/hooks/use-table-page-size.ts";
-import { formatZar } from "#/lib/currency.ts";
-import { formatDate } from "#/lib/dates.ts";
-import { useRouter } from "@tanstack/react-router";
-import { flexRender } from "@tanstack/react-table";
-import { getPaginationRowModel, useLegacyTable } from "@tanstack/react-table/legacy";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { postTransaction, type AccountTransaction } from "../-server/transactions.server.ts";
-import { getColumns } from "./columns.tsx";
-import { NotesContext, type NotesState } from "./notes-context.ts";
-import { TransferMatchDialog } from "./transfer-match-dialog.tsx";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "#/components/ui/table.tsx"
+import { useTablePageSize } from "#/hooks/use-table-page-size.ts"
+import { formatZar } from "#/lib/currency.ts"
+import { formatDate } from "#/lib/dates.ts"
+import { useRouter } from "@tanstack/react-router"
+import { flexRender } from "@tanstack/react-table"
+import { getPaginationRowModel, useLegacyTable } from "@tanstack/react-table/legacy"
+import { useEffect, useMemo, useRef, useState } from "react"
+import { postTransaction, type AccountTransaction } from "../-server/transactions.server.ts"
+import { getColumns } from "./columns.tsx"
+import { NotesContext, type NotesState } from "./notes-context.ts"
+import { TransferMatchDialog } from "./transfer-match-dialog.tsx"
 
 // Columns that shrink to their contents, leaving the spare width to the
 // others. w-px works because table cells can't shrink below their content,
 // and TableHead/TableCell are already whitespace-nowrap.
-const FIT_CONTENT_COLUMNS = new Set(["account", "actions"]);
+const FIT_CONTENT_COLUMNS = new Set(["account", "actions"])
 
 function fitContentClass(columnId: string) {
-  return FIT_CONTENT_COLUMNS.has(columnId) ? "w-px" : undefined;
+  return FIT_CONTENT_COLUMNS.has(columnId) ? "w-px" : undefined
 }
 
 // How long after a Transfer account is picked the matching-transaction
 // lookup starts - so clicking through the list doesn't fire one per click.
-const MATCH_LOOKUP_DELAY_MS = 1000;
+const MATCH_LOOKUP_DELAY_MS = 1000
 
-type PendingSave = { accountId: number; shouldPost: boolean; note: string };
-type SaveError = { transaction: AccountTransaction; message: string };
+type PendingSave = { accountId: number; shouldPost: boolean; note: string }
+type SaveError = { transaction: AccountTransaction; message: string }
 // A Transfer account picked for a row, waiting for its Select dialog.
-type MatchPrompt = { transaction: AccountTransaction; accountId: number };
+type MatchPrompt = { transaction: AccountTransaction; accountId: number }
 
 function withoutKey<V>(map: ReadonlyMap<number, V>, key: number): ReadonlyMap<number, V> {
-  const next = new Map(map);
-  next.delete(key);
-  return next;
+  const next = new Map(map)
+  next.delete(key)
+  return next
 }
 
 export function TransactionsTable({
@@ -58,23 +58,23 @@ export function TransactionsTable({
   accountOptions,
   pageResetKey,
 }: {
-  data: AccountTransaction[];
-  accountOptions: AccountOptions;
+  data: AccountTransaction[]
+  accountOptions: AccountOptions
   /** Changing this (e.g. when filters change) sends the table back to page 1. */
-  pageResetKey?: string;
+  pageResetKey?: string
 }) {
-  const router = useRouter();
-  const [selections, setSelections] = useState<ReadonlyMap<number, number>>(new Map());
+  const router = useRouter()
+  const [selections, setSelections] = useState<ReadonlyMap<number, number>>(new Map())
   // Stored as the exceptions so "Post?" is ticked by default for every row.
-  const [unpostedLineIds, setUnpostedLineIds] = useState<ReadonlySet<number>>(new Set());
-  const [notes, setNotes] = useState<ReadonlyMap<number, string>>(new Map());
+  const [unpostedLineIds, setUnpostedLineIds] = useState<ReadonlySet<number>>(new Set())
+  const [notes, setNotes] = useState<ReadonlyMap<number, string>>(new Map())
   // Saves in flight, applied optimistically: the row shows the result
   // straight away and the user can move on while the server catches up.
-  const [pendingSaves, setPendingSaves] = useState<ReadonlyMap<number, PendingSave>>(new Map());
+  const [pendingSaves, setPendingSaves] = useState<ReadonlyMap<number, PendingSave>>(new Map())
   // Failed saves waiting to be shown, one modal at a time.
-  const [saveErrors, setSaveErrors] = useState<readonly SaveError[]>([]);
+  const [saveErrors, setSaveErrors] = useState<readonly SaveError[]>([])
 
-  const savingLineIds = useMemo(() => new Set(pendingSaves.keys()), [pendingSaves]);
+  const savingLineIds = useMemo(() => new Set(pendingSaves.keys()), [pendingSaves])
 
   // Picking a Transfer account starts a lookup for the matching transaction
   // MATCH_LOOKUP_DELAY_MS later; its result is chosen in a dialog, one at a
@@ -82,15 +82,15 @@ export function TransactionsTable({
   const bankIds = useMemo(
     () => new Set(accountOptions.banks.map((option) => option.id)),
     [accountOptions],
-  );
-  const [chosenMatches, setChosenMatches] = useState<ReadonlyMap<number, number>>(new Map());
-  const [matchPrompts, setMatchPrompts] = useState<readonly MatchPrompt[]>([]);
-  const matchTimers = useRef(new Map<number, ReturnType<typeof setTimeout>>());
+  )
+  const [chosenMatches, setChosenMatches] = useState<ReadonlyMap<number, number>>(new Map())
+  const [matchPrompts, setMatchPrompts] = useState<readonly MatchPrompt[]>([])
+  const matchTimers = useRef(new Map<number, ReturnType<typeof setTimeout>>())
   useEffect(() => {
-    const timers = matchTimers.current;
-    return () => timers.forEach((timer) => clearTimeout(timer));
-  }, []);
-  const activePrompt = matchPrompts[0];
+    const timers = matchTimers.current
+    return () => timers.forEach((timer) => clearTimeout(timer))
+  }, [])
+  const activePrompt = matchPrompts[0]
 
   // Provided to the Note cells through context (see NotesContext in
   // columns.tsx) so typing doesn't rebuild the columns and remount the input.
@@ -101,16 +101,16 @@ export function TransactionsTable({
         setNotes((previous) => new Map(previous).set(journalLineId, note)),
     }),
     [notes],
-  );
+  )
 
   // What the grid shows: server data with pending saves layered on top. A
   // posted row disappears, a saved-but-unposted one shows its new account.
   const visibleData = useMemo(
     () =>
       data.flatMap((transaction) => {
-        const pending = pendingSaves.get(transaction.journalLineId);
+        const pending = pendingSaves.get(transaction.journalLineId)
         if (!pending) {
-          return [transaction];
+          return [transaction]
         }
         return pending.shouldPost
           ? []
@@ -121,10 +121,10 @@ export function TransactionsTable({
                 // A blank note leaves the saved description as it was.
                 description: pending.note || transaction.description,
               },
-            ];
+            ]
       }),
     [data, pendingSaves],
-  );
+  )
 
   // Reload just this page's transactions. The cached account options stay
   // as they are. sync: without it the router reloads an already-showing
@@ -135,7 +135,7 @@ export function TransactionsTable({
     router.invalidate({
       filter: (match) => match.routeId === "/books/banking/transactions/$id",
       sync: true,
-    });
+    })
 
   const columns = useMemo(
     () =>
@@ -145,61 +145,61 @@ export function TransactionsTable({
         savingLineIds,
         chosenMatches,
         onSelect: (transaction, accountId) => {
-          const { journalLineId } = transaction;
+          const { journalLineId } = transaction
           // A new choice replaces whatever was in progress for this row.
-          clearTimeout(matchTimers.current.get(journalLineId));
-          matchTimers.current.delete(journalLineId);
-          setChosenMatches((previous) => withoutKey(previous, journalLineId));
+          clearTimeout(matchTimers.current.get(journalLineId))
+          matchTimers.current.delete(journalLineId)
+          setChosenMatches((previous) => withoutKey(previous, journalLineId))
           setMatchPrompts((previous) =>
             previous.filter((prompt) => prompt.transaction.journalLineId !== journalLineId),
-          );
-          setSelections((previous) => new Map(previous).set(journalLineId, accountId));
+          )
+          setSelections((previous) => new Map(previous).set(journalLineId, accountId))
 
           // The account the row is already matched with has nothing to look up.
           if (bankIds.has(accountId) && accountId !== transaction.otherAccountId) {
             matchTimers.current.set(
               journalLineId,
               setTimeout(() => {
-                matchTimers.current.delete(journalLineId);
-                setMatchPrompts((previous) => [...previous, { transaction, accountId }]);
+                matchTimers.current.delete(journalLineId)
+                setMatchPrompts((previous) => [...previous, { transaction, accountId }])
               }, MATCH_LOOKUP_DELAY_MS),
-            );
+            )
           }
         },
         unpostedLineIds,
         onPostChange: (journalLineId, shouldPost) =>
           setUnpostedLineIds((previous) => {
-            const next = new Set(previous);
+            const next = new Set(previous)
             if (shouldPost) {
-              next.delete(journalLineId);
+              next.delete(journalLineId)
             } else {
-              next.add(journalLineId);
+              next.add(journalLineId)
             }
-            return next;
+            return next
           }),
         onSave: async (transaction, accountId) => {
-          const { journalLineId } = transaction;
-          const shouldPost = !unpostedLineIds.has(journalLineId);
-          const note = (notes.get(journalLineId) ?? "").trim();
+          const { journalLineId } = transaction
+          const shouldPost = !unpostedLineIds.has(journalLineId)
+          const note = (notes.get(journalLineId) ?? "").trim()
           // The matching transaction chosen for a newly picked Transfer.
           const counterpartLineId = bankIds.has(accountId)
             ? chosenMatches.get(journalLineId)
-            : undefined;
+            : undefined
 
           setPendingSaves((previous) =>
             new Map(previous).set(journalLineId, { accountId, shouldPost, note }),
-          );
-          setSelections((previous) => withoutKey(previous, journalLineId));
-          setChosenMatches((previous) => withoutKey(previous, journalLineId));
-          setNotes((previous) => withoutKey(previous, journalLineId));
+          )
+          setSelections((previous) => withoutKey(previous, journalLineId))
+          setChosenMatches((previous) => withoutKey(previous, journalLineId))
+          setNotes((previous) => withoutKey(previous, journalLineId))
 
           try {
             await postTransaction({
               data: { journalLineId, accountId, should_post: shouldPost, note, counterpartLineId },
-            });
+            })
             // Keep the optimistic row until fresh data has arrived, so it
             // doesn't flash back to its old state in between.
-            await refreshTransactions();
+            await refreshTransactions()
           } catch (error) {
             // postTransaction runs in a database transaction, so a failure
             // leaves nothing half-saved - drop the optimistic change, explain,
@@ -210,17 +210,26 @@ export function TransactionsTable({
                 transaction,
                 message: error instanceof Error ? error.message : "Couldn't save the transaction.",
               },
-            ]);
-            void refreshTransactions();
+            ])
+            void refreshTransactions()
           } finally {
-            setPendingSaves((previous) => withoutKey(previous, journalLineId));
+            setPendingSaves((previous) => withoutKey(previous, journalLineId))
           }
         },
       }),
-    [accountOptions, bankIds, selections, chosenMatches, unpostedLineIds, notes, savingLineIds, router],
-  );
-  const [pageSize, setPageSize] = useTablePageSize();
-  const [requestedPageIndex, setPageIndex] = useState(0);
+    [
+      accountOptions,
+      bankIds,
+      selections,
+      chosenMatches,
+      unpostedLineIds,
+      notes,
+      savingLineIds,
+      router,
+    ],
+  )
+  const [pageSize, setPageSize] = useTablePageSize()
+  const [requestedPageIndex, setPageIndex] = useState(0)
 
   // The page-size dropdown lives outside this table (it's shared across
   // every table via useTablePageSize) and can change pageSize without going
@@ -228,13 +237,13 @@ export function TransactionsTable({
   // happens so the current pageIndex can't end up out of range. Same for a
   // change of filters, which the parent signals through pageResetKey.
   useEffect(() => {
-    setPageIndex(0);
-  }, [pageSize, pageResetKey]);
+    setPageIndex(0)
+  }, [pageSize, pageResetKey])
 
   // Saving reloads data, and posting removes a row - clamp so posting the
   // last row of the last page lands on the new last page, not an empty one.
-  const pageCount = Math.max(1, Math.ceil(visibleData.length / pageSize));
-  const pageIndex = Math.min(requestedPageIndex, pageCount - 1);
+  const pageCount = Math.max(1, Math.ceil(visibleData.length / pageSize))
+  const pageIndex = Math.min(requestedPageIndex, pageCount - 1)
 
   const table = useLegacyTable({
     data: visibleData,
@@ -248,14 +257,13 @@ export function TransactionsTable({
     autoResetPageIndex: false,
     state: { pagination: { pageIndex, pageSize } },
     onPaginationChange: (updater) => {
-      const next =
-        typeof updater === "function" ? updater({ pageIndex, pageSize }) : updater;
-      setPageIndex(next.pageIndex);
-      setPageSize(next.pageSize as typeof pageSize);
+      const next = typeof updater === "function" ? updater({ pageIndex, pageSize }) : updater
+      setPageIndex(next.pageIndex)
+      setPageSize(next.pageSize as typeof pageSize)
     },
-  });
+  })
 
-  const currentError = saveErrors[0];
+  const currentError = saveErrors[0]
 
   return (
     <>
@@ -263,7 +271,7 @@ export function TransactionsTable({
         open={currentError !== undefined}
         onOpenChange={(open) => {
           if (!open) {
-            setSaveErrors((previous) => previous.slice(1));
+            setSaveErrors((previous) => previous.slice(1))
           }
         }}
       >
@@ -296,53 +304,55 @@ export function TransactionsTable({
             // Choosing enables Save for the row.
             setChosenMatches((previous) =>
               new Map(previous).set(activePrompt.transaction.journalLineId, counterpartLineId),
-            );
-            setMatchPrompts((previous) => previous.slice(1));
+            )
+            setMatchPrompts((previous) => previous.slice(1))
           }}
           onCancel={() => {
             // No match chosen: the transfer account is deselected again.
-            setSelections((previous) => withoutKey(previous, activePrompt.transaction.journalLineId));
-            setMatchPrompts((previous) => previous.slice(1));
+            setSelections((previous) =>
+              withoutKey(previous, activePrompt.transaction.journalLineId),
+            )
+            setMatchPrompts((previous) => previous.slice(1))
           }}
         />
       ) : null}
       <NotesContext.Provider value={notesState}>
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => (
-                <TableHead key={header.id} className={fitContentClass(header.column.id)}>
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(header.column.columnDef.header, header.getContext())}
-                </TableHead>
-              ))}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows.length ? (
-            table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id}>
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id} className={fitContentClass(cell.column.id)}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id} className={fitContentClass(header.column.id)}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(header.column.columnDef.header, header.getContext())}
+                  </TableHead>
                 ))}
               </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={columns.length} className="text-center text-muted-foreground">
-                No transactions yet.
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow key={row.id}>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id} className={fitContentClass(cell.column.id)}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="text-center text-muted-foreground">
+                  No transactions yet.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
       </NotesContext.Provider>
       <TablePagination table={table} />
     </>
-  );
+  )
 }

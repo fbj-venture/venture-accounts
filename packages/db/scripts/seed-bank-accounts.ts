@@ -1,7 +1,7 @@
-import { account, bankAccount, db, withCreate } from "../src/index.js";
-import { getScriptUserId, runScript } from "./harness.js";
+import { account, bankAccount, db, withCreate } from "../src/index.js"
+import { getScriptUserId, runScript } from "./harness.js"
 
-const ASSET_ACCOUNT_TYPE_ID = 1;
+const ASSET_ACCOUNT_TYPE_ID = 1
 
 // STUB: fill in real values for each of the 4 bank accounts before running.
 const BANK_ACCOUNTS = [
@@ -29,10 +29,10 @@ const BANK_ACCOUNTS = [
     bankName: "Standard Bank",
     accountNumber: "003888711",
   },
-];
+]
 
 await runScript("seed-bank-accounts", async () => {
-  const userId = await getScriptUserId();
+  const userId = await getScriptUserId()
   for (const entry of BANK_ACCOUNTS) {
     // bankAccount.id isn't auto-generated - it reuses its linked account's
     // id (the 1:1 relationship), so the account has to be inserted first.
@@ -46,11 +46,11 @@ await runScript("seed-bank-accounts", async () => {
         }),
       )
       .onConflictDoNothing({ target: account.name })
-      .returning();
+      .returning()
 
     if (!createdAccount) {
-      console.log(`  skipped (already exists): ${entry.name}`);
-      continue;
+      console.log(`  skipped (already exists): ${entry.name}`)
+      continue
     }
 
     await db.insert(bankAccount).values(
@@ -60,8 +60,8 @@ await runScript("seed-bank-accounts", async () => {
         description: entry.description,
         accountNumber: entry.accountNumber,
       }),
-    );
+    )
 
-    console.log(`  created bank account: ${entry.name}`);
+    console.log(`  created bank account: ${entry.name}`)
   }
-});
+})

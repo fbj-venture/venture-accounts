@@ -5,6 +5,7 @@ How to get from nothing to sending a test email from this project (TypeScript, T
 Resend is a hosted service for sending email from code. You give it an API key, it sends the message and shows you what happened to it in a dashboard. The only part that takes real effort is proving to the world that you are allowed to send mail from your own domain (step 6) - the rest is a few lines of code.
 
 **What you need before starting**
+
 - An email address you can receive mail at (this becomes the Resend account owner).
 - To send from your own address (e.g. `accounts@yourchurch.org.za`): access to the DNS settings of that domain. Whoever registered the domain or hosts its website can give you this. You can do the first test without it.
 
@@ -25,7 +26,7 @@ The API key is the password your code uses to send mail. Treat it like a databas
 1. Dashboard -> **API Keys** -> **Create API Key**.
 2. Name: something that says where it is used, e.g. `venture-accounts-dev`. Make a separate key per environment (dev, production) so one can be revoked on its own.
 3. Permission: **Sending access** (not Full access). Sending access can only send mail, so a leaked key can't read your emails or change your domain.
-4. Domain: leave it as *All domains* for now. Once your domain is verified you can create a key restricted to just that domain.
+4. Domain: leave it as _All domains_ for now. Once your domain is verified you can create a key restricted to just that domain.
 5. **Add**, then **copy the key now** - it starts with `re_` and Resend only shows it once. If you lose it, delete it and make another.
 
 ## 3. Put the key in the project's environment
@@ -55,6 +56,7 @@ EMAIL_FROM: z.string().min(1),
 ```
 
 Two consequences of that being required:
+
 - The app won't start without them. Add both variables to the hosting platform's environment (Railway) **before** you deploy this change.
 - They are `server` variables, so they can never reach the browser - as long as you only use them in server code (step 5).
 
@@ -68,29 +70,29 @@ pnpm --filter @app/email add resend
 
 ## 5. Send a test email
 
-Resend lets every account send *without* any DNS setup using its shared test address, `onboarding@resend.dev`, with one restriction: **it can only deliver to the email address you signed up with**. That is enough to prove the code works.
+Resend lets every account send _without_ any DNS setup using its shared test address, `onboarding@resend.dev`, with one restriction: **it can only deliver to the email address you signed up with**. That is enough to prove the code works.
 
 ### 5a. The mailer module
 
 The mailer is `packages/email/src/send.server.ts`, exposed to the rest of the repo as `@app/email/send`:
 
 ```ts
-import { env } from "@app/env";
-import { Resend } from "resend";
+import { env } from "@app/env"
+import { Resend } from "resend"
 
-const resend = new Resend(env.RESEND_API_KEY);
+const resend = new Resend(env.RESEND_API_KEY)
 
 export async function sendEmail(options: { to: string | string[]; subject: string; html: string }) {
   const { data, error } = await resend.emails.send({
     from: env.EMAIL_FROM,
     ...options,
-  });
+  })
 
   // The SDK reports failures in `error` instead of throwing - always check it.
   if (error) {
-    throw new Error(`Couldn't send email: ${error.message}`);
+    throw new Error(`Couldn't send email: ${error.message}`)
   }
-  return data; // { id: "..." } - the id you can look up in the dashboard
+  return data // { id: "..." } - the id you can look up in the dashboard
 }
 ```
 
@@ -102,23 +104,23 @@ That is also why the package has two entry points: `@app/email` (the templates a
 
 HTML bodies are written as [React Email](https://react.email) components in `packages/email/src/templates/` and turned into an HTML string by a `render*Email` function exported from `@app/email`:
 
-| Email | Template | Render function |
-| --- | --- | --- |
-| Reset password | `reset-password.tsx` | `renderResetPasswordEmail` |
-| Verify email address | `verify-email.tsx` | `renderVerifyEmail` |
-| Invitation | `invitation.tsx` | `renderInvitationEmail` |
+| Email                | Template             | Render function            |
+| -------------------- | -------------------- | -------------------------- |
+| Reset password       | `reset-password.tsx` | `renderResetPasswordEmail` |
+| Verify email address | `verify-email.tsx`   | `renderVerifyEmail`        |
+| Invitation           | `invitation.tsx`     | `renderInvitationEmail`    |
 
 Rendering is async, so `await` it and pass the result to `sendEmail`:
 
 ```ts
-import { renderResetPasswordEmail } from "@app/email";
-import { sendEmail } from "@app/email/send";
+import { renderResetPasswordEmail } from "@app/email"
+import { sendEmail } from "@app/email/send"
 
 await sendEmail({
   to: user.email,
   subject: "Reset your password",
   html: await renderResetPasswordEmail({ name: user.name, company: APP_COMPANY, url }),
-});
+})
 ```
 
 Values passed as props are HTML-escaped by React, so don't escape them yourself.
@@ -136,19 +138,19 @@ This serves the preview on <http://localhost:3001>. To add a template: create `p
 Create `apps/web/scripts/send-test-email.ts`:
 
 ```ts
-import { sendEmail } from "@app/email/send";
+import { sendEmail } from "@app/email/send"
 
-const to = process.argv[2];
+const to = process.argv[2]
 if (!to) {
-  throw new Error("Usage: pnpm --filter web send-test-email you@example.com");
+  throw new Error("Usage: pnpm --filter web send-test-email you@example.com")
 }
 
 const result = await sendEmail({
   to,
   subject: "Venture Accounts test email",
   html: "<p>If you can read this, Resend is working.</p>",
-});
-console.log("Sent:", result);
+})
+console.log("Sent:", result)
 ```
 
 Add a script to `apps/web/package.json`, next to `create-user`:
@@ -170,22 +172,22 @@ Expected: it prints `Sent: { id: '...' }` and the email arrives within a few sec
 This is the shape real features (password resets, statements, notifications) will use. Put it in a route's `-components` file like the project's other `*-fn.ts` files:
 
 ```ts
-import { requireAdmin } from "#/lib/require-admin.server.ts";
-import { sendEmail } from "@app/email/send";
-import { createServerFn } from "@tanstack/react-start";
+import { requireAdmin } from "#/lib/require-admin.server.ts"
+import { sendEmail } from "@app/email/send"
+import { createServerFn } from "@tanstack/react-start"
 
 export const sendTestEmail = createServerFn({ method: "POST" })
   .validator((to: string) => to)
   .handler(async ({ data: to }) => {
     // Never expose an unauthenticated "send an email" endpoint - anyone could
     // use it to spam from your domain. Restrict it, as here, to admins.
-    await requireAdmin();
+    await requireAdmin()
     await sendEmail({
       to,
       subject: "Venture Accounts test email",
       html: "<p>Sent from a server function.</p>",
-    });
-  });
+    })
+  })
 ```
 
 Call it from a button's `onClick` with `await sendTestEmail({ data: "you@example.com" })`.
@@ -202,8 +204,9 @@ Call it from a button's `onClick` with `await sendTestEmail({ data: "you@example
    - a **TXT (DKIM)** record at `resend._domainkey` (a long public key).
 
    The exact names and values are shown in the dashboard - **copy them from there**, not from this document.
+
 5. Sign in to wherever the domain's DNS is managed (the registrar - e.g. Afrihost, Domains.co.za, GoDaddy - or Cloudflare if the domain uses it) and add each record exactly as shown. Two common slips: some DNS hosts append the domain name automatically, so you enter `resend._domainkey` rather than the full name; and pasted values must have no extra quotes or spaces.
-6. Back in Resend, press **Verify DNS Records**. Propagation usually takes minutes but can take up to a day; the status moves from *Pending* to *Verified*.
+6. Back in Resend, press **Verify DNS Records**. Propagation usually takes minutes but can take up to a day; the status moves from _Pending_ to _Verified_.
 7. Optional but recommended: add a **DMARC** TXT record at `_dmarc` (Resend's DNS page links to guidance). A starting value is `v=DMARC1; p=none; rua=mailto:you@yourchurch.org.za`, which only reports on mail and doesn't block anything yet.
 
 Once the domain shows **Verified**:
@@ -214,14 +217,14 @@ Once the domain shows **Verified**:
 
 ## 7. Troubleshooting
 
-| Symptom | Likely cause |
-|---|---|
-| `Couldn't send email: API key is invalid` | Wrong or truncated key, a stray space/quote in `.env`, or the dev server wasn't restarted after editing `.env`. |
-| `You can only send testing emails to your own email address` | Still using `onboarding@resend.dev` with a recipient that isn't the account owner. Verify a domain (step 6). |
-| `The ... domain is not verified` | `EMAIL_FROM` uses a domain that is not yet **Verified** in the dashboard, or has a typo. |
-| App refuses to start, naming `RESEND_API_KEY` or `EMAIL_FROM` | The variable is missing in that environment (e.g. Railway) - `@app/env` validates at startup. |
-| Sent, but nothing arrives | Open **Emails** in the dashboard and click the message: it shows *Delivered*, *Bounced* or *Complained*, with the reason. Also check spam, and that DNS (SPF/DKIM) is verified. |
-| White screen / hydration errors after adding email code | A server-only import (`send.server.ts`, `@app/env`) is reachable from browser code. Move it inside a `createServerFn` handler. |
+| Symptom                                                       | Likely cause                                                                                                                                                                    |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Couldn't send email: API key is invalid`                     | Wrong or truncated key, a stray space/quote in `.env`, or the dev server wasn't restarted after editing `.env`.                                                                 |
+| `You can only send testing emails to your own email address`  | Still using `onboarding@resend.dev` with a recipient that isn't the account owner. Verify a domain (step 6).                                                                    |
+| `The ... domain is not verified`                              | `EMAIL_FROM` uses a domain that is not yet **Verified** in the dashboard, or has a typo.                                                                                        |
+| App refuses to start, naming `RESEND_API_KEY` or `EMAIL_FROM` | The variable is missing in that environment (e.g. Railway) - `@app/env` validates at startup.                                                                                   |
+| Sent, but nothing arrives                                     | Open **Emails** in the dashboard and click the message: it shows _Delivered_, _Bounced_ or _Complained_, with the reason. Also check spam, and that DNS (SPF/DKIM) is verified. |
+| White screen / hydration errors after adding email code       | A server-only import (`send.server.ts`, `@app/env`) is reachable from browser code. Move it inside a `createServerFn` handler.                                                  |
 
 ## 8. Before relying on it in production
 

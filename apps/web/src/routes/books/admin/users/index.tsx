@@ -1,19 +1,19 @@
-import { Button } from '#/components/ui/button.tsx';
-import { useSetBreadcrumbs } from '#/routes/books/-lib/breadcrumbs.ts';
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
-import { PlusIcon } from 'lucide-react';
-import { UsersTable } from './-lib/users-table.tsx';
-import { getUsers } from './-server/users.server.ts';
+import { Button } from "#/components/ui/button.tsx"
+import { useSetBreadcrumbs } from "#/routes/books/-lib/breadcrumbs.ts"
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
+import { PlusIcon } from "lucide-react"
+import { UsersTable } from "./-lib/users-table.tsx"
+import { getUsers } from "./-server/users.server.ts"
 
-export const Route = createFileRoute('/books/admin/users/')({
+export const Route = createFileRoute("/books/admin/users/")({
   loader: async () => ({ users: await getUsers() }),
   component: RouteComponent,
 })
 
 function RouteComponent() {
-  const navigate = useNavigate();
-  useSetBreadcrumbs([{ title: 'Users' }]);
-  const { users } = Route.useLoaderData();
+  const navigate = useNavigate()
+  useSetBreadcrumbs([{ title: "Users" }])
+  const { users } = Route.useLoaderData()
 
   return (
     <>
@@ -29,9 +29,9 @@ function RouteComponent() {
       <div className="mt-4">
         <UsersTable
           data={users}
-          onEdit={(user) => navigate({ to: '/books/admin/users/$id', params: { id: user.id } })}
+          onEdit={(user) => navigate({ to: "/books/admin/users/$id", params: { id: user.id } })}
         />
       </div>
     </>
-  );
+  )
 }

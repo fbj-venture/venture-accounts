@@ -1,34 +1,28 @@
-import { SortableHeader } from "#/components/sortable-header.tsx";
-import { Button } from "#/components/ui/button.tsx";
-import { Checkbox } from "#/components/ui/checkbox.tsx";
+import { SortableHeader } from "#/components/sortable-header.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import { Checkbox } from "#/components/ui/checkbox.tsx"
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "#/components/ui/table.tsx";
-import { formatDate } from "#/lib/dates.ts";
-import { flexRender, type SortingState } from "@tanstack/react-table";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "#/components/ui/table.tsx"
+import { formatDate } from "#/lib/dates.ts"
+import { flexRender, type SortingState } from "@tanstack/react-table"
 import {
-    getSortedRowModel,
-    useLegacyTable,
-    type LegacyColumnDef,
-} from "@tanstack/react-table/legacy";
-import { PencilIcon } from "lucide-react";
-import { useMemo, useState } from "react";
-import type { AppUser } from "../-server/users.server.ts";
-import { SendVerificationLink } from "./send-verification-link.tsx";
+  getSortedRowModel,
+  useLegacyTable,
+  type LegacyColumnDef,
+} from "@tanstack/react-table/legacy"
+import { PencilIcon } from "lucide-react"
+import { useMemo, useState } from "react"
+import type { AppUser } from "../-server/users.server.ts"
+import { SendVerificationLink } from "./send-verification-link.tsx"
 
-export function UsersTable({
-  data,
-  onEdit,
-}: {
-  data: AppUser[];
-  onEdit: (user: AppUser) => void;
-}) {
-  const [sorting, setSorting] = useState<SortingState>([]);
+export function UsersTable({ data, onEdit }: { data: AppUser[]; onEdit: (user: AppUser) => void }) {
+  const [sorting, setSorting] = useState<SortingState>([])
 
   const columns = useMemo<LegacyColumnDef<AppUser>[]>(
     () => [
@@ -50,8 +44,11 @@ export function UsersTable({
         header: ({ column }) => <SortableHeader column={column} title="Enabled" />,
         // A ban with an expiry date lapses on its own - better-auth lifts it
         // at the user's next sign-in - so an expired one counts as enabled.
-        accessorFn: (row) => !row.banned || (row.banExpires !== null && row.banExpires <= new Date()),
-        cell: ({ getValue }) => <Checkbox checked={getValue<boolean>()} disabled aria-label="Enabled" />,
+        accessorFn: (row) =>
+          !row.banned || (row.banExpires !== null && row.banExpires <= new Date()),
+        cell: ({ getValue }) => (
+          <Checkbox checked={getValue<boolean>()} disabled aria-label="Enabled" />
+        ),
       },
       {
         accessorKey: "emailVerified",
@@ -82,7 +79,7 @@ export function UsersTable({
       },
     ],
     [onEdit],
-  );
+  )
 
   const table = useLegacyTable({
     data,
@@ -91,7 +88,7 @@ export function UsersTable({
     getSortedRowModel: getSortedRowModel(),
     state: { sorting },
     onSortingChange: setSorting,
-  });
+  })
 
   return (
     <Table>
@@ -99,7 +96,10 @@ export function UsersTable({
         {table.getHeaderGroups().map((headerGroup) => (
           <TableRow key={headerGroup.id}>
             {headerGroup.headers.map((header) => (
-              <TableHead key={header.id} className={header.column.id === "actions" ? "w-px" : undefined}>
+              <TableHead
+                key={header.id}
+                className={header.column.id === "actions" ? "w-px" : undefined}
+              >
                 {header.isPlaceholder
                   ? null
                   : flexRender(header.column.columnDef.header, header.getContext())}
@@ -113,7 +113,10 @@ export function UsersTable({
           table.getRowModel().rows.map((row) => (
             <TableRow key={row.id}>
               {row.getVisibleCells().map((cell) => (
-                <TableCell key={cell.id} className={cell.column.id === "actions" ? "w-px" : undefined}>
+                <TableCell
+                  key={cell.id}
+                  className={cell.column.id === "actions" ? "w-px" : undefined}
+                >
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </TableCell>
               ))}
@@ -128,5 +131,5 @@ export function UsersTable({
         )}
       </TableBody>
     </Table>
-  );
+  )
 }

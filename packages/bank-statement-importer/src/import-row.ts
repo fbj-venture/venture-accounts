@@ -1,10 +1,10 @@
 export type ImportRow = {
-  rowIndex: number;
-  details: string;
-  serviceFee: string;
-  debits: string;
-  credits: string;
-  date: string;
-  balance: string;
-  hash: string;
-};
+  rowIndex: number
+  details: string
+  serviceFee: string
+  debits: string
+  credits: string
+  date: string
+  balance: string
+  hash: string
+}

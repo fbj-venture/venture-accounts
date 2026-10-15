@@ -6,24 +6,24 @@
 // file, which happened to make the old same-file "am I being run directly"
 // check true, printing the usage message and killing the server on every
 // request.
-import { db, user } from "@app/db/direct";
-import { eq } from "drizzle-orm";
-import { readPdfFileFromFile } from "./index.js";
+import { db, user } from "@app/db/direct"
+import { eq } from "drizzle-orm"
+import { readPdfFileFromFile } from "./index.js"
 
 // Imported entries are attributed to this user (createdBy/updatedBy) unless
 // another email is given.
-const DEFAULT_USER_EMAIL = "francis@venturechurch.co.za";
+const DEFAULT_USER_EMAIL = "francis@venturechurch.co.za"
 
-const [filePath, email = DEFAULT_USER_EMAIL] = process.argv.slice(2).filter((arg) => arg !== "--");
+const [filePath, email = DEFAULT_USER_EMAIL] = process.argv.slice(2).filter((arg) => arg !== "--")
 if (!filePath) {
-   console.error("Usage: pnpm read-pdf -- <path-to-pdf> [user-email]");
-   process.exit(1);
+  console.error("Usage: pnpm read-pdf -- <path-to-pdf> [user-email]")
+  process.exit(1)
 }
 
-const [importer] = await db.select({ id: user.id }).from(user).where(eq(user.email, email));
+const [importer] = await db.select({ id: user.id }).from(user).where(eq(user.email, email))
 if (!importer) {
-   console.error(`No user with email ${email}.`);
-   process.exit(1);
+  console.error(`No user with email ${email}.`)
+  process.exit(1)
 }
 
-await readPdfFileFromFile(filePath, importer.id);
+await readPdfFileFromFile(filePath, importer.id)

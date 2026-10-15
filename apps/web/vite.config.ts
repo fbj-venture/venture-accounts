@@ -1,25 +1,25 @@
-import { devtools } from "@tanstack/devtools-vite";
-import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
-import { defineConfig, loadEnv, lazyPlugins } from "vite-plus";
+import { devtools } from "@tanstack/devtools-vite"
+import { readFileSync } from "node:fs"
+import { fileURLToPath } from "node:url"
+import { defineConfig, loadEnv, lazyPlugins } from "vite-plus"
 
-import { tanstackStart } from "@tanstack/react-start/plugin/vite";
+import { tanstackStart } from "@tanstack/react-start/plugin/vite"
 
-import { nitro } from "nitro/vite";
-import tailwindcss from "@tailwindcss/vite";
-import viteReact from "@vitejs/plugin-react";
+import { nitro } from "nitro/vite"
+import tailwindcss from "@tailwindcss/vite"
+import viteReact from "@vitejs/plugin-react"
 
 // Nitro's default output.dir ("{rootDir}/.output") is relative to this app,
 // so it lands in apps/web/.output. Deploy platforms (and the root "preview"
 // script) expect the build at the repo root instead - pointing Nitro there
 // directly means the workspace root doesn't need its own copy step.
-const outputDir = fileURLToPath(new URL("../../.output", import.meta.url));
+const outputDir = fileURLToPath(new URL("../../.output", import.meta.url))
 
 // APP_COMPANY comes from the workspace root .env (or the platform's real
 // environment variables) and is inlined at build time as __APP_COMPANY__, so
 // the same value is available to browser and server code alike - see
 // src/lib/app-company.ts. Mirrors the default in @app/env.
-const rootDir = fileURLToPath(new URL("../..", import.meta.url));
+const rootDir = fileURLToPath(new URL("../..", import.meta.url))
 
 // Name, description and version come from the workspace root package.json.
 // The publish date is stamped only by a production build (`vite build`), so
@@ -27,7 +27,7 @@ const rootDir = fileURLToPath(new URL("../..", import.meta.url));
 // See src/lib/app-info.ts.
 const rootPackage = JSON.parse(
   readFileSync(fileURLToPath(new URL("../../package.json", import.meta.url)), "utf8"),
-) as { name: string; description: string; version: string };
+) as { name: string; description: string; version: string }
 
 const config = defineConfig(({ mode, command }) => ({
   define: {
@@ -58,6 +58,6 @@ const config = defineConfig(({ mode, command }) => ({
     }),
     viteReact(),
   ]),
-}));
+}))
 
-export default config;
+export default config

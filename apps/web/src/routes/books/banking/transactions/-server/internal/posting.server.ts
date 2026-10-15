@@ -4,18 +4,11 @@
 // browser bundle along with the handler. Module-level code next to a
 // createServerFn is NOT stripped: helpers kept in transactions.server.ts pulled
 // the database driver into the client and broke hydration app-wide.
-import { formatZar } from "#/lib/currency.ts";
-import {
-  bankAccount,
-  db,
-  journal,
-  journalLine,
-  withCreate,
-  withUpdate,
-} from "@app/db/direct";
-import { and, asc, eq, inArray, ne, sql } from "drizzle-orm";
+import { formatZar } from "#/lib/currency.ts"
+import { bankAccount, db, journal, journalLine, withCreate, withUpdate } from "@app/db/direct"
+import { and, asc, eq, inArray, ne, sql } from "drizzle-orm"
 
-const DAY_MS = 24 * 60 * 60 * 1000;
+const DAY_MS = 24 * 60 * 60 * 1000
 
 // Banks don't settle at weekends, so the two sides of a Transfer can be
 // dated a business day apart. The dates a transfer's other side may carry:
@@ -23,29 +16,29 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 // weekday after it, both included - so weekend days in between count.
 // Computed in UTC on the calendar date, so time zones can't shift the day.
 export function transferMatchRange(date: Date): { from: string; to: string } {
-  const isWeekend = (time: number) => [0, 6].includes(new Date(time).getUTCDay());
-  const own = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+  const isWeekend = (time: number) => [0, 6].includes(new Date(time).getUTCDay())
+  const own = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
 
-  let before = own - DAY_MS;
-  while (isWeekend(before)) before -= DAY_MS;
-  let after = own + DAY_MS;
-  while (isWeekend(after)) after += DAY_MS;
+  let before = own - DAY_MS
+  while (isWeekend(before)) before -= DAY_MS
+  let after = own + DAY_MS
+  while (isWeekend(after)) after += DAY_MS
 
-  const iso = (time: number) => new Date(time).toISOString().slice(0, 10);
-  return { from: iso(before), to: iso(after) };
+  const iso = (time: number) => new Date(time).toISOString().slice(0, 10)
+  return { from: iso(before), to: iso(after) }
 }
 
-export type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
+export type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0]
 
 export type BankLine = {
-  journalId: number;
-  accountId: number;
-  amount: number;
-  date: Date;
-  isPosted: boolean;
-  description: string | null;
-  note: string;
-};
+  journalId: number
+  accountId: number
+  amount: number
+  date: Date
+  isPosted: boolean
+  description: string | null
+  note: string
+}
 
 // The entry's lines other than the bank line being saved, flagged with
 // whether each is on a bank account (i.e. the entry is already a Transfer).
@@ -58,17 +51,17 @@ async function getOtherLines(tx: Tx, journalId: number, journalLineId: number) {
     })
     .from(journalLine)
     .leftJoin(bankAccount, eq(bankAccount.id, journalLine.accountId))
-    .where(and(eq(journalLine.journalEntryId, journalId), ne(journalLine.id, journalLineId)));
+    .where(and(eq(journalLine.journalEntryId, journalId), ne(journalLine.id, journalLineId)))
 }
 
 async function getEntryTotal(tx: Tx, journalId: number) {
   const [{ total }] = await tx
     .select({ total: sql<number>`coalesce(sum(${journalLine.amount}), 0)`.mapWith(Number) })
     .from(journalLine)
-    .where(eq(journalLine.journalEntryId, journalId));
+    .where(eq(journalLine.journalEntryId, journalId))
   // numeric(14,2) sums come back exact, but round anyway so float noise
   // from mapWith(Number) can't leave the entry a fraction of a cent out.
-  return Math.round(total * 100) / 100;
+  return Math.round(total * 100) / 100
 }
 
 // The other bank's imported lines a Transfer from `bankLine` into `targetId`
@@ -83,7 +76,7 @@ export async function findTransferCandidates(
   targetId: number,
   { lineId, limit, lock }: { lineId?: number; limit: number; lock: boolean },
 ) {
-  const matchRange = transferMatchRange(bankLine.date);
+  const matchRange = transferMatchRange(bankLine.date)
   const query = tx
     .select({
       lineId: journalLine.id,
@@ -109,20 +102,20 @@ export async function findTransferCandidates(
       ),
     )
     .orderBy(asc(journal.date), asc(journalLine.id))
-    .limit(limit);
-  return lock ? await query.for("update", { of: journal }) : await query;
+    .limit(limit)
+  return lock ? await query.for("update", { of: journal }) : await query
 }
 
 // The user's own note (already trimmed; "" = none) replaces the lines'
 // description. The entry's note keeps the original statement text.
 async function setDescription(tx: Tx, lineIds: number[], note: string, userId: string) {
   if (note === "" || lineIds.length === 0) {
-    return;
+    return
   }
   await tx
     .update(journalLine)
     .set(withUpdate(userId, { description: note }))
-    .where(inArray(journalLine.id, lineIds));
+    .where(inArray(journalLine.id, lineIds))
 }
 
 export async function postToCategory(
@@ -133,22 +126,22 @@ export async function postToCategory(
   userId: string,
   note: string,
 ) {
-  const otherLines = await getOtherLines(tx, bankLine.journalId, journalLineId);
+  const otherLines = await getOtherLines(tx, bankLine.journalId, journalLineId)
 
   // A matched Transfer's other line is the other bank's own imported line -
   // re-pointing it at a Category would erase that bank's side of the money.
   if (otherLines.some((line) => line.isBankLine)) {
     throw new Error(
       "This transaction is matched as a transfer with another bank account, so it can't be changed to a category here.",
-    );
+    )
   }
 
-  const balancingAmount = -(await getEntryTotal(tx, bankLine.journalId));
+  const balancingAmount = -(await getEntryTotal(tx, bankLine.journalId))
 
   if (otherLines.length === 0) {
     // First save: add the balancing line.
     if (balancingAmount === 0) {
-      throw new Error("Transaction has no amount to balance.");
+      throw new Error("Transaction has no amount to balance.")
     }
     await tx.insert(journalLine).values(
       withCreate(userId, {
@@ -157,30 +150,30 @@ export async function postToCategory(
         amount: balancingAmount,
         description: note || (bankLine.description ?? bankLine.note),
       }),
-    );
+    )
   } else if (otherLines.length === 1 && balancingAmount === 0) {
     // Already categorised: move the existing balancing line to the new
     // account. Its amount is unchanged, so the entry stays balanced.
-    const [otherLine] = otherLines;
+    const [otherLine] = otherLines
     if (otherLine!.accountId !== categoryId) {
       await tx
         .update(journalLine)
         .set(withUpdate(userId, { accountId: categoryId }))
-        .where(eq(journalLine.id, otherLine!.id));
+        .where(eq(journalLine.id, otherLine!.id))
     }
-    await setDescription(tx, [otherLine!.id], note, userId);
+    await setDescription(tx, [otherLine!.id], note, userId)
   } else {
     // Splits (or an entry left unbalanced some other way) can't be
     // safely reduced to a single account from this screen.
     throw new Error(
       "This transaction is split across several accounts or doesn't balance, so it can't be changed here.",
-    );
+    )
   }
 
   // The bank line carries the note too - it's the line the transaction
   // lists and the search show, and it's what the Note box is refilled from
   // while the transaction is saved but not yet posted.
-  await setDescription(tx, [journalLineId], note, userId);
+  await setDescription(tx, [journalLineId], note, userId)
 }
 
 // A Transfer is imported twice - once from each bank's statement - as two
@@ -206,30 +199,30 @@ export async function postTransfer(
   counterpartLineId?: number,
 ) {
   if (target.id === bankLine.accountId) {
-    throw new Error("A transfer must be to a different bank account.");
+    throw new Error("A transfer must be to a different bank account.")
   }
 
-  const otherLines = await getOtherLines(tx, bankLine.journalId, journalLineId);
-  const [existing] = otherLines;
+  const otherLines = await getOtherLines(tx, bankLine.journalId, journalLineId)
+  const [existing] = otherLines
 
   if (otherLines.length === 1 && existing!.isBankLine) {
     if (existing!.accountId === target.id) {
       // Already matched with this bank - nothing to change; the caller
       // still applies should_post. A note overrides both sides.
-      await setDescription(tx, [journalLineId, existing!.id], note, userId);
-      return;
+      await setDescription(tx, [journalLineId, existing!.id], note, userId)
+      return
     }
     throw new Error(
       "This transaction is already matched as a transfer with a different bank account.",
-    );
+    )
   }
   if (otherLines.length > 1) {
     throw new Error(
       "This transaction is split across several accounts, so it can't be matched as a transfer.",
-    );
+    )
   }
 
-  const matchRange = transferMatchRange(bankLine.date);
+  const matchRange = transferMatchRange(bankLine.date)
 
   // Two rows is enough to tell "one match" from "several". A line the user
   // picked is checked against the same rules again - it may have been matched
@@ -238,32 +231,32 @@ export async function postTransfer(
     lineId: counterpartLineId,
     limit: 2,
     lock: true,
-  });
+  })
 
-  const expected = `${formatZar(-bankLine.amount)} in ${target.name}`;
+  const expected = `${formatZar(-bankLine.amount)} in ${target.name}`
   if (counterpartLineId !== undefined && counterparts.length === 0) {
     throw new Error(
       "The transaction you chose to match with is no longer available - it may have been matched or posted already. Choose the account again to pick another.",
-    );
+    )
   }
   if (counterparts.length > 1) {
     throw new Error(
       `More than one transaction matches ${expected} between ${matchRange.from} and ${matchRange.to}, so it can't be chosen automatically. ` +
         `Match this transfer by hand once the others are sorted out.`,
-    );
+    )
   }
-  const [counterpart] = counterparts;
+  const [counterpart] = counterparts
   if (!counterpart) {
     throw new Error(
       `No matching transaction found: expected ${expected} between ${matchRange.from} and ${matchRange.to}. ` +
         `Check that account's statement has been imported and that the amount and date agree.`,
-    );
+    )
   }
 
   // Switching from a Category to a Transfer: the category line goes, the
   // other bank's line takes its place.
   if (existing) {
-    await tx.delete(journalLine).where(eq(journalLine.id, existing.id));
+    await tx.delete(journalLine).where(eq(journalLine.id, existing.id))
   }
 
   await tx
@@ -280,13 +273,13 @@ export async function postTransfer(
         description: counterpart.description ?? counterpart.note,
       }),
     )
-    .where(eq(journalLine.id, counterpart.lineId));
-  await tx.delete(journal).where(eq(journal.id, counterpart.journalId));
-  await setDescription(tx, [journalLineId, counterpart.lineId], note, userId);
+    .where(eq(journalLine.id, counterpart.lineId))
+  await tx.delete(journal).where(eq(journal.id, counterpart.journalId))
+  await setDescription(tx, [journalLineId, counterpart.lineId], note, userId)
 
   if ((await getEntryTotal(tx, bankLine.journalId)) !== 0) {
     // Can't happen with the filters above - but never commit an
     // unbalanced entry. Throwing rolls the whole save back.
-    throw new Error("Matching this transfer would leave the transaction unbalanced.");
+    throw new Error("Matching this transfer would leave the transaction unbalanced.")
   }
 }

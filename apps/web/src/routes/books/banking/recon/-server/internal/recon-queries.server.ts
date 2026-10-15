@@ -10,22 +10,10 @@ import {
   journalLine,
   recon,
   withUpdate,
-} from "@app/db/direct";
-import {
-  and,
-  asc,
-  desc,
-  eq,
-  exists,
-  inArray,
-  isNotNull,
-  isNull,
-  ne,
-  or,
-  sql,
-} from "drizzle-orm";
-import { alias } from "drizzle-orm/pg-core";
-import { findOpeningBalanceEntry } from "../../../-server/internal/opening-balance.server.ts";
+} from "@app/db/direct"
+import { and, asc, desc, eq, exists, inArray, isNotNull, isNull, ne, or, sql } from "drizzle-orm"
+import { alias } from "drizzle-orm/pg-core"
+import { findOpeningBalanceEntry } from "../../../-server/internal/opening-balance.server.ts"
 
 // Where a reconciliation's opening balance comes from:
 //  - after a balanced reconciliation: its closing balance (locked) - the
@@ -41,14 +29,14 @@ export async function resolveReconSetup(bankAccountId: number) {
     .from(recon)
     .where(and(eq(recon.bankAccountId, bankAccountId), isNull(recon.ballancedAt)))
     .orderBy(desc(recon.id))
-    .limit(1);
+    .limit(1)
 
   const [lastBalanced] = await db
     .select({ closingBallance: recon.closingBallance, statementDate: recon.statementDate })
     .from(recon)
     .where(and(eq(recon.bankAccountId, bankAccountId), isNotNull(recon.ballancedAt)))
     .orderBy(desc(recon.ballancedAt), desc(recon.id))
-    .limit(1);
+    .limit(1)
 
   if (lastBalanced) {
     return {
@@ -56,17 +44,17 @@ export async function resolveReconSetup(bankAccountId: number) {
       openingBalance: lastBalanced.closingBallance,
       openingBalanceLocked: true,
       previousStatementDate: lastBalanced.statementDate,
-    };
+    }
   }
 
-  const takeOn = await findOpeningBalanceEntry(bankAccountId);
+  const takeOn = await findOpeningBalanceEntry(bankAccountId)
   if (takeOn !== null) {
     return {
       openRecon,
       openingBalance: takeOn.amount,
       openingBalanceLocked: true,
       previousStatementDate: takeOn.date,
-    };
+    }
   }
 
   return {
@@ -74,29 +62,29 @@ export async function resolveReconSetup(bankAccountId: number) {
     openingBalance: openRecon?.openingBallance ?? null,
     openingBalanceLocked: false,
     previousStatementDate: null,
-  };
+  }
 }
 
 // ---- The lines a reconciliation lists, and ticking them off ----
 
 // A transaction or the plain connection - both can run these queries.
-export type Tx = Pick<typeof db, "select" | "update">;
+export type Tx = Pick<typeof db, "select" | "update">
 
 export type ReconRow = {
-  id: number;
-  bankAccountId: number;
-  statementDate: string;
-  isBalanced: boolean;
-};
+  id: number
+  bankAccountId: number
+  statementDate: string
+  isBalanced: boolean
+}
 
 // "yyyy-MM-dd" -> the Date a date column (mode: "date") compares against, on
 // the calendar date in UTC so time zones can't shift the day.
-const toDate = (day: string) => new Date(`${day}T00:00:00Z`);
+const toDate = (day: string) => new Date(`${day}T00:00:00Z`)
 
 // The date a bank line has on its own bank's statement: the line's own date
 // when it has one (the other side of a matched Transfer, which that bank may
 // date differently from the entry), otherwise the entry's date.
-const lineDate = sql`coalesce(${journalLine.statementDate}, ${journal.date})`;
+const lineDate = sql`coalesce(${journalLine.statementDate}, ${journal.date})`
 
 // The lines a reconciliation shows: the bank account's posted lines that
 // were categorised to an Income or Expense account, or matched as a Transfer
@@ -106,9 +94,9 @@ const lineDate = sql`coalesce(${journalLine.statementDate}, ${journal.date})`;
 // while it's still open - are unreconciled and dated up to the statement's
 // end date.
 export async function listReconLines(tx: Tx, row: ReconRow) {
-  const otherLine = alias(journalLine, "other_line");
-  const otherAccount = alias(account, "other_account");
-  const otherType = alias(accountType, "other_type");
+  const otherLine = alias(journalLine, "other_line")
+  const otherAccount = alias(account, "other_account")
+  const otherType = alias(accountType, "other_type")
   const isReconcilable = exists(
     tx
       .select({ one: otherLine.id })
@@ -123,13 +111,13 @@ export async function listReconLines(tx: Tx, row: ReconRow) {
           or(inArray(otherType.name, ["Income", "Expense"]), isNotNull(bankAccount.id)),
         ),
       ),
-  );
+  )
 
   const stillUnreconciled = and(
     isNull(journalLine.bankReconId),
     eq(journalLine.isReconciled, false),
     sql`${lineDate} <= ${row.statementDate}::date`,
-  );
+  )
 
   const lines = await tx
     .select({
@@ -152,7 +140,7 @@ export async function listReconLines(tx: Tx, row: ReconRow) {
           : or(eq(journalLine.bankReconId, row.id), stillUnreconciled),
       ),
     )
-    .orderBy(asc(lineDate), asc(journalLine.id));
+    .orderBy(asc(lineDate), asc(journalLine.id))
 
   return lines.map(({ journalLineId, date, note, description, amount, included }) => ({
     journalLineId,
@@ -160,7 +148,7 @@ export async function listReconLines(tx: Tx, row: ReconRow) {
     description: description ?? note,
     amount,
     included,
-  }));
+  }))
 }
 
 // Makes the reconciliation's ticked lines exactly `includedLineIds`: ticks
@@ -173,17 +161,17 @@ export async function applyReconSelection(
   includedLineIds: readonly number[],
   userId: string,
 ): Promise<number> {
-  const eligible = await listReconLines(tx, row);
-  const eligibleIds = new Set(eligible.map((line) => line.journalLineId));
+  const eligible = await listReconLines(tx, row)
+  const eligibleIds = new Set(eligible.map((line) => line.journalLineId))
   if (includedLineIds.some((id) => !eligibleIds.has(id))) {
     throw new Error(
       "Some of the ticked transactions can't be reconciled here any more - reload the page.",
-    );
+    )
   }
 
-  const wanted = new Set(includedLineIds);
-  const toTick = eligible.filter((line) => wanted.has(line.journalLineId) && !line.included);
-  const toRelease = eligible.filter((line) => !wanted.has(line.journalLineId) && line.included);
+  const wanted = new Set(includedLineIds)
+  const toTick = eligible.filter((line) => wanted.has(line.journalLineId) && !line.included)
+  const toRelease = eligible.filter((line) => !wanted.has(line.journalLineId) && line.included)
 
   if (toTick.length > 0) {
     await tx
@@ -194,7 +182,7 @@ export async function applyReconSelection(
           journalLine.id,
           toTick.map((line) => line.journalLineId),
         ),
-      );
+      )
   }
   if (toRelease.length > 0) {
     await tx
@@ -205,10 +193,10 @@ export async function applyReconSelection(
           journalLine.id,
           toRelease.map((line) => line.journalLineId),
         ),
-      );
+      )
   }
 
   return eligible
     .filter((line) => wanted.has(line.journalLineId))
-    .reduce((cents, line) => cents + Math.round(line.amount * 100), 0);
+    .reduce((cents, line) => cents + Math.round(line.amount * 100), 0)
 }

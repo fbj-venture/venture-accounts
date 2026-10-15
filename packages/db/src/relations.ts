@@ -1,5 +1,5 @@
-import { defineRelations } from "drizzle-orm";
-import * as schema from "./schema.js";
+import { defineRelations } from "drizzle-orm"
+import * as schema from "./schema.js"
 
 // Drizzle v1 relations (Relational Queries v2), used by `db.query.*`. One
 // definition for the whole schema, passed to drizzle({ relations }) in both
@@ -87,4 +87,4 @@ export const relations = defineRelations(schema, (r) => ({
       optional: false,
     }),
   },
-}));
+}))

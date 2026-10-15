@@ -1,30 +1,30 @@
-import { Button } from "#/components/ui/button.tsx";
-import { Checkbox } from "#/components/ui/checkbox.tsx";
+import { Button } from "#/components/ui/button.tsx"
+import { Checkbox } from "#/components/ui/checkbox.tsx"
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from "#/components/ui/dialog.tsx";
-import { Field, FieldLabel } from "#/components/ui/field.tsx";
-import { Input } from "#/components/ui/input.tsx";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "#/components/ui/dialog.tsx"
+import { Field, FieldLabel } from "#/components/ui/field.tsx"
+import { Input } from "#/components/ui/input.tsx"
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "#/components/ui/select.tsx";
-import { LoaderCircleIcon, PlusIcon } from "lucide-react";
-import { useState, type FormEvent } from "react";
-import { MAX_ACCOUNT_NAME_LENGTH, createAccount } from "../-server/accounts.server.ts";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "#/components/ui/select.tsx"
+import { LoaderCircleIcon, PlusIcon } from "lucide-react"
+import { useState, type FormEvent } from "react"
+import { MAX_ACCOUNT_NAME_LENGTH, createAccount } from "../-server/accounts.server.ts"
 
 // The value of the <no parent> choice: a Select item can't have an empty one.
-const NO_PARENT = "none";
+const NO_PARENT = "none"
 
-export type ParentChoice = { id: number; name: string; accountTypeId: number };
+export type ParentChoice = { id: number; name: string; accountTypeId: number }
 
 // Adds a new Account. Its Account Type is chosen here, unless it is put under
 // a parent: a sub-account takes its parent's type.
@@ -34,42 +34,42 @@ export function AddAccountDialog({
   onClose,
   onAdded,
 }: {
-  accountTypes: { id: number; name: string }[];
+  accountTypes: { id: number; name: string }[]
   /** The Accounts that can be a parent: every one that isn't a sub-account itself. */
-  parents: ParentChoice[];
-  onClose: () => void;
+  parents: ParentChoice[]
+  onClose: () => void
   /** Called after the account was added, to reload the list. */
-  onAdded: () => void | Promise<unknown>;
+  onAdded: () => void | Promise<unknown>
 }) {
-  const [name, setName] = useState("");
-  const [parentValue, setParentValue] = useState(NO_PARENT);
-  const [typeValue, setTypeValue] = useState("");
-  const [isArchived, setIsArchived] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [name, setName] = useState("")
+  const [parentValue, setParentValue] = useState(NO_PARENT)
+  const [typeValue, setTypeValue] = useState("")
+  const [isArchived, setIsArchived] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const parent = parents.find((choice) => String(choice.id) === parentValue);
-  const trimmed = name.trim();
-  const canSave = trimmed !== "" && typeValue !== "" && !saving;
+  const parent = parents.find((choice) => String(choice.id) === parentValue)
+  const trimmed = name.trim()
+  const canSave = trimmed !== "" && typeValue !== "" && !saving
 
   // A sub-account has its parent's type, so choosing a parent sets the type to
   // match (and the type select is locked while a parent is chosen). Going back
   // to <no parent> leaves the type as it was, free to change.
   function changeParent(value: string) {
-    setParentValue(value);
-    const chosen = parents.find((choice) => String(choice.id) === value);
+    setParentValue(value)
+    const chosen = parents.find((choice) => String(choice.id) === value)
     if (chosen) {
-      setTypeValue(String(chosen.accountTypeId));
+      setTypeValue(String(chosen.accountTypeId))
     }
   }
 
   async function save(event: FormEvent) {
-    event.preventDefault();
+    event.preventDefault()
     if (!canSave) {
-      return;
+      return
     }
-    setSaving(true);
-    setError(null);
+    setSaving(true)
+    setError(null)
     try {
       await createAccount({
         data: {
@@ -78,13 +78,13 @@ export function AddAccountDialog({
           accountTypeId: Number(typeValue),
           parentId: parent ? parent.id : null,
         },
-      });
-      await onAdded();
-      onClose();
+      })
+      await onAdded()
+      onClose()
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Couldn't add the account.");
+      setError(caught instanceof Error ? caught.message : "Couldn't add the account.")
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
   }
 
@@ -165,5 +165,5 @@ export function AddAccountDialog({
         </form>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

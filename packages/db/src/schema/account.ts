@@ -1,6 +1,6 @@
-import { boolean, foreignKey, integer, pgTable, serial, text } from "drizzle-orm/pg-core";
-import { accountType } from "./account-type.js";
-import { auditColumns } from "./audit.js";
+import { boolean, foreignKey, integer, pgTable, serial, text } from "drizzle-orm/pg-core"
+import { accountType } from "./account-type.js"
+import { auditColumns } from "./audit.js"
 
 /**
  * Account ("Ledger account" in docs/Ledger Ubiquitous Language.md)
@@ -13,22 +13,24 @@ import { auditColumns } from "./audit.js";
  * real institution/account-number details for a bank account live
  * separately in bankAccountDetails, 1:1 linked to a row here.
  */
-export const account = pgTable("account", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull().unique(),
-  description: text("description"),
-  isArchived: boolean().notNull().default(false),
-  account_type: integer("account_type")
-    .notNull()
-    .references(() => accountType.id),
-  parentId: integer(),
+export const account = pgTable(
+  "account",
+  {
+    id: serial("id").primaryKey(),
+    name: text("name").notNull().unique(),
+    description: text("description"),
+    isArchived: boolean().notNull().default(false),
+    account_type: integer("account_type")
+      .notNull()
+      .references(() => accountType.id),
+    parentId: integer(),
 
-  ...auditColumns,
-},
+    ...auditColumns,
+  },
   (table) => [
     foreignKey({
       columns: [table.parentId],
       foreignColumns: [table.id],
-    })
-  ]
-);
+    }),
+  ],
+)

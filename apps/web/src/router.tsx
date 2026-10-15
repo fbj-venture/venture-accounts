@@ -1,12 +1,12 @@
-import { QueryClient } from '@tanstack/react-query'
-import { createRouter as createTanStackRouter } from '@tanstack/react-router'
-import { setupRouterSsrQueryIntegration } from '@tanstack/react-router-ssr-query'
+import { QueryClient } from "@tanstack/react-query"
+import { createRouter as createTanStackRouter } from "@tanstack/react-router"
+import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query"
 // Type-only: loads @tanstack/start-client-core's declare-module augmentation
 // (adds the `server` route option) into the program. Nothing in src/
 // otherwise imports @tanstack/react-start's main entry, so without this,
 // createFileRoute(...)({ server: {...} }) doesn't type-check.
-import type {} from '@tanstack/react-start'
-import { routeTree } from './routeTree.gen'
+import type {} from "@tanstack/react-start"
+import { routeTree } from "./routeTree.gen"
 
 export function getRouter() {
   // One per request on the server (never a module singleton, or users would
@@ -18,7 +18,7 @@ export function getRouter() {
   const router = createTanStackRouter({
     routeTree,
     scrollRestoration: true,
-    defaultPreload: 'intent',
+    defaultPreload: "intent",
     defaultPreloadStaleTime: 0,
     context: { queryClient },
   })
@@ -30,7 +30,7 @@ export function getRouter() {
   return router
 }
 
-declare module '@tanstack/react-router' {
+declare module "@tanstack/react-router" {
   interface Register {
     router: ReturnType<typeof getRouter>
   }

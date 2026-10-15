@@ -1,27 +1,27 @@
-import { Button } from "#/components/ui/button.tsx";
-import { Checkbox } from "#/components/ui/checkbox.tsx";
+import { Button } from "#/components/ui/button.tsx"
+import { Checkbox } from "#/components/ui/checkbox.tsx"
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from "#/components/ui/dialog.tsx";
-import { formatZar } from "#/lib/currency.ts";
-import { formatDate } from "#/lib/dates.ts";
-import { LoaderCircleIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "#/components/ui/dialog.tsx"
+import { formatZar } from "#/lib/currency.ts"
+import { formatDate } from "#/lib/dates.ts"
+import { LoaderCircleIcon } from "lucide-react"
+import { useEffect, useState } from "react"
 import {
-    findTransferMatches,
-    type AccountTransaction,
-    type TransferMatches,
-} from "../-server/transactions.server.ts";
+  findTransferMatches,
+  type AccountTransaction,
+  type TransferMatches,
+} from "../-server/transactions.server.ts"
 
 type State =
   | { status: "loading" }
   | { status: "error"; message: string }
-  | { status: "ready"; result: TransferMatches };
+  | { status: "ready"; result: TransferMatches }
 
 // Shown a moment after a bank account is picked for a row: looks for the
 // other bank's transactions this one could be a Transfer with, and lets the
@@ -37,41 +37,42 @@ export function TransferMatchDialog({
   onSelect,
   onCancel,
 }: {
-  transaction: AccountTransaction;
-  accountId: number;
-  onSelect: (counterpartLineId: number) => void;
-  onCancel: () => void;
+  transaction: AccountTransaction
+  accountId: number
+  onSelect: (counterpartLineId: number) => void
+  onCancel: () => void
 }) {
-  const [state, setState] = useState<State>({ status: "loading" });
-  const [chosenLineId, setChosenLineId] = useState<number | null>(null);
+  const [state, setState] = useState<State>({ status: "loading" })
+  const [chosenLineId, setChosenLineId] = useState<number | null>(null)
 
-  const { journalLineId } = transaction;
+  const { journalLineId } = transaction
   useEffect(() => {
-    let cancelled = false;
+    let cancelled = false
     findTransferMatches({ data: { journalLineId, accountId } }).then(
       (result) => {
         if (cancelled) {
-          return;
+          return
         }
-        setState({ status: "ready", result });
+        setState({ status: "ready", result })
         // The only match is the likely answer - start with it ticked.
         if (result.matches.length === 1) {
-          setChosenLineId(result.matches[0]!.lineId);
+          setChosenLineId(result.matches[0]!.lineId)
         }
       },
       (caught) =>
         !cancelled &&
         setState({
           status: "error",
-          message: caught instanceof Error ? caught.message : "Couldn't look for matching transactions.",
+          message:
+            caught instanceof Error ? caught.message : "Couldn't look for matching transactions.",
         }),
-    );
+    )
     return () => {
-      cancelled = true;
-    };
-  }, [journalLineId, accountId]);
+      cancelled = true
+    }
+  }, [journalLineId, accountId])
 
-  const result = state.status === "ready" ? state.result : null;
+  const result = state.status === "ready" ? state.result : null
 
   return (
     <Dialog open onOpenChange={(open) => !open && onCancel()}>
@@ -107,7 +108,9 @@ export function TransferMatchDialog({
                 <label className="flex cursor-pointer items-center gap-3 rounded-md px-2 py-2 text-sm hover:bg-accent">
                   <Checkbox
                     checked={chosenLineId === match.lineId}
-                    onCheckedChange={(checked) => setChosenLineId(checked === true ? match.lineId : null)}
+                    onCheckedChange={(checked) =>
+                      setChosenLineId(checked === true ? match.lineId : null)
+                    }
                   />
                   <span className="tabular-nums">{formatDate(match.date)}</span>
                   <span className="min-w-0 flex-1 truncate">{match.description}</span>
@@ -123,12 +126,16 @@ export function TransferMatchDialog({
             {result && result.matches.length > 0 ? "Cancel" : "Close"}
           </Button>
           {result && result.matches.length > 0 ? (
-            <Button type="button" disabled={chosenLineId === null} onClick={() => chosenLineId !== null && onSelect(chosenLineId)}>
+            <Button
+              type="button"
+              disabled={chosenLineId === null}
+              onClick={() => chosenLineId !== null && onSelect(chosenLineId)}
+            >
               Select
             </Button>
           ) : null}
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

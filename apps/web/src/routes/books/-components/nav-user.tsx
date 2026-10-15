@@ -7,21 +7,17 @@ import {
   Moon,
   Settings,
   Sun,
-  User as UserIcon
-} from "lucide-react";
+  User as UserIcon,
+} from "lucide-react"
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "#/components/ui/avatar.tsx";
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "#/components/ui/dialog.tsx";
+} from "#/components/ui/dialog.tsx"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,43 +31,39 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from "#/components/ui/dropdown-menu.tsx";
+} from "#/components/ui/dropdown-menu.tsx"
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "#/components/ui/sidebar.tsx";
-import { useTheme, type Theme } from "#/hooks/use-theme.ts";
-import { authClient } from "#/lib/auth-client";
-import type { SessionUser } from "@app/models";
-import { Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+} from "#/components/ui/sidebar.tsx"
+import { useTheme, type Theme } from "#/hooks/use-theme.ts"
+import { authClient } from "#/lib/auth-client"
+import type { SessionUser } from "@app/models"
+import { Link, useNavigate } from "@tanstack/react-router"
+import { useState } from "react"
 
-export function NavUser({
-  user,
-}: {
-  user: SessionUser;
-}) {
-  const { isMobile } = useSidebar();
-  const navigate = useNavigate();
-  const [theme, setTheme] = useTheme();
-  const ThemeIcon = theme === "light" ? Sun : theme === "dark" ? Moon : Monitor;
+export function NavUser({ user }: { user: SessionUser }) {
+  const { isMobile } = useSidebar()
+  const navigate = useNavigate()
+  const [theme, setTheme] = useTheme()
+  const ThemeIcon = theme === "light" ? Sun : theme === "dark" ? Moon : Monitor
 
   // null: closed. Otherwise the progress of the reset email the dialog reports.
   const [passwordEmail, setPasswordEmail] = useState<
     null | { status: "sending" } | { status: "sent" } | { status: "error"; message: string }
-  >(null);
+  >(null)
 
   // Emails the signed-in user a link (to /set-password) to choose a new
   // password - the same email as "Forgot your password?", so it is throttled
   // the same way.
   const changePassword = async () => {
-    setPasswordEmail({ status: "sending" });
+    setPasswordEmail({ status: "sending" })
     const { error } = await authClient.requestPasswordReset({
       email: user.email,
       redirectTo: "/set-password",
-    });
+    })
     setPasswordEmail(
       error
         ? {
@@ -82,13 +74,13 @@ export function NavUser({
                 : (error.message ?? "Couldn't send the email."),
           }
         : { status: "sent" },
-    );
-  };
+    )
+  }
 
   const signout = async () => {
-    await authClient.signOut();
-    await navigate({ to: "/" });
-  };
+    await authClient.signOut()
+    await navigate({ to: "/" })
+  }
 
   return (
     <SidebarMenu>
@@ -204,5 +196,5 @@ export function NavUser({
         </DialogContent>
       </Dialog>
     </SidebarMenu>
-  );
+  )
 }

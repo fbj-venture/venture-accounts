@@ -1,7 +1,7 @@
-import { drizzle } from "drizzle-orm/node-postgres";
-import { Pool } from "pg";
-import { env } from "@app/env";
-import { relations } from "./relations.js";
+import { drizzle } from "drizzle-orm/node-postgres"
+import { Pool } from "pg"
+import { env } from "@app/env"
+import { relations } from "./relations.js"
 
 // A real TCP connection with its own session/connection pool - for a
 // long-running Node server (e.g. the TanStack Start server) that wants
@@ -15,11 +15,11 @@ import { relations } from "./relations.js";
 // HTTP driver).
 const pool = new Pool({
   connectionString: env.DATABASE_URL_UNPOOLED,
-});
+})
 
 // Drizzle v1 takes a single config object; `relations` (not v0's `schema`)
 // powers db.query.* relational queries.
-export const db = drizzle({ client: pool, relations });
+export const db = drizzle({ client: pool, relations })
 
-export { relations } from "./relations.js";
-export * from "./schema.js";
+export { relations } from "./relations.js"
+export * from "./schema.js"

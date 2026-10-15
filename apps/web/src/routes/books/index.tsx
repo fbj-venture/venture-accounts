@@ -1,17 +1,17 @@
-import { BankAccountCard } from '#/routes/books/-components/bank-account-card';
-import { BankAccountMenu } from '#/routes/books/-components/bank-account-menu';
-import { useSetBreadcrumbs } from '#/routes/books/-lib/breadcrumbs';
-import { getBankAccountBalances } from '#/routes/books/-server/bank-account-balances.server.ts';
-import { createFileRoute } from '@tanstack/react-router';
+import { BankAccountCard } from "#/routes/books/-components/bank-account-card"
+import { BankAccountMenu } from "#/routes/books/-components/bank-account-menu"
+import { useSetBreadcrumbs } from "#/routes/books/-lib/breadcrumbs"
+import { getBankAccountBalances } from "#/routes/books/-server/bank-account-balances.server.ts"
+import { createFileRoute } from "@tanstack/react-router"
 
-export const Route = createFileRoute('/books/')({
+export const Route = createFileRoute("/books/")({
   loader: () => getBankAccountBalances(),
   component: RouteComponent,
-});
+})
 
 function RouteComponent() {
-  useSetBreadcrumbs([{ title: 'Dashboard' }]);
-  const bankAccounts = Route.useLoaderData();
+  useSetBreadcrumbs([{ title: "Dashboard" }])
+  const bankAccounts = Route.useLoaderData()
 
   return (
     <>
@@ -27,5 +27,5 @@ function RouteComponent() {
         ))}
       </div>
     </>
-  );
+  )
 }

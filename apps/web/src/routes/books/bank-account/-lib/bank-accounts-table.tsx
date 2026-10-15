@@ -1,6 +1,6 @@
-import { SortableHeader } from "#/components/sortable-header.tsx";
-import { Button } from "#/components/ui/button.tsx";
-import { Checkbox } from "#/components/ui/checkbox.tsx";
+import { SortableHeader } from "#/components/sortable-header.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import { Checkbox } from "#/components/ui/checkbox.tsx"
 import {
   Table,
   TableBody,
@@ -8,17 +8,17 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "#/components/ui/table.tsx";
-import { Link } from "@tanstack/react-router";
-import { flexRender, type SortingState } from "@tanstack/react-table";
+} from "#/components/ui/table.tsx"
+import { Link } from "@tanstack/react-router"
+import { flexRender, type SortingState } from "@tanstack/react-table"
 import {
   getSortedRowModel,
   useLegacyTable,
   type LegacyColumnDef,
-} from "@tanstack/react-table/legacy";
-import { PencilIcon } from "lucide-react";
-import { useMemo, useState } from "react";
-import type { BankAccountRow } from "../-server/bank-accounts.server.ts";
+} from "@tanstack/react-table/legacy"
+import { PencilIcon } from "lucide-react"
+import { useMemo, useState } from "react"
+import type { BankAccountRow } from "../-server/bank-accounts.server.ts"
 
 // Built once (see the useMemo below): the cells render as components, so
 // columns that were rebuilt on every render would remount them each time.
@@ -60,13 +60,13 @@ function getColumns(): LegacyColumnDef<BankAccountRow>[] {
         </Button>
       ),
     },
-  ];
+  ]
 }
 
 export function BankAccountsTable({ data }: { data: BankAccountRow[] }) {
-  const [sorting, setSorting] = useState<SortingState>([]);
+  const [sorting, setSorting] = useState<SortingState>([])
 
-  const columns = useMemo(() => getColumns(), []);
+  const columns = useMemo(() => getColumns(), [])
 
   const table = useLegacyTable({
     data,
@@ -75,7 +75,7 @@ export function BankAccountsTable({ data }: { data: BankAccountRow[] }) {
     getSortedRowModel: getSortedRowModel(),
     state: { sorting },
     onSortingChange: setSorting,
-  });
+  })
 
   return (
     <>
@@ -114,5 +114,5 @@ export function BankAccountsTable({ data }: { data: BankAccountRow[] }) {
         </TableBody>
       </Table>
     </>
-  );
+  )
 }

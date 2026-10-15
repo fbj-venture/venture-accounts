@@ -1,14 +1,14 @@
-import { requireUser } from "#/lib/require-user.server.ts";
-import { account, bankAccount, db, journal, journalLine, withUpdate } from "@app/db/direct";
-import { createServerFn } from "@tanstack/react-start";
-import { and, asc, desc, eq, ne } from "drizzle-orm";
-import { alias } from "drizzle-orm/pg-core";
+import { requireUser } from "#/lib/require-user.server.ts"
+import { account, bankAccount, db, journal, journalLine, withUpdate } from "@app/db/direct"
+import { createServerFn } from "@tanstack/react-start"
+import { and, asc, desc, eq, ne } from "drizzle-orm"
+import { alias } from "drizzle-orm/pg-core"
 import {
   findTransferCandidates,
   postToCategory,
   postTransfer,
   transferMatchRange,
-} from "./internal/posting.server.ts";
+} from "./internal/posting.server.ts"
 
 // Keep ALL database code inside handlers (or in posting.server.ts, used only
 // from a handler). This file is imported by the route tree, so it's in the
@@ -19,7 +19,7 @@ import {
 // One row per Journal Line ("posting" in docs/Ledger Ubiquitous Language.md)
 // on the account, flattened with its parent Journal Entry ("Transaction" in
 // the UI - never show "journal" or "debit"/"credit" to the user).
-export type AccountTransaction = Awaited<ReturnType<typeof getUnPostedAccountTransactions>>[number];
+export type AccountTransaction = Awaited<ReturnType<typeof getUnPostedAccountTransactions>>[number]
 
 export const getUnPostedAccountTransactions = createServerFn({ method: "GET" })
   .validator((accountId: number) => accountId)
@@ -27,7 +27,7 @@ export const getUnPostedAccountTransactions = createServerFn({ method: "GET" })
     // The entry's other Journal Line(s) - the side already saved against a
     // Category, or the other bank's line for a matched Transfer - so the
     // table can show which account was chosen.
-    const otherLine = alias(journalLine, "other_line");
+    const otherLine = alias(journalLine, "other_line")
     const rows = await db
       .select({
         journalLineId: journalLine.id,
@@ -44,38 +44,33 @@ export const getUnPostedAccountTransactions = createServerFn({ method: "GET" })
         otherLine,
         and(eq(otherLine.journalEntryId, journal.id), ne(otherLine.id, journalLine.id)),
       )
-      .where(
-        and(
-          eq(journalLine.accountId, accountId),
-          eq(journal.isPosted, false)
-        )
-      )
+      .where(and(eq(journalLine.accountId, accountId), eq(journal.isPosted, false)))
       // Newest first. otherLine.id stays ascending so the de-duplication below keeps
       // the first of a split entry's lines.
-      .orderBy(desc(journal.date), desc(journalLine.id), asc(otherLine.id));
+      .orderBy(desc(journal.date), desc(journalLine.id), asc(otherLine.id))
 
     // Saving only ever adds one other line, but an entry split across
     // several would repeat the bank line once per split - keep the first so
     // there's still one row per bank line.
-    const seen = new Set<number>();
+    const seen = new Set<number>()
     return rows.filter((row) => {
       if (seen.has(row.journalLineId)) {
-        return false;
+        return false
       }
-      seen.add(row.journalLineId);
-      return true;
-    });
-  });
+      seen.add(row.journalLineId)
+      return true
+    })
+  })
 
 // The other bank's transactions a Transfer from this bank line to
 // `accountId` could be matched with (see findTransferCandidates). Read-only:
 // the Select dialog lists them, and the user's pick goes back with Save.
-export type TransferMatches = Awaited<ReturnType<typeof findTransferMatches>>;
+export type TransferMatches = Awaited<ReturnType<typeof findTransferMatches>>
 
 export const findTransferMatches = createServerFn({ method: "POST" })
   .validator((data: { journalLineId: number; accountId: number }) => data)
   .handler(async ({ data }) => {
-    await requireUser();
+    await requireUser()
     return await db.transaction(async (tx) => {
       const [bankLine] = await tx
         .select({
@@ -87,30 +82,30 @@ export const findTransferMatches = createServerFn({ method: "POST" })
         })
         .from(journalLine)
         .innerJoin(journal, eq(journal.id, journalLine.journalEntryId))
-        .where(eq(journalLine.id, data.journalLineId));
+        .where(eq(journalLine.id, data.journalLineId))
       if (!bankLine) {
-        throw new Error("Transaction not found.");
+        throw new Error("Transaction not found.")
       }
       if (bankLine.isPosted) {
-        throw new Error("Transaction has already been posted.");
+        throw new Error("Transaction has already been posted.")
       }
 
       const [target] = await tx
         .select({ id: account.id, name: account.name, bankAccountId: bankAccount.id })
         .from(account)
         .leftJoin(bankAccount, eq(bankAccount.id, account.id))
-        .where(eq(account.id, data.accountId));
+        .where(eq(account.id, data.accountId))
       if (!target || target.bankAccountId === null) {
-        throw new Error("That is not a bank account.");
+        throw new Error("That is not a bank account.")
       }
       if (target.id === bankLine.accountId) {
-        throw new Error("A transfer must be to a different bank account.");
+        throw new Error("A transfer must be to a different bank account.")
       }
 
       const candidates = await findTransferCandidates(tx, bankLine, target.id, {
         limit: 20,
         lock: false,
-      });
+      })
       return {
         accountName: target.name,
         range: transferMatchRange(bankLine.date),
@@ -120,9 +115,9 @@ export const findTransferMatches = createServerFn({ method: "POST" })
           description: candidate.description ?? candidate.note,
           amount: candidate.amount,
         })),
-      };
-    });
-  });
+      }
+    })
+  })
 
 // Saves the other side of a bank transaction - the second half of its
 // double entry. Picking a Category adds (or moves) a balancing line on that
@@ -131,18 +126,20 @@ export const findTransferMatches = createServerFn({ method: "POST" })
 // drops off the un-posted list. Runs in one database transaction, so any
 // failure leaves nothing half-saved.
 export const postTransaction = createServerFn({ method: "POST" })
-  .validator((data: {
-    journalLineId: number;
-    accountId: number,
-    should_post: boolean;
-    /** The user's note for the line(s); blank leaves the descriptions as imported. */
-    note?: string;
-    /** For a Transfer: the other bank's line picked in the Select dialog. */
-    counterpartLineId?: number;
-  }) => data)
+  .validator(
+    (data: {
+      journalLineId: number
+      accountId: number
+      should_post: boolean
+      /** The user's note for the line(s); blank leaves the descriptions as imported. */
+      note?: string
+      /** For a Transfer: the other bank's line picked in the Select dialog. */
+      counterpartLineId?: number
+    }) => data,
+  )
   .handler(async ({ data }) => {
-    const { id: userId } = await requireUser();
-    const note = (data.note ?? "").trim();
+    const { id: userId } = await requireUser()
+    const note = (data.note ?? "").trim()
     await db.transaction(async (tx) => {
       // Lock the entry so two saves on the same transaction can't both
       // add a balancing line, or race to change it.
@@ -159,21 +156,21 @@ export const postTransaction = createServerFn({ method: "POST" })
         .from(journalLine)
         .innerJoin(journal, eq(journal.id, journalLine.journalEntryId))
         .where(eq(journalLine.id, data.journalLineId))
-        .for("update", { of: journal });
+        .for("update", { of: journal })
       if (!bankLine) {
-        throw new Error("Transaction not found.");
+        throw new Error("Transaction not found.")
       }
       if (bankLine.isPosted) {
-        throw new Error("Transaction has already been posted.");
+        throw new Error("Transaction has already been posted.")
       }
 
       const [target] = await tx
         .select({ id: account.id, name: account.name, bankAccountId: bankAccount.id })
         .from(account)
         .leftJoin(bankAccount, eq(bankAccount.id, account.id))
-        .where(eq(account.id, data.accountId));
+        .where(eq(account.id, data.accountId))
       if (!target) {
-        throw new Error("Account not found.");
+        throw new Error("Account not found.")
       }
 
       if (target.bankAccountId !== null) {
@@ -185,16 +182,16 @@ export const postTransaction = createServerFn({ method: "POST" })
           userId,
           note,
           data.counterpartLineId,
-        );
+        )
       } else {
-        await postToCategory(tx, data.journalLineId, bankLine, target.id, userId, note);
+        await postToCategory(tx, data.journalLineId, bankLine, target.id, userId, note)
       }
 
       if (data.should_post) {
         await tx
           .update(journal)
           .set(withUpdate(userId, { isPosted: true }))
-          .where(eq(journal.id, bankLine.journalId));
+          .where(eq(journal.id, bankLine.journalId))
       }
-    });
-  });
+    })
+  })

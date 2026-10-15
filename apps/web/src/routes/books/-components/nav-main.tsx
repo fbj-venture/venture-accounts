@@ -1,12 +1,16 @@
-import { setNavSectionOpen, useNavSectionsOpen, type NavSectionsOpen } from "#/hooks/use-nav-sections-open.ts";
-import { ChevronRight } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import {
+  setNavSectionOpen,
+  useNavSectionsOpen,
+  type NavSectionsOpen,
+} from "#/hooks/use-nav-sections-open.ts"
+import { ChevronRight } from "lucide-react"
+import { useEffect, useRef, useState } from "react"
 
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "#/components/ui/collapsible.tsx";
+} from "#/components/ui/collapsible.tsx"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +18,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "#/components/ui/dropdown-menu.tsx";
+} from "#/components/ui/dropdown-menu.tsx"
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -25,29 +29,29 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
   useSidebar,
-} from "#/components/ui/sidebar.tsx";
-import type { NavItem } from "#/routes/books/-lib/nav-item.ts";
+} from "#/components/ui/sidebar.tsx"
+import type { NavItem } from "#/routes/books/-lib/nav-item.ts"
 
 // How long the menu stays open after the pointer leaves, so it can cross the
 // small gap between the icon and the menu.
-const HOVER_CLOSE_DELAY_MS = 150;
+const HOVER_CLOSE_DELAY_MS = 150
 
 // A collapsed sidebar shows only each category's icon. Hovering one opens this
 // menu beside it: the category as a heading (not selectable) and every item in
 // it, with its icon.
 function CollapsedCategoryMenu({ item }: { item: NavItem }) {
-  const [open, setOpen] = useState(false);
-  const closeTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const [open, setOpen] = useState(false)
+  const closeTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   const show = () => {
-    clearTimeout(closeTimer.current);
-    setOpen(true);
-  };
+    clearTimeout(closeTimer.current)
+    setOpen(true)
+  }
   const hideSoon = () => {
-    clearTimeout(closeTimer.current);
-    closeTimer.current = setTimeout(() => setOpen(false), HOVER_CLOSE_DELAY_MS);
-  };
-  useEffect(() => () => clearTimeout(closeTimer.current), []);
+    clearTimeout(closeTimer.current)
+    closeTimer.current = setTimeout(() => setOpen(false), HOVER_CLOSE_DELAY_MS)
+  }
+  useEffect(() => () => clearTimeout(closeTimer.current), [])
 
   return (
     <SidebarMenuItem>
@@ -89,7 +93,7 @@ function CollapsedCategoryMenu({ item }: { item: NavItem }) {
         </DropdownMenuContent>
       </DropdownMenu>
     </SidebarMenuItem>
-  );
+  )
 }
 
 // savedSections: the open/closed state of the sections the server drew the
@@ -98,12 +102,12 @@ export function NavAccounts({
   items,
   savedSections,
 }: {
-  items: NavItem[];
-  savedSections: NavSectionsOpen;
+  items: NavItem[]
+  savedSections: NavSectionsOpen
 }) {
-  const sections = useNavSectionsOpen(savedSections);
-  const { state, isMobile } = useSidebar();
-  const collapsed = state === "collapsed" && !isMobile;
+  const sections = useNavSectionsOpen(savedSections)
+  const { state, isMobile } = useSidebar()
+  const collapsed = state === "collapsed" && !isMobile
 
   return (
     <SidebarGroup>
@@ -113,40 +117,40 @@ export function NavAccounts({
           collapsed ? (
             <CollapsedCategoryMenu key={item.title} item={item} />
           ) : (
-          <Collapsible
-            key={item.title}
-            asChild
-            open={sections[item.title] ?? item.isActive ?? false}
-            onOpenChange={(open) => setNavSectionOpen(item.title, open)}
-            className="group/collapsible"
-          >
-            <SidebarMenuItem>
-              <CollapsibleTrigger asChild>
-                <SidebarMenuButton>
-                  {item.icon && <item.icon />}
-                  <span>{item.title}</span>
-                  <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                </SidebarMenuButton>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <SidebarMenuSub>
-                  {item.items?.map((subItem) => (
-                    <SidebarMenuSubItem key={subItem.title}>
-                      <SidebarMenuSubButton asChild>
-                        <a href={subItem.url}>
-                          {subItem.icon && <subItem.icon />}
-                          <span>{subItem.title}</span>
-                        </a>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  ))}
-                </SidebarMenuSub>
-              </CollapsibleContent>
-            </SidebarMenuItem>
-          </Collapsible>
+            <Collapsible
+              key={item.title}
+              asChild
+              open={sections[item.title] ?? item.isActive ?? false}
+              onOpenChange={(open) => setNavSectionOpen(item.title, open)}
+              className="group/collapsible"
+            >
+              <SidebarMenuItem>
+                <CollapsibleTrigger asChild>
+                  <SidebarMenuButton>
+                    {item.icon && <item.icon />}
+                    <span>{item.title}</span>
+                    <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                  </SidebarMenuButton>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <SidebarMenuSub>
+                    {item.items?.map((subItem) => (
+                      <SidebarMenuSubItem key={subItem.title}>
+                        <SidebarMenuSubButton asChild>
+                          <a href={subItem.url}>
+                            {subItem.icon && <subItem.icon />}
+                            <span>{subItem.title}</span>
+                          </a>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    ))}
+                  </SidebarMenuSub>
+                </CollapsibleContent>
+              </SidebarMenuItem>
+            </Collapsible>
           ),
         )}
       </SidebarMenu>
     </SidebarGroup>
-  );
+  )
 }

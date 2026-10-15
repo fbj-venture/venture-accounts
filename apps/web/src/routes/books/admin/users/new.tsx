@@ -1,63 +1,61 @@
-import { Button } from '#/components/ui/button.tsx';
-import { Field, FieldDescription, FieldGroup, FieldLabel } from '#/components/ui/field.tsx';
-import { Input } from '#/components/ui/input.tsx';
+import { Button } from "#/components/ui/button.tsx"
+import { Field, FieldDescription, FieldGroup, FieldLabel } from "#/components/ui/field.tsx"
+import { Input } from "#/components/ui/input.tsx"
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '#/components/ui/select.tsx';
-import { useSetBreadcrumbs } from '#/routes/books/-lib/breadcrumbs.ts';
-import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
-import { UserPlusIcon } from 'lucide-react';
-import { useState } from 'react';
-import { USER_ROLES, createUser, sendUserInvitation } from './-server/users.server.ts';
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "#/components/ui/select.tsx"
+import { useSetBreadcrumbs } from "#/routes/books/-lib/breadcrumbs.ts"
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
+import { UserPlusIcon } from "lucide-react"
+import { useState } from "react"
+import { USER_ROLES, createUser, sendUserInvitation } from "./-server/users.server.ts"
 
 // A static "new" segment outranks the dynamic $id route, so this is matched
 // before $id.tsx.
-export const Route = createFileRoute('/books/admin/users/new')({
+export const Route = createFileRoute("/books/admin/users/new")({
   component: RouteComponent,
-});
+})
 
 function RouteComponent() {
-  const navigate = useNavigate();
-  useSetBreadcrumbs([
-    { title: 'Users', url: '/books/admin/users' },
-    { title: 'New user' },
-  ]);
+  const navigate = useNavigate()
+  useSetBreadcrumbs([{ title: "Users", url: "/books/admin/users" }, { title: "New user" }])
 
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [role, setRole] = useState<string>('user');
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
+  const [role, setRole] = useState<string>("user")
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   // Set when the user was created but their invitation email wasn't sent.
-  const [created, setCreated] = useState<{ id: string; emailError: string } | null>(null);
-  const [resend, setResend] = useState<'idle' | 'sending' | 'sent' | string>('idle');
+  const [created, setCreated] = useState<{ id: string; emailError: string } | null>(null)
+  type ResentState = "idle" | "sending" | "sent" | (string & {})
+  const [resend, setResend] = useState<ResentState>("idle")
 
-  const canSubmit = !busy && name.trim() !== '' && email.trim() !== '';
+  const canSubmit = !busy && name.trim() !== "" && email.trim() !== ""
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+    event.preventDefault()
     if (!canSubmit) {
-      return;
+      return
     }
-    setBusy(true);
-    setError(null);
+    setBusy(true)
+    setError(null)
     try {
       const result = await createUser({
         data: { name, email, role },
-      });
+      })
       if (result.invitationEmailError) {
-        setCreated({ id: result.id, emailError: result.invitationEmailError });
-        return;
+        setCreated({ id: result.id, emailError: result.invitationEmailError })
+        return
       }
-      await navigate({ to: '/books/admin/users/$id', params: { id: result.id } });
+      await navigate({ to: "/books/admin/users/$id", params: { id: result.id } })
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Couldn't create the user.");
+      setError(caught instanceof Error ? caught.message : "Couldn't create the user.")
     } finally {
-      setBusy(false);
+      setBusy(false)
     }
   }
 
@@ -73,7 +71,7 @@ function RouteComponent() {
           <p className="text-muted-foreground">
             They can't sign in until they've chosen a password from the invitation link.
           </p>
-          {resend !== 'idle' && resend !== 'sending' && resend !== 'sent' ? (
+          {resend !== "idle" && resend !== "sending" && resend !== "sent" ? (
             <p className="text-destructive" role="alert">
               {resend}
             </p>
@@ -81,18 +79,22 @@ function RouteComponent() {
           <div className="flex gap-2">
             <Button
               type="button"
-              disabled={resend === 'sending' || resend === 'sent'}
+              disabled={resend === "sending" || resend === "sent"}
               onClick={async () => {
-                setResend('sending');
+                setResend("sending")
                 try {
-                  await sendUserInvitation({ data: created.id });
-                  setResend('sent');
+                  await sendUserInvitation({ data: created.id })
+                  setResend("sent")
                 } catch (caught) {
-                  setResend(caught instanceof Error ? caught.message : "Couldn't send the email.");
+                  setResend(caught instanceof Error ? caught.message : "Couldn't send the email.")
                 }
               }}
             >
-              {resend === 'sending' ? 'Sending...' : resend === 'sent' ? 'Invitation sent' : 'Send invitation again'}
+              {resend === "sending"
+                ? "Sending..."
+                : resend === "sent"
+                  ? "Invitation sent"
+                  : "Send invitation again"}
             </Button>
             <Button asChild variant="outline">
               <Link to="/books/admin/users/$id" params={{ id: created.id }}>
@@ -102,7 +104,7 @@ function RouteComponent() {
           </div>
         </div>
       </>
-    );
+    )
   }
 
   return (
@@ -158,10 +160,10 @@ function RouteComponent() {
         <div>
           <Button type="submit" disabled={!canSubmit}>
             <UserPlusIcon />
-            {busy ? 'Creating...' : 'Create user and send invitation'}
+            {busy ? "Creating..." : "Create user and send invitation"}
           </Button>
         </div>
       </form>
     </>
-  );
+  )
 }

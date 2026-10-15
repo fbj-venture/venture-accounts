@@ -14,8 +14,5 @@
   "version": 1,
   "addOns": true,
   "framework": "react",
-  "chosenAddOns": [
-    "nitro",
-    "form"
-  ]
+  "chosenAddOns": ["nitro", "form"]
 }

@@ -10,19 +10,19 @@ This document is the single source of truth for what each core term means, and w
 
 ## Core entity glossary
 
-| Theory term | Database representation | UI label (proposed) | Notes |
-| --- | --- | --- | --- |
-| Ledger account | Row in `accounts` | "Account" (the account picker's "Accounts" tab), or "Transfer" when the chosen account is a bank | See Account vs. bank account below |
-| Account type | `account_types.code`, referenced by `accounts.type` | Not usually shown directly; drives grouping in reports | Asset, Liability, Equity, Income, Expense |
-| Transaction | A `journal_entries` row plus its `journal_lines` | "Transaction" | One real-world event; may span several lines |
-| Journal entry | Row in `journal_entries` | Same as Transaction in UI | The envelope; date + description |
-| Journal line / posting | Row in `journal_lines` | Not shown as a separate concept | One account + signed amount within an entry |
-| Debit | Positive `amount` value | Implicit; shown as money in/out depending on account type | Never shown as the word "debit" to the user |
-| Credit | Negative `amount` value | Implicit | Never shown as the word "credit" to the user |
-| Balance | `SUM(amount)` for an account | "Balance" | Shown per account and for the whole ledger (should always be 0) |
-| Sub-account | `accounts.parent_id` self-reference (deferred) | Nested category, e.g. "Groceries › Household" | Not yet built |
-| Opening balance | Equity-type row in `accounts` named "Opening Balance" | "Starting balance" | Absorbs the other side of take-on entries |
-| Bank account details | Row in `bank_account_details`, 1:1 with an `accounts` row | Account settings / "linked bank account" | Kept separate from ledger `accounts` on purpose |
+| Theory term            | Database representation                                   | UI label (proposed)                                                                              | Notes                                                           |
+| ---------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------- |
+| Ledger account         | Row in `accounts`                                         | "Account" (the account picker's "Accounts" tab), or "Transfer" when the chosen account is a bank | See Account vs. bank account below                              |
+| Account type           | `account_types.code`, referenced by `accounts.type`       | Not usually shown directly; drives grouping in reports                                           | Asset, Liability, Equity, Income, Expense                       |
+| Transaction            | A `journal_entries` row plus its `journal_lines`          | "Transaction"                                                                                    | One real-world event; may span several lines                    |
+| Journal entry          | Row in `journal_entries`                                  | Same as Transaction in UI                                                                        | The envelope; date + description                                |
+| Journal line / posting | Row in `journal_lines`                                    | Not shown as a separate concept                                                                  | One account + signed amount within an entry                     |
+| Debit                  | Positive `amount` value                                   | Implicit; shown as money in/out depending on account type                                        | Never shown as the word "debit" to the user                     |
+| Credit                 | Negative `amount` value                                   | Implicit                                                                                         | Never shown as the word "credit" to the user                    |
+| Balance                | `SUM(amount)` for an account                              | "Balance"                                                                                        | Shown per account and for the whole ledger (should always be 0) |
+| Sub-account            | `accounts.parent_id` self-reference (deferred)            | Nested category, e.g. "Groceries › Household"                                                    | Not yet built                                                   |
+| Opening balance        | Equity-type row in `accounts` named "Opening Balance"     | "Starting balance"                                                                               | Absorbs the other side of take-on entries                       |
+| Bank account details   | Row in `bank_account_details`, 1:1 with an `accounts` row | Account settings / "linked bank account"                                                         | Kept separate from ledger `accounts` on purpose                 |
 
 ## Term-by-term notes
 

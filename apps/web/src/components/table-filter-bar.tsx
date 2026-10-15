@@ -1,9 +1,9 @@
-import { AmountFilterHelp, AmountFilterInput } from "#/components/amount-filter-input.tsx";
-import { TableDateRange } from "#/components/table-date-range.tsx";
-import { Input } from "#/components/ui/input.tsx";
-import { Label } from "#/components/ui/label.tsx";
-import { useState } from "react";
-import type { DateRange } from "react-day-picker";
+import { AmountFilterHelp, AmountFilterInput } from "#/components/amount-filter-input.tsx"
+import { TableDateRange } from "#/components/table-date-range.tsx"
+import { Input } from "#/components/ui/input.tsx"
+import { Label } from "#/components/ui/label.tsx"
+import { useState } from "react"
+import type { DateRange } from "react-day-picker"
 
 // Generic filter bar for any transaction-style table: description search,
 // amount search (with a togglable grammar explainer) on the left, and a
@@ -18,16 +18,16 @@ export function TableFilterBar({
   onRangeChange,
   years,
 }: {
-  descriptionFilter: string;
-  onDescriptionFilterChange: (value: string) => void;
-  amountFilter: string;
-  onAmountFilterChange: (value: string) => void;
-  range: DateRange | undefined;
-  onRangeChange: (range: DateRange | undefined) => void;
+  descriptionFilter: string
+  onDescriptionFilterChange: (value: string) => void
+  amountFilter: string
+  onAmountFilterChange: (value: string) => void
+  range: DateRange | undefined
+  onRangeChange: (range: DateRange | undefined) => void
   /** Years to offer in the date range's quick-select dropdown. */
-  years: number[];
+  years: number[]
 }) {
-  const [showAmountHelp, setShowAmountHelp] = useState(false);
+  const [showAmountHelp, setShowAmountHelp] = useState(false)
 
   return (
     <div>
@@ -59,5 +59,5 @@ export function TableFilterBar({
       </div>
       {showAmountHelp ? <AmountFilterHelp /> : null}
     </div>
-  );
+  )
 }

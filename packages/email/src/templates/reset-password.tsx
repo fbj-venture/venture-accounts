@@ -1,22 +1,35 @@
-import { Body, Button, Column, Container, Head, Heading, Html, Img, Preview, Row, Section, Tailwind, Text } from "@react-email/components";
-import { barebonesBoxedTailwindConfig } from './theme';
-import { BarebonesFonts } from './theme-fonts';
+import {
+  Body,
+  Button,
+  Column,
+  Container,
+  Head,
+  Heading,
+  Html,
+  Img,
+  Preview,
+  Row,
+  Section,
+  Tailwind,
+  Text,
+} from "@react-email/components"
+import { barebonesBoxedTailwindConfig } from "./theme"
+import { BarebonesFonts } from "./theme-fonts"
 
 export interface ResetPasswordEmailProps {
-  name: string;
+  name: string
   /** Company name shown in the copy, e.g. "Venture Church". */
-  company: string;
+  company: string
   /** Single-use reset link from Better-Auth. */
-  url: string;
+  url: string
   /** Absolute public URL of the logo image shown in the header. */
-  logoUrl: string;
+  logoUrl: string
 }
 
 // TODO: styling/branding. Copy mirrors the previous inline HTML in auth.ts.
 export function ResetPasswordEmail({ name, company, url, logoUrl }: ResetPasswordEmailProps) {
   return (
     <Tailwind config={barebonesBoxedTailwindConfig}>
-
       <Html lang="en">
         <Head>
           <BarebonesFonts />
@@ -56,11 +69,20 @@ export function ResetPasswordEmail({ name, company, url, logoUrl }: ResetPasswor
 
                   <Text>Hi {name},</Text>
                   <Text>
-                    We received a request to reset your {company} Accounts password. This link works for one hour:
+                    We received a request to reset your {company} Accounts password. This link works
+                    for one hour:
                   </Text>
                   <Section className="mb-6 text-center">
-                    <Button href={url} className="bg-brand font-16 text-fg-inverted inline-block rounded-lg px-7 py-4 text-center font-sans leading-6">Reset my password</Button>
-                    <Text>If you didn't ask for this, you can ignore this email - your password won't change.</Text>
+                    <Button
+                      href={url}
+                      className="bg-brand font-16 text-fg-inverted inline-block rounded-lg px-7 py-4 text-center font-sans leading-6"
+                    >
+                      Reset my password
+                    </Button>
+                    <Text>
+                      If you didn't ask for this, you can ignore this email - your password won't
+                      change.
+                    </Text>
                   </Section>
 
                   <Text className="font-13 text-fg-3 mx-auto mt-8 mb-0 max-w-[400px] text-center font-sans">
@@ -71,15 +93,14 @@ export function ResetPasswordEmail({ name, company, url, logoUrl }: ResetPasswor
                 </Section>
 
                 {/* Footer */}
-                <Section className="bg-bg">
-                </Section>
+                <Section className="bg-bg"></Section>
               </Section>
             </Section>
           </Container>
         </Body>
       </Html>
     </Tailwind>
-  );
+  )
 }
 
 ResetPasswordEmail.PreviewProps = {
@@ -87,6 +108,6 @@ ResetPasswordEmail.PreviewProps = {
   company: "Venture Church",
   url: "https://example.com/set-password?token=abc123",
   logoUrl: "https://example.com/img/venture-church.png",
-} satisfies ResetPasswordEmailProps;
+} satisfies ResetPasswordEmailProps
 
-export default ResetPasswordEmail;
+export default ResetPasswordEmail

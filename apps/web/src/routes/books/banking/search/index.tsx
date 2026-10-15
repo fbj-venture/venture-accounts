@@ -1,75 +1,76 @@
-import { AmountFilterInput } from '#/components/amount-filter-input.tsx';
-import { MultiSelect } from '#/components/multi-select.tsx';
-import { TableDateRange } from '#/components/table-date-range.tsx';
-import { Button } from '#/components/ui/button.tsx';
-import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card.tsx';
-import { Checkbox } from '#/components/ui/checkbox.tsx';
-import { Field, FieldLabel } from '#/components/ui/field.tsx';
-import { Input } from '#/components/ui/input.tsx';
-import { isValidAmountFilter } from '#/lib/amount-filter.ts';
-import { useStartingYear } from "#/lib/starting-year.ts";
-import { yearsFromStart } from "#/lib/years.ts";
-import { useSetBreadcrumbs } from '#/routes/books/-lib/breadcrumbs.ts';
-import { createFileRoute } from '@tanstack/react-router';
-import { format } from 'date-fns';
-import { SearchIcon, XIcon } from 'lucide-react';
-import { useMemo, useRef, useState } from 'react';
-import type { DateRange } from 'react-day-picker';
-import { loadBankAccounts } from '../-server/bank-accounts-cache.ts';
-import { getAccountOptions } from '../transactions/-server/account-options.server.ts';
-import { SearchResultsTable } from './-lib/search-results-table.tsx';
+import { AmountFilterInput } from "#/components/amount-filter-input.tsx"
+import { MultiSelect } from "#/components/multi-select.tsx"
+import { TableDateRange } from "#/components/table-date-range.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import { Card, CardContent, CardHeader, CardTitle } from "#/components/ui/card.tsx"
+import { Checkbox } from "#/components/ui/checkbox.tsx"
+import { Field, FieldLabel } from "#/components/ui/field.tsx"
+import { Input } from "#/components/ui/input.tsx"
+import { isValidAmountFilter } from "#/lib/amount-filter.ts"
+import { useStartingYear } from "#/lib/starting-year.ts"
+import { yearsFromStart } from "#/lib/years.ts"
+import { useSetBreadcrumbs } from "#/routes/books/-lib/breadcrumbs.ts"
+import { noop } from "@tanstack/react-query"
+import { createFileRoute } from "@tanstack/react-router"
+import { format } from "date-fns"
+import { SearchIcon, XIcon } from "lucide-react"
+import { useMemo, useRef, useState } from "react"
+import type { DateRange } from "react-day-picker"
+import { loadBankAccounts } from "../-server/bank-accounts-cache.ts"
+import { getAccountOptions } from "../transactions/-server/account-options.server.ts"
+import { SearchResultsTable } from "./-lib/search-results-table.tsx"
 import {
-    getIsAdmin,
-    searchTransactions,
-    type SearchCriteria,
-    type SearchResult,
-} from './-server/search.server.ts';
+  getIsAdmin,
+  searchTransactions,
+  type SearchCriteria,
+  type SearchResult,
+} from "./-server/search.server.ts"
 
-export const Route = createFileRoute('/books/banking/search/')({
+export const Route = createFileRoute("/books/banking/search/")({
   // A bank account to start with, e.g. from the dashboard's Actions menu.
   validateSearch: (search: Record<string, unknown>): { bankAccountId?: number } => {
-    const bankAccountId = Number(search.bankAccountId);
-    return Number.isInteger(bankAccountId) && bankAccountId > 0 ? { bankAccountId } : {};
+    const bankAccountId = Number(search.bankAccountId)
+    return Number.isInteger(bankAccountId) && bankAccountId > 0 ? { bankAccountId } : {}
   },
   loader: async () => {
     const [bankAccounts, accountOptions, isAdmin] = await Promise.all([
       loadBankAccounts(),
       getAccountOptions(),
       getIsAdmin(),
-    ]);
-    return { bankAccounts, accountOptions, isAdmin };
+    ])
+    return { bankAccounts, accountOptions, isAdmin }
   },
   component: RouteComponent,
-});
+})
 
 // Every criterion is optional; an empty one doesn't restrict the search.
 type Criteria = {
-  bankAccountIds: number[];
-  range: DateRange | undefined;
+  bankAccountIds: number[]
+  range: DateRange | undefined
   /** The amount expression, as on the transactions page (e.g. ">100 & <500"). */
-  amount: string;
+  amount: string
   /** Text to find anywhere in the transaction's note or description (any case). */
-  description: string;
+  description: string
   /** null: either way; true: only posted; false: only unposted. */
-  posted: boolean | null;
-  reconciled: boolean | null;
-  accountIds: number[];
-};
+  posted: boolean | null
+  reconciled: boolean | null
+  accountIds: number[]
+}
 
 type Outcome =
-  | { status: 'loading' }
-  | { status: 'error'; message: string }
-  | { status: 'done'; results: SearchResult[]; amount: string };
+  | { status: "loading" }
+  | { status: "error"; message: string }
+  | { status: "done"; results: SearchResult[]; amount: string }
 
 const NO_CRITERIA: Criteria = {
   bankAccountIds: [],
   range: undefined,
-  amount: '',
-  description: '',
+  amount: "",
+  description: "",
   posted: null,
   reconciled: null,
   accountIds: [],
-};
+}
 
 // Clicking cycles: either (dash) -> yes (tick) -> no (empty) -> either.
 function TriStateCheckbox({
@@ -77,36 +78,36 @@ function TriStateCheckbox({
   value,
   onValueChange,
 }: {
-  label: string;
-  value: boolean | null;
-  onValueChange: (value: boolean | null) => void;
+  label: string
+  value: boolean | null
+  onValueChange: (value: boolean | null) => void
 }) {
-  const id = `search-${label.toLowerCase()}`;
+  const id = `search-${label.toLowerCase()}`
   return (
     <div className="flex items-center gap-2">
       <Checkbox
         id={id}
-        checked={value === null ? 'indeterminate' : value}
+        checked={value === null ? "indeterminate" : value}
         onCheckedChange={() => onValueChange(value === null ? true : value ? false : null)}
       />
       <label htmlFor={id} className="text-sm">
         {label}
         <span className="pl-1 text-muted-foreground">
-          ({value === null ? 'either' : value ? 'yes' : 'no'})
+          ({value === null ? "either" : value ? "yes" : "no"})
         </span>
       </label>
     </div>
-  );
+  )
 }
 
 function RouteComponent() {
-  useSetBreadcrumbs([{ title: 'Dashboard', url: '/books' }, { title: 'Find transactions' }]);
-  const { bankAccounts, accountOptions, isAdmin } = Route.useLoaderData();
+  useSetBreadcrumbs([{ title: "Dashboard", url: "/books" }, { title: "Find transactions" }])
+  const { bankAccounts, accountOptions, isAdmin } = Route.useLoaderData()
   // The years the date range's quick-select offers: from the user's
   // starting year to this one.
-  const startingYear = useStartingYear();
-  const years = useMemo(() => yearsFromStart(startingYear), [startingYear]);
-  const { bankAccountId } = Route.useSearch();
+  const startingYear = useStartingYear()
+  const years = useMemo(() => yearsFromStart(startingYear), [startingYear])
+  const { bankAccountId } = Route.useSearch()
 
   const [criteria, setCriteria] = useState<Criteria>(() => ({
     ...NO_CRITERIA,
@@ -114,40 +115,40 @@ function RouteComponent() {
       bankAccountId !== undefined && bankAccounts.some((account) => account.id === bankAccountId)
         ? [bankAccountId]
         : [],
-  }));
+  }))
   // The latest search: its results, plus the amount expression it was run
   // with (applied to them in the results table).
-  const [outcome, setOutcome] = useState<Outcome | null>(null);
-  const searchCount = useRef(0);
+  const [outcome, setOutcome] = useState<Outcome | null>(null)
+  const searchCount = useRef(0)
   // The criteria the latest search was run with, so refreshSearch repeats
   // that search even if the form has been edited since.
-  const lastSearch = useRef<SearchCriteria | null>(null);
+  const lastSearch = useRef<SearchCriteria | null>(null)
 
   async function runSearch() {
-    const searchId = ++searchCount.current;
-    const { range, amount } = criteria;
-    setOutcome({ status: 'loading' });
+    const searchId = ++searchCount.current
+    const { range, amount } = criteria
+    setOutcome({ status: "loading" })
     try {
       const data: SearchCriteria = {
         bankAccountIds: criteria.bankAccountIds,
         accountIds: criteria.accountIds,
         description: criteria.description,
-        from: range?.from ? format(range.from, 'yyyy-MM-dd') : null,
-        to: range?.from ? format(range.to ?? range.from, 'yyyy-MM-dd') : null,
+        from: range?.from ? format(range.from, "yyyy-MM-dd") : null,
+        to: range?.from ? format(range.to ?? range.from, "yyyy-MM-dd") : null,
         posted: criteria.posted,
         reconciled: criteria.reconciled,
-      };
-      lastSearch.current = data;
-      const results = await searchTransactions({ data });
+      }
+      lastSearch.current = data
+      const results = await searchTransactions({ data })
       if (searchId === searchCount.current) {
-        setOutcome({ status: 'done', results, amount });
+        setOutcome({ status: "done", results, amount })
       }
     } catch (caught) {
       if (searchId === searchCount.current) {
         setOutcome({
-          status: 'error',
+          status: "error",
           message: caught instanceof Error ? caught.message : "Couldn't run the search.",
-        });
+        })
       }
     }
   }
@@ -155,18 +156,18 @@ function RouteComponent() {
   // Repeats the latest search without the "Searching..." state, so the table
   // (and its sort and page) stays put while an administrator's change shows.
   async function refreshSearch() {
-    const data = lastSearch.current;
+    const data = lastSearch.current
     if (!data) {
-      return;
+      return
     }
-    const searchId = ++searchCount.current;
+    const searchId = ++searchCount.current
     try {
-      const results = await searchTransactions({ data });
+      const results = await searchTransactions({ data })
       setOutcome((previous) =>
-        searchId === searchCount.current && previous?.status === 'done'
+        searchId === searchCount.current && previous?.status === "done"
           ? { ...previous, results }
           : previous,
-      );
+      )
     } catch {
       // The old results stay; the next Search will show any error.
     }
@@ -179,7 +180,7 @@ function RouteComponent() {
         label: `${bankAccount.name} (${bankAccount.accountNumber})`,
       })),
     [bankAccounts],
-  );
+  )
   const accountChoices = useMemo(
     () =>
       accountOptions.categories.map((option) => ({
@@ -187,11 +188,12 @@ function RouteComponent() {
         label: option.parentName ? `${option.parentName} › ${option.name}` : option.name,
       })),
     [accountOptions],
-  );
+  )
 
   // A half-typed amount expression would silently search without it.
-  const canSearch = criteria.amount.trim() === '' || isValidAmountFilter(criteria.amount);
-  const update = (changes: Partial<Criteria>) => setCriteria((previous) => ({ ...previous, ...changes }));
+  const canSearch = criteria.amount.trim() === "" || isValidAmountFilter(criteria.amount)
+  const update = (changes: Partial<Criteria>) =>
+    setCriteria((previous) => ({ ...previous, ...changes }))
 
   return (
     <>
@@ -204,9 +206,9 @@ function RouteComponent() {
           <form
             className="grid gap-4"
             onSubmit={(event) => {
-              event.preventDefault();
+              event.preventDefault()
               if (canSearch) {
-                runSearch();
+                runSearch().catch(noop)
               }
             }}
           >
@@ -281,9 +283,9 @@ function RouteComponent() {
                 type="button"
                 variant="outline"
                 onClick={() => {
-                  setCriteria(NO_CRITERIA);
-                  searchCount.current++;
-                  setOutcome(null);
+                  setCriteria(NO_CRITERIA)
+                  searchCount.current++
+                  setOutcome(null)
                 }}
               >
                 <XIcon />
@@ -296,9 +298,9 @@ function RouteComponent() {
       <div className="mt-6">
         {outcome === null ? (
           <p className="text-sm text-muted-foreground">Enter any criteria and press Search.</p>
-        ) : outcome.status === 'loading' ? (
+        ) : outcome.status === "loading" ? (
           <p className="text-sm text-muted-foreground">Searching...</p>
-        ) : outcome.status === 'error' ? (
+        ) : outcome.status === "error" ? (
           <p className="text-sm text-destructive" role="alert">
             {outcome.message}
           </p>
@@ -312,5 +314,5 @@ function RouteComponent() {
         )}
       </div>
     </>
-  );
+  )
 }

@@ -1,11 +1,11 @@
-import { Button } from "#/components/ui/button.tsx";
+import { Button } from "#/components/ui/button.tsx"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "#/components/ui/dropdown-menu.tsx";
-import { Link } from "@tanstack/react-router";
+} from "#/components/ui/dropdown-menu.tsx"
+import { Link } from "@tanstack/react-router"
 import {
   ArrowLeftRightIcon,
   ChevronDownIcon,
@@ -13,12 +13,12 @@ import {
   ScaleIcon,
   SearchIcon,
   ZapIcon,
-} from "lucide-react";
+} from "lucide-react"
 
 // The "Actions" menu in a bank account card's footer. Uploads comes first; add
 // further per-account pages below it.
 export function BankAccountMenu({ bankAccountId }: { bankAccountId: number }) {
-  const id = String(bankAccountId);
+  const id = String(bankAccountId)
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -55,5 +55,5 @@ export function BankAccountMenu({ bankAccountId }: { bankAccountId: number }) {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  );
+  )
 }

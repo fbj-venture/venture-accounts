@@ -1,27 +1,31 @@
 import {
-    AlertDialog,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "#/components/ui/alert-dialog.tsx";
-import { Button } from "#/components/ui/button.tsx";
-import { Checkbox } from "#/components/ui/checkbox.tsx";
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "#/components/ui/alert-dialog.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import { Checkbox } from "#/components/ui/checkbox.tsx"
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from "#/components/ui/dialog.tsx";
-import { Field, FieldLabel } from "#/components/ui/field.tsx";
-import { Input } from "#/components/ui/input.tsx";
-import { LoaderCircleIcon, SaveIcon, TriangleAlertIcon } from "lucide-react";
-import { useState, type FormEvent } from "react";
-import { MAX_ACCOUNT_NAME_LENGTH, renameAccount, type AccountRow } from "../-server/accounts.server.ts";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "#/components/ui/dialog.tsx"
+import { Field, FieldLabel } from "#/components/ui/field.tsx"
+import { Input } from "#/components/ui/input.tsx"
+import { LoaderCircleIcon, SaveIcon, TriangleAlertIcon } from "lucide-react"
+import { useState, type FormEvent } from "react"
+import {
+  MAX_ACCOUNT_NAME_LENGTH,
+  renameAccount,
+  type AccountRow,
+} from "../-server/accounts.server.ts"
 
 // Edits just this account's own name - for a sub-account that's the part
 // after the "Parent:", the parent's name isn't touched. Mount it with a key
@@ -31,41 +35,41 @@ export function RenameAccountDialog({
   onClose,
   onRenamed,
 }: {
-  account: AccountRow;
-  onClose: () => void;
+  account: AccountRow
+  onClose: () => void
   /** Called after the new name was saved, to reload the list. */
-  onRenamed: () => void | Promise<unknown>;
+  onRenamed: () => void | Promise<unknown>
 }) {
-  const [name, setName] = useState(account.name);
-  const [isArchived, setIsArchived] = useState(account.isArchived);
-  const [confirming, setConfirming] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [name, setName] = useState(account.name)
+  const [isArchived, setIsArchived] = useState(account.isArchived)
+  const [confirming, setConfirming] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const trimmed = name.trim();
-  const renaming = trimmed !== account.name;
-  const archiveChanged = isArchived !== account.isArchived;
-  const canSave = trimmed !== "" && (renaming || archiveChanged) && !saving;
+  const trimmed = name.trim()
+  const renaming = trimmed !== account.name
+  const archiveChanged = isArchived !== account.isArchived
+  const canSave = trimmed !== "" && (renaming || archiveChanged) && !saving
 
   function askToConfirm(event: FormEvent) {
-    event.preventDefault();
+    event.preventDefault()
     if (canSave) {
-      setConfirming(true);
+      setConfirming(true)
     }
   }
 
   async function save() {
-    setSaving(true);
-    setError(null);
+    setSaving(true)
+    setError(null)
     try {
-      await renameAccount({ data: { id: account.id, name: trimmed, isArchived } });
-      await onRenamed();
-      onClose();
+      await renameAccount({ data: { id: account.id, name: trimmed, isArchived } })
+      await onRenamed()
+      onClose()
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Couldn't rename the account.");
+      setError(caught instanceof Error ? caught.message : "Couldn't rename the account.")
     } finally {
-      setSaving(false);
-      setConfirming(false);
+      setSaving(false)
+      setConfirming(false)
     }
   }
 
@@ -148,5 +152,5 @@ export function RenameAccountDialog({
         </AlertDialogContent>
       </AlertDialog>
     </>
-  );
+  )
 }

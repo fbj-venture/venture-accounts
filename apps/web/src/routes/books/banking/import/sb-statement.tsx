@@ -1,111 +1,96 @@
-import { Alert, AlertDescription, AlertTitle } from "#/components/ui/alert.tsx";
-import { Button } from "#/components/ui/button.tsx";
-import {
-    Field,
-    FieldDescription,
-    FieldGroup,
-    FieldLabel,
-} from "#/components/ui/field.tsx";
-import { Input } from "#/components/ui/input.tsx";
-import { Progress } from "#/components/ui/progress";
-import type { UploadEvent } from "#/routes/api/books/import.ts";
-import { useSetBreadcrumbs } from "#/routes/books/-lib/breadcrumbs.ts";
-import { createFileRoute } from "@tanstack/react-router";
-import { AlertCircleIcon, CheckCircle2Icon } from "lucide-react";
-import { useState } from "react";
-import { toDisplayLines, toProgressValue } from "./-import-events.ts";
+import { Alert, AlertDescription, AlertTitle } from "#/components/ui/alert.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import { Field, FieldDescription, FieldGroup, FieldLabel } from "#/components/ui/field.tsx"
+import { Input } from "#/components/ui/input.tsx"
+import { Progress } from "#/components/ui/progress"
+import type { UploadEvent } from "#/routes/api/books/import.ts"
+import { useSetBreadcrumbs } from "#/routes/books/-lib/breadcrumbs.ts"
+import { createFileRoute } from "@tanstack/react-router"
+import { AlertCircleIcon, CheckCircle2Icon } from "lucide-react"
+import { useState } from "react"
+import { toDisplayLines, toProgressValue } from "./-import-events.ts"
 
-const DEFAULT_DESCRIPTION = "Uploading bank statement";
+const DEFAULT_DESCRIPTION = "Uploading bank statement"
 
 export const Route = createFileRoute("/books/banking/import/sb-statement")({
   component: RouteComponent,
-});
+})
 
 function RouteComponent() {
   useSetBreadcrumbs([
     { title: "Dashboard", url: "/books" },
     { title: "Kind of Import", url: "/books/banking/import" },
     { title: "PDF Import from Standard Bank" },
-  ]);
+  ])
 
-  const [events, setEvents] = useState<UploadEvent[]>([]);
-  const [pending, setPending] = useState(false);
+  const [events, setEvents] = useState<UploadEvent[]>([])
+  const [pending, setPending] = useState(false)
 
-  const finalEvent = events.at(-1);
-  const outcome =
-    finalEvent?.phase === "done" || finalEvent?.phase === "error"
-      ? finalEvent
-      : null;
+  const finalEvent = events.at(-1)
+  const outcome = finalEvent?.phase === "done" || finalEvent?.phase === "error" ? finalEvent : null
   // Hidden until the upload starts; once it's started, stays visible even
   // after it finishes (pending goes back to false at the end).
-  const hasStarted = pending || events.length > 0;
+  const hasStarted = pending || events.length > 0
 
   async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = event.currentTarget;
-    setEvents([]);
-    setPending(true);
+    event.preventDefault()
+    const form = event.currentTarget
+    setEvents([])
+    setPending(true)
 
-    const formData = new FormData(form);
+    const formData = new FormData(form)
     const response = await fetch("/api/books/import", {
       method: "POST",
       body: formData,
-    });
+    })
 
     if (!response.ok || !response.body) {
-      setEvents([{ phase: "error", message: await response.text() }]);
-      setPending(false);
-      return;
+      setEvents([{ phase: "error", message: await response.text() }])
+      setPending(false)
+      return
     }
 
-    const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
-    let buffer = "";
-    let lastEvent: UploadEvent | undefined;
+    const reader = response.body.pipeThrough(new TextDecoderStream()).getReader()
+    let buffer = ""
+    let lastEvent: UploadEvent | undefined
 
     while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
+      const { done, value } = await reader.read()
+      if (done) break
 
-      buffer += value;
-      const parts = buffer.split("\n\n");
-      buffer = parts.pop() ?? "";
+      buffer += value
+      const parts = buffer.split("\n\n")
+      buffer = parts.pop() ?? ""
 
       for (const part of parts) {
-        const line = part.trim();
-        if (!line.startsWith("data: ")) continue;
-        const parsedEvent: UploadEvent = JSON.parse(line.slice("data: ".length));
-        lastEvent = parsedEvent;
-        setEvents((previous) => [...previous, parsedEvent]);
+        const line = part.trim()
+        if (!line.startsWith("data: ")) continue
+        const parsedEvent: UploadEvent = JSON.parse(line.slice("data: ".length))
+        lastEvent = parsedEvent
+        setEvents((previous) => [...previous, parsedEvent])
       }
     }
 
-    setPending(false);
+    setPending(false)
     if (lastEvent?.phase === "done") {
-      form.reset();
+      form.reset()
     }
   }
 
   return (
     <>
       <h2>PDF Import from Standard Bank</h2>
-      <p className='py-2'>
-        The import feature currently only supports uploading Standard 
-        Bank statements in PDF format, and without passwords. 
-        The bank account number and statement date will be read 
-        from the uploaded PDF.
+      <p className="py-2">
+        The import feature currently only supports uploading Standard Bank statements in PDF format,
+        and without passwords. The bank account number and statement date will be read from the
+        uploaded PDF.
       </p>
 
       <form onSubmit={handleSubmit} className="mt-6 max-w-sm">
         <FieldGroup>
           <Field>
             <FieldLabel htmlFor="file">Bank statement</FieldLabel>
-            <Input
-              id="file"
-              name="file"
-              type="file"
-              accept="application/pdf,.pdf"
-              required
-            />
+            <Input id="file" name="file" type="file" accept="application/pdf,.pdf" required />
             <FieldDescription>PDF documents only.</FieldDescription>
           </Field>
 
@@ -160,5 +145,5 @@ function RouteComponent() {
         </FieldGroup>
       </form>
     </>
-  );
+  )
 }

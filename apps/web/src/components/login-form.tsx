@@ -1,17 +1,17 @@
-import { cn } from "cn";
+import { cn } from "cn"
 
-import { Button } from "#/components/ui/button.tsx";
-import { Card, CardContent } from "#/components/ui/card.tsx";
+import { Button } from "#/components/ui/button.tsx"
+import { Card, CardContent } from "#/components/ui/card.tsx"
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
   FieldSeparator,
-} from "#/components/ui/field.tsx";
-import { Input } from "#/components/ui/input.tsx";
-import { Link } from "@tanstack/react-router";
-import { Wallet2Icon } from "lucide-react";
+} from "#/components/ui/field.tsx"
+import { Input } from "#/components/ui/input.tsx"
+import { Link } from "@tanstack/react-router"
+import { Wallet2Icon } from "lucide-react"
 
 export function LoginForm({
   className,
@@ -20,17 +20,19 @@ export function LoginForm({
   pending,
   ...props
 }: React.ComponentProps<"div"> & {
-  onLogin?: (values: { email: string; password: string; }) => void;
-  error?: string | null;
-  pending?: boolean;
+  onLogin?: (values: { email: string; password: string }) => void
+  error?: string | null
+  pending?: boolean
 }) {
   function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
+    event.preventDefault()
+    const formData = new FormData(event.currentTarget)
+    const email = formData.get("email")
+    const password = formData.get("password")
     onLogin?.({
-      email: String(formData.get("email") ?? ""),
-      password: String(formData.get("password") ?? ""),
-    });
+      email: typeof email === "string" ? email : "",
+      password: typeof password === "string" ? password : "",
+    })
   }
 
   return (
@@ -52,13 +54,7 @@ export function LoginForm({
               </div>
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="m@example.com"
-                  required
-                />
+                <Input id="email" name="email" type="email" placeholder="m@example.com" required />
               </Field>
               <Field>
                 <div className="flex items-center">
@@ -114,12 +110,11 @@ export function LoginForm({
         &copy; 2026 Venture Church
       </FieldDescription>
     </div>
-  );
+  )
 }
 
-
-
-{/* <div className="flex min-h-svh flex-col items-center justify-center gap-6  p-6 md:p-10">
+{
+  /* <div className="flex min-h-svh flex-col items-center justify-center gap-6  p-6 md:p-10">
       <div className="flex w-full max-w-sm flex-col gap-6">
         <a href="#" className="flex items-center gap-2 self-center font-medium">
           <div className="flex size-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
@@ -129,4 +124,5 @@ export function LoginForm({
         </a>
         <LoginForm />
       </div>
-    </div> */}
+    </div> */
+}

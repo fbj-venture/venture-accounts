@@ -5,27 +5,27 @@
 // Storage is optional. Without the S3_* settings (see @app/env) isStorageConfigured()
 // is false and uploadFile() throws, so callers that can live without it
 // check first.
-import { env } from "@app/env";
+import { env } from "@app/env"
 import {
   DeleteObjectCommand,
   GetObjectCommand,
   PutObjectCommand,
   S3Client,
-} from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+} from "@aws-sdk/client-s3"
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 
 type Config = {
-  endpoint: string;
-  region: string;
-  bucket: string;
-  accessKeyId: string;
-  secretAccessKey: string;
-};
+  endpoint: string
+  region: string
+  bucket: string
+  accessKeyId: string
+  secretAccessKey: string
+}
 
 function getConfig(): Config | undefined {
-  const { S3_ENDPOINT, S3_REGION, S3_BUCKET, S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY } = env;
+  const { S3_ENDPOINT, S3_REGION, S3_BUCKET, S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY } = env
   if (!S3_ENDPOINT || !S3_BUCKET || !S3_ACCESS_KEY_ID || !S3_SECRET_ACCESS_KEY) {
-    return undefined;
+    return undefined
   }
   return {
     endpoint: S3_ENDPOINT,
@@ -33,21 +33,21 @@ function getConfig(): Config | undefined {
     bucket: S3_BUCKET,
     accessKeyId: S3_ACCESS_KEY_ID,
     secretAccessKey: S3_SECRET_ACCESS_KEY,
-  };
+  }
 }
 
 export function isStorageConfigured(): boolean {
-  return getConfig() !== undefined;
+  return getConfig() !== undefined
 }
 
-let cached: { config: Config; client: S3Client } | undefined;
+let cached: { config: Config; client: S3Client } | undefined
 
 function getStorage() {
-  const config = getConfig();
+  const config = getConfig()
   if (!config) {
     throw new Error(
       "File storage isn't configured: set S3_ENDPOINT, S3_BUCKET, S3_ACCESS_KEY_ID and S3_SECRET_ACCESS_KEY.",
-    );
+    )
   }
   cached ??= {
     config,
@@ -58,8 +58,8 @@ function getStorage() {
       // Railway Buckets are addressed path-style (endpoint/bucket/key).
       forcePathStyle: true,
     }),
-  };
-  return cached;
+  }
+  return cached
 }
 
 /** Saves `body` at `key` (overwriting anything already there) and returns the key. */
@@ -68,11 +68,11 @@ export async function uploadFile(
   body: Uint8Array,
   contentType: string,
 ): Promise<string> {
-  const { client, config } = getStorage();
+  const { client, config } = getStorage()
   await client.send(
     new PutObjectCommand({ Bucket: config.bucket, Key: key, Body: body, ContentType: contentType }),
-  );
-  return key;
+  )
+  return key
 }
 
 /**
@@ -80,13 +80,13 @@ export async function uploadFile(
  * are only ever handed out this way. Expires after `expiresInSeconds` (default 5 minutes).
  */
 export async function getFileUrl(key: string, expiresInSeconds = 300): Promise<string> {
-  const { client, config } = getStorage();
+  const { client, config } = getStorage()
   return getSignedUrl(client, new GetObjectCommand({ Bucket: config.bucket, Key: key }), {
     expiresIn: expiresInSeconds,
-  });
+  })
 }
 
 export async function deleteFile(key: string): Promise<void> {
-  const { client, config } = getStorage();
-  await client.send(new DeleteObjectCommand({ Bucket: config.bucket, Key: key }));
+  const { client, config } = getStorage()
+  await client.send(new DeleteObjectCommand({ Bucket: config.bucket, Key: key }))
 }

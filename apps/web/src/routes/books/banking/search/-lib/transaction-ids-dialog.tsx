@@ -1,27 +1,27 @@
-import { Button } from "#/components/ui/button.tsx";
+import { Button } from "#/components/ui/button.tsx"
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from "#/components/ui/dialog.tsx";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "#/components/ui/dialog.tsx"
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "#/components/ui/table.tsx";
-import { useEffect, useState } from "react";
-import { getTransactionIds, unpostJournal, type TransactionIds } from "../-server/search.server.ts";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "#/components/ui/table.tsx"
+import { useEffect, useState } from "react"
+import { getTransactionIds, unpostJournal, type TransactionIds } from "../-server/search.server.ts"
 
 type State =
   | { status: "loading" }
   | { status: "error"; message: string }
-  | { status: "ready"; ids: TransactionIds };
+  | { status: "ready"; ids: TransactionIds }
 
 // Administrators only: the database ids behind one search result, and the
 // option to mark its whole journal entry (every line in it) un-posted.
@@ -31,42 +31,42 @@ export function TransactionIdsDialog({
   onChanged,
 }: {
   /** The clicked row's journal line; the dialog is open while this is set. */
-  journalLineId: number | null;
-  onClose: () => void;
+  journalLineId: number | null
+  onClose: () => void
   /** Called after the entry was changed, so the results can be refreshed. */
-  onChanged: () => void;
+  onChanged: () => void
 }) {
-  const [state, setState] = useState<State>({ status: "loading" });
-  const [confirming, setConfirming] = useState(false);
-  const [unposting, setUnposting] = useState(false);
-  const [unpostError, setUnpostError] = useState<string | null>(null);
+  const [state, setState] = useState<State>({ status: "loading" })
+  const [confirming, setConfirming] = useState(false)
+  const [unposting, setUnposting] = useState(false)
+  const [unpostError, setUnpostError] = useState<string | null>(null)
 
   async function unpost() {
     if (journalLineId === null) {
-      return;
+      return
     }
-    setUnposting(true);
-    setUnpostError(null);
+    setUnposting(true)
+    setUnpostError(null)
     try {
-      await unpostJournal({ data: journalLineId });
-      onChanged();
-      onClose();
+      await unpostJournal({ data: journalLineId })
+      onChanged()
+      onClose()
     } catch (caught) {
-      setUnpostError(caught instanceof Error ? caught.message : "Couldn't un-post the transaction.");
-      setConfirming(false);
+      setUnpostError(caught instanceof Error ? caught.message : "Couldn't un-post the transaction.")
+      setConfirming(false)
     } finally {
-      setUnposting(false);
+      setUnposting(false)
     }
   }
 
   useEffect(() => {
     if (journalLineId === null) {
-      return;
+      return
     }
-    let cancelled = false;
-    setState({ status: "loading" });
-    setConfirming(false);
-    setUnpostError(null);
+    let cancelled = false
+    setState({ status: "loading" })
+    setConfirming(false)
+    setUnpostError(null)
     getTransactionIds({ data: journalLineId }).then(
       (ids) => !cancelled && setState({ status: "ready", ids }),
       (caught) =>
@@ -75,18 +75,20 @@ export function TransactionIdsDialog({
           status: "error",
           message: caught instanceof Error ? caught.message : "Couldn't load the ids.",
         }),
-    );
+    )
     return () => {
-      cancelled = true;
-    };
-  }, [journalLineId]);
+      cancelled = true
+    }
+  }, [journalLineId])
 
   return (
     <Dialog open={journalLineId !== null} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>Database ids</DialogTitle>
-          <DialogDescription>For administrators: the records behind this transaction.</DialogDescription>
+          <DialogDescription>
+            For administrators: the records behind this transaction.
+          </DialogDescription>
         </DialogHeader>
         {state.status === "loading" ? (
           <p className="text-sm text-muted-foreground">Loading...</p>
@@ -114,7 +116,9 @@ export function TransactionIdsDialog({
                 {state.ids.lines.map((line) => (
                   <TableRow
                     key={line.journalLineId}
-                    data-state={line.journalLineId === state.ids.clickedJournalLineId ? "selected" : undefined}
+                    data-state={
+                      line.journalLineId === state.ids.clickedJournalLineId ? "selected" : undefined
+                    }
                   >
                     <TableCell className="tabular-nums">{line.journalLineId}</TableCell>
                     <TableCell className="tabular-nums">{line.accountId}</TableCell>
@@ -123,7 +127,9 @@ export function TransactionIdsDialog({
                 ))}
               </TableBody>
             </Table>
-            <p className="text-xs text-muted-foreground">The highlighted line is the bank line you clicked.</p>
+            <p className="text-xs text-muted-foreground">
+              The highlighted line is the bank line you clicked.
+            </p>
             {unpostError ? (
               <p className="text-sm text-destructive" role="alert">
                 {unpostError}
@@ -138,7 +144,12 @@ export function TransactionIdsDialog({
                 </p>
                 {confirming ? (
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" disabled={unposting} onClick={() => setConfirming(false)}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={unposting}
+                      onClick={() => setConfirming(false)}
+                    >
                       Cancel
                     </Button>
                     <Button variant="destructive" size="sm" disabled={unposting} onClick={unpost}>
@@ -161,5 +172,5 @@ export function TransactionIdsDialog({
         )}
       </DialogContent>
     </Dialog>
-  );
+  )
 }

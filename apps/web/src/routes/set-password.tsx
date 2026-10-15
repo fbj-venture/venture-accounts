@@ -1,52 +1,52 @@
-import { Button } from '#/components/ui/button.tsx';
-import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card.tsx';
-import { Field, FieldDescription, FieldGroup, FieldLabel } from '#/components/ui/field.tsx';
-import { Input } from '#/components/ui/input.tsx';
-import { authClient } from '#/lib/auth-client.ts';
-import { Link, createFileRoute } from '@tanstack/react-router';
-import { useState } from 'react';
+import { Button } from "#/components/ui/button.tsx"
+import { Card, CardContent, CardHeader, CardTitle } from "#/components/ui/card.tsx"
+import { Field, FieldDescription, FieldGroup, FieldLabel } from "#/components/ui/field.tsx"
+import { Input } from "#/components/ui/input.tsx"
+import { authClient } from "#/lib/auth-client.ts"
+import { Link, createFileRoute } from "@tanstack/react-router"
+import { useState } from "react"
 
 // Where the link in an invitation email lands (see sendInvitationEmail in
 // lib/invitation.server.ts): the new user chooses their password. Public -
 // the token in the link is what authorises it.
-export const Route = createFileRoute('/set-password')({
+export const Route = createFileRoute("/set-password")({
   validateSearch: (search: Record<string, unknown>): { token?: string } => ({
-    token: typeof search.token === 'string' && search.token ? search.token : undefined,
+    token: typeof search.token === "string" && search.token ? search.token : undefined,
   }),
   component: RouteComponent,
-});
+})
 
 function RouteComponent() {
-  const { token } = Route.useSearch();
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [done, setDone] = useState(false);
+  const { token } = Route.useSearch()
+  const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [done, setDone] = useState(false)
 
-  const tooShort = password !== '' && password.length < 8;
-  const mismatch = confirmPassword !== '' && password !== confirmPassword;
-  const canSubmit = !busy && password.length >= 8 && password === confirmPassword;
+  const tooShort = password !== "" && password.length < 8
+  const mismatch = confirmPassword !== "" && password !== confirmPassword
+  const canSubmit = !busy && password.length >= 8 && password === confirmPassword
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+    event.preventDefault()
     if (!canSubmit || !token) {
-      return;
+      return
     }
-    setBusy(true);
-    setError(null);
-    const { error: resetError } = await authClient.resetPassword({ newPassword: password, token });
+    setBusy(true)
+    setError(null)
+    const { error: resetError } = await authClient.resetPassword({ newPassword: password, token })
     if (resetError) {
       setError(
-        resetError.code === 'INVALID_TOKEN'
-          ? 'This link has expired or has already been used. Ask an administrator to send you a new invitation.'
+        resetError.code === "INVALID_TOKEN"
+          ? "This link has expired or has already been used. Ask an administrator to send you a new invitation."
           : (resetError.message ?? "Couldn't set your password."),
-      );
-      setBusy(false);
-      return;
+      )
+      setBusy(false)
+      return
     }
-    setDone(true);
-    setBusy(false);
+    setDone(true)
+    setBusy(false)
   }
 
   return (
@@ -81,7 +81,7 @@ function RouteComponent() {
                     aria-invalid={tooShort}
                     required
                   />
-                  <FieldDescription className={tooShort ? 'text-destructive' : undefined}>
+                  <FieldDescription className={tooShort ? "text-destructive" : undefined}>
                     At least 8 characters.
                   </FieldDescription>
                 </Field>
@@ -109,12 +109,12 @@ function RouteComponent() {
                 </p>
               ) : null}
               <Button type="submit" disabled={!canSubmit}>
-                {busy ? 'Saving...' : 'Set password'}
+                {busy ? "Saving..." : "Set password"}
               </Button>
             </form>
           )}
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

@@ -1,41 +1,41 @@
-import { useEffect, useSyncExternalStore } from "react";
+import { useEffect, useSyncExternalStore } from "react"
 
 export type BreadcrumbItem = {
-  title: string;
-  url?: string;
-};
+  title: string
+  url?: string
+}
 
-let breadcrumbs: BreadcrumbItem[] = [];
-const listeners = new Set<() => void>();
-const EMPTY_BREADCRUMBS: BreadcrumbItem[] = [];
+let breadcrumbs: BreadcrumbItem[] = []
+const listeners = new Set<() => void>()
+const EMPTY_BREADCRUMBS: BreadcrumbItem[] = []
 
 function setBreadcrumbs(items: BreadcrumbItem[]) {
-  breadcrumbs = items;
+  breadcrumbs = items
   for (const listener of listeners) {
-    listener();
+    listener()
   }
 }
 
 function subscribe(listener: () => void) {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
+  listeners.add(listener)
+  return () => listeners.delete(listener)
 }
 
 function getSnapshot() {
-  return breadcrumbs;
+  return breadcrumbs
 }
 
 /** Reads the breadcrumb trail set by the currently active page. */
 export function useBreadcrumbs() {
-  return useSyncExternalStore(subscribe, getSnapshot, () => EMPTY_BREADCRUMBS);
+  return useSyncExternalStore(subscribe, getSnapshot, () => EMPTY_BREADCRUMBS)
 }
 
 /** Sets the breadcrumb trail for the page it's called from; cleared on unmount. */
 export function useSetBreadcrumbs(items: BreadcrumbItem[]) {
-  const key = JSON.stringify(items);
+  const key = JSON.stringify(items)
   useEffect(() => {
-    setBreadcrumbs(items);
-    return () => setBreadcrumbs([]);
+    setBreadcrumbs(items)
+    return () => setBreadcrumbs([])
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key]);
+  }, [key])
 }

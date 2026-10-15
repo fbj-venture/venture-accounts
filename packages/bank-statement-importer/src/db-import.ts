@@ -10,9 +10,9 @@ import {
   journalLine,
   withCreate,
   withUpdate,
-} from "@app/db/direct";
-import type { Transaction } from "@app/models";
-import { and, eq } from "drizzle-orm";
+} from "@app/db/direct"
+import type { Transaction } from "@app/models"
+import { and, eq } from "drizzle-orm"
 
 // "Account" is overloaded (see docs/Ledger Ubiquitous Language.md): this
 // looks up the ledger Account - what a Journal Line actually references -
@@ -24,9 +24,9 @@ export async function findAccountByBankAccountNumber(accountNumber: string) {
     .from(bankAccount)
     .innerJoin(account, eq(account.id, bankAccount.id))
     .where(eq(bankAccount.accountNumber, accountNumber))
-    .limit(1);
+    .limit(1)
 
-  return { found: Boolean(row), account: row?.account, bankAccount: row?.bankAccount };
+  return { found: Boolean(row), account: row?.account, bankAccount: row?.bankAccount }
 }
 
 // Records an uploaded statement so it can be found again later. The file lives
@@ -47,20 +47,22 @@ export async function recordBankUpload(
     .select({ id: bankUpload.id })
     .from(bankUpload)
     .where(and(eq(bankUpload.bankId, bankId), eq(bankUpload.fileUrl, fileKey)))
-    .limit(1);
+    .limit(1)
   if (existing) {
     await db
       .update(bankUpload)
       .set(withUpdate(userId, { description, fileHash }))
-      .where(eq(bankUpload.id, existing.id));
-    return;
+      .where(eq(bankUpload.id, existing.id))
+    return
   }
-  await db.insert(bankUpload).values(withCreate(userId, { bankId, description, fileUrl: fileKey, fileHash }));
+  await db
+    .insert(bankUpload)
+    .values(withCreate(userId, { bankId, description, fileUrl: fileKey, fileHash }))
 }
 
 export type ImportRowProgress =
   | { status: "imported"; index: number; total: number; transaction: Transaction }
-  | { status: "skipped"; index: number; total: number; transaction: Transaction };
+  | { status: "skipped"; index: number; total: number; transaction: Transaction }
 
 // Imports each Transaction as a Journal Entry (one per row) with a single
 // Journal Line against `ledgerAccount`. NOTE: this is not yet real
@@ -74,20 +76,20 @@ export async function importTransactions(
   userId: string,
   onProgress?: (progress: ImportRowProgress) => void,
 ): Promise<void> {
-  const total = transactions.length;
+  const total = transactions.length
 
   for (let index = 0; index < transactions.length; index++) {
-    const transaction = transactions[index]!;
+    const transaction = transactions[index]!
 
     const [existingLine] = await db
       .select({ id: journalLine.id })
       .from(journalLine)
       .where(eq(journalLine.hash, transaction.hash))
-      .limit(1);
+      .limit(1)
 
     if (existingLine) {
-      onProgress?.({ status: "skipped", index, total, transaction });
-      continue;
+      onProgress?.({ status: "skipped", index, total, transaction })
+      continue
     }
 
     // Creating the Journal entry
@@ -99,12 +101,10 @@ export async function importTransactions(
           note: transaction.details,
         }),
       )
-      .returning();
+      .returning()
 
     if (!createdJournal) {
-      throw new Error(
-        `Failed to create journal entry for transaction hash ${transaction.hash}`,
-      );
+      throw new Error(`Failed to create journal entry for transaction hash ${transaction.hash}`)
     }
 
     // Creating the Journal Line
@@ -118,13 +118,13 @@ export async function importTransactions(
           hash: transaction.hash,
         }),
       )
-      .returning();
+      .returning()
 
     if (!createdLine) {
-      await db.delete(journal).where(eq(journal.id, createdJournal.id));
-      continue;
+      await db.delete(journal).where(eq(journal.id, createdJournal.id))
+      continue
     }
 
-    onProgress?.({ status: "imported", index, total, transaction });
+    onProgress?.({ status: "imported", index, total, transaction })
   }
 }

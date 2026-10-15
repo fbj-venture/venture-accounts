@@ -1,11 +1,6 @@
 "use client"
 
-import {
-  Folder,
-  Forward,
-  MoreHorizontal,
-  Trash2,
-} from "lucide-react";
+import { Folder, Forward, MoreHorizontal, Trash2 } from "lucide-react"
 
 import {
   DropdownMenu,
@@ -13,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "#/components/ui/dropdown-menu.tsx";
+} from "#/components/ui/dropdown-menu.tsx"
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -22,8 +17,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "#/components/ui/sidebar.tsx";
-import type { NavItem } from "#/routes/books/-lib/nav-item.ts";
+} from "#/components/ui/sidebar.tsx"
+import type { NavItem } from "#/routes/books/-lib/nav-item.ts"
 
 export function NavUsers({ users: projects }: { users: NavItem[] }) {
   const { isMobile } = useSidebar()

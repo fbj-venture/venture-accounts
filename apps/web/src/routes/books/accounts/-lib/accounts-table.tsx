@@ -1,34 +1,34 @@
-import { SortableHeader } from "#/components/sortable-header.tsx";
-import { Button } from "#/components/ui/button.tsx";
-import { Checkbox } from "#/components/ui/checkbox.tsx";
+import { SortableHeader } from "#/components/sortable-header.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import { Checkbox } from "#/components/ui/checkbox.tsx"
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "#/components/ui/table.tsx";
-import { useQueryClient } from "@tanstack/react-query";
-import { Link, useRouter } from "@tanstack/react-router";
-import { flexRender, type SortingState } from "@tanstack/react-table";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "#/components/ui/table.tsx"
+import { useQueryClient } from "@tanstack/react-query"
+import { Link, useRouter } from "@tanstack/react-router"
+import { flexRender, type SortingState } from "@tanstack/react-table"
 import {
-    getSortedRowModel,
-    useLegacyTable,
-    type LegacyColumnDef,
-} from "@tanstack/react-table/legacy";
-import { ArrowRightIcon } from "lucide-react";
-import { useMemo, useState } from "react";
-import type { AccountRow } from "../-server/accounts.server.ts";
-import { accountKeys } from "./accounts-queries.ts";
-import { RenameAccountDialog } from "./rename-account-dialog.tsx";
+  getSortedRowModel,
+  useLegacyTable,
+  type LegacyColumnDef,
+} from "@tanstack/react-table/legacy"
+import { ArrowRightIcon } from "lucide-react"
+import { useMemo, useState } from "react"
+import type { AccountRow } from "../-server/accounts.server.ts"
+import { accountKeys } from "./accounts-queries.ts"
+import { RenameAccountDialog } from "./rename-account-dialog.tsx"
 
 // Built once (see the useMemo below): the cells render as components, so
 // columns that were rebuilt on every render would remount them each time.
 function getColumns({
   onRename,
 }: {
-  onRename: (account: AccountRow) => void;
+  onRename: (account: AccountRow) => void
 }): LegacyColumnDef<AccountRow>[] {
   return [
     {
@@ -68,7 +68,9 @@ function getColumns({
     {
       accessorKey: "isArchived",
       header: ({ column }) => <SortableHeader column={column} title="Archived" />,
-      cell: ({ getValue }) => <Checkbox checked={getValue<boolean>()} disabled aria-label="Archived" />,
+      cell: ({ getValue }) => (
+        <Checkbox checked={getValue<boolean>()} disabled aria-label="Archived" />
+      ),
     },
     {
       id: "bank",
@@ -85,25 +87,25 @@ function getColumns({
           </Button>
         ) : null,
     },
-  ];
+  ]
 }
 
 export function AccountsTable({ data }: { data: AccountRow[] }) {
-  const router = useRouter();
-  const queryClient = useQueryClient();
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [renaming, setRenaming] = useState<AccountRow | null>(null);
+  const router = useRouter()
+  const queryClient = useQueryClient()
+  const [sorting, setSorting] = useState<SortingState>([])
+  const [renaming, setRenaming] = useState<AccountRow | null>(null)
 
   // Resolves once the reloaded list has arrived, so a dialog doesn't close on
   // the old values. The router is refreshed too: the account selectors on the
   // transactions pages are still route-loader data, not queries.
   const refresh = async () => {
-    await queryClient.invalidateQueries({ queryKey: accountKeys.all });
-    await router.invalidate({ sync: true });
-  };
+    await queryClient.invalidateQueries({ queryKey: accountKeys.all })
+    await router.invalidate({ sync: true })
+  }
 
   // The state setters never change, so neither do the columns.
-  const columns = useMemo(() => getColumns({ onRename: setRenaming }), []);
+  const columns = useMemo(() => getColumns({ onRename: setRenaming }), [])
 
   const table = useLegacyTable({
     data,
@@ -112,7 +114,7 @@ export function AccountsTable({ data }: { data: AccountRow[] }) {
     getSortedRowModel: getSortedRowModel(),
     state: { sorting },
     onSortingChange: setSorting,
-  });
+  })
 
   return (
     <>
@@ -159,5 +161,5 @@ export function AccountsTable({ data }: { data: AccountRow[] }) {
         />
       ) : null}
     </>
-  );
+  )
 }

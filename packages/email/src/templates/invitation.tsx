@@ -1,17 +1,31 @@
-import { Body, Button, Column, Container, Head, Heading, Html, Img, Preview, Row, Section, Tailwind, Text } from "@react-email/components";
-import { barebonesBoxedTailwindConfig } from './theme';
-import { BarebonesFonts } from './theme-fonts';
+import {
+  Body,
+  Button,
+  Column,
+  Container,
+  Head,
+  Heading,
+  Html,
+  Img,
+  Preview,
+  Row,
+  Section,
+  Tailwind,
+  Text,
+} from "@react-email/components"
+import { barebonesBoxedTailwindConfig } from "./theme"
+import { BarebonesFonts } from "./theme-fonts"
 
 export interface InvitationEmailProps {
-  name: string;
+  name: string
   /** Company name shown in the copy, e.g. "Venture Church". */
-  company: string;
+  company: string
   /** Link to the set-password page, carrying the invitation token. */
-  url: string;
+  url: string
   /** Absolute public URL of the logo image shown in the header. */
-  logoUrl: string;
+  logoUrl: string
   /** How many days the link works for. */
-  validDays: number;
+  validDays: number
 }
 
 export function InvitationEmail({ name, company, url, validDays, logoUrl }: InvitationEmailProps) {
@@ -49,10 +63,16 @@ export function InvitationEmail({ name, company, url, validDays, logoUrl }: Invi
 
                   <Text>Hi {name},</Text>
                   <Text>
-                    You've been invited to {company} Accounts. Choose a password to finish setting up your login:
+                    You've been invited to {company} Accounts. Choose a password to finish setting
+                    up your login:
                   </Text>
                   <Section className="mb-6 text-center">
-                    <Button href={url} className="bg-brand font-16 text-fg-inverted inline-block rounded-lg px-7 py-4 text-center font-sans leading-6">Set my password</Button>
+                    <Button
+                      href={url}
+                      className="bg-brand font-16 text-fg-inverted inline-block rounded-lg px-7 py-4 text-center font-sans leading-6"
+                    >
+                      Set my password
+                    </Button>
                   </Section>
 
                   <Text className="font-13 text-fg-3 mx-auto mt-8 mb-0 max-w-[400px] text-center font-sans">
@@ -67,7 +87,7 @@ export function InvitationEmail({ name, company, url, validDays, logoUrl }: Invi
         </Body>
       </Html>
     </Tailwind>
-  );
+  )
 }
 
 InvitationEmail.PreviewProps = {
@@ -76,6 +96,6 @@ InvitationEmail.PreviewProps = {
   url: "https://example.com/set-password?token=abc123",
   logoUrl: "https://example.com/img/venture-church.png",
   validDays: 7,
-} satisfies InvitationEmailProps;
+} satisfies InvitationEmailProps
 
-export default InvitationEmail;
+export default InvitationEmail

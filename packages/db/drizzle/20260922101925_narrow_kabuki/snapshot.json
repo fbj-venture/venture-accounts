@@ -1,8 +1,6 @@
 {
   "id": "5b31d08b-4f1c-4d89-8e62-1f767b6b7ca3",
-  "prevIds": [
-    "573ac6c5-890f-4af5-9ed9-97b9cc9b544d"
-  ],
+  "prevIds": ["573ac6c5-890f-4af5-9ed9-97b9cc9b544d"],
   "version": "8",
   "dialect": "postgres",
   "ddl": [
@@ -17,9 +15,7 @@
       "entityType": "tables"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "account_type_pkey",
       "schema": "public",
@@ -80,9 +76,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "name"
-      ],
+      "columns": ["name"],
       "nullsNotDistinct": false,
       "name": "account_type_name_unique",
       "schema": "public",
@@ -96,9 +90,7 @@
       "entityType": "tables"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "account_pkey",
       "schema": "public",
@@ -159,9 +151,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "name"
-      ],
+      "columns": ["name"],
       "nullsNotDistinct": false,
       "name": "account_name_unique",
       "schema": "public",
@@ -170,14 +160,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "type"
-      ],
+      "columns": ["type"],
       "schemaTo": "public",
       "tableTo": "account_type",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "account_type_account_type_id_fk",
@@ -192,9 +178,7 @@
       "entityType": "tables"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "bank_account_pkey",
       "schema": "public",
@@ -255,9 +239,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "account_number"
-      ],
+      "columns": ["account_number"],
       "nullsNotDistinct": false,
       "name": "bank_account_account_number_unique",
       "schema": "public",
@@ -266,14 +248,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "schemaTo": "public",
       "tableTo": "account",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "bank_account_id_account_id_fk",
@@ -288,9 +266,7 @@
       "entityType": "tables"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "journal_line_pkey",
       "schema": "public",
@@ -364,14 +340,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "journal_entry_id"
-      ],
+      "columns": ["journal_entry_id"],
       "schemaTo": "public",
       "tableTo": "journal",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "journal_line_journal_entry_id_journal_id_fk",
@@ -381,14 +353,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "account_id"
-      ],
+      "columns": ["account_id"],
       "schemaTo": "public",
       "tableTo": "account",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "journal_line_account_id_account_id_fk",
@@ -403,9 +371,7 @@
       "entityType": "tables"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "journal_pkey",
       "schema": "public",
@@ -452,10 +418,7 @@
       "entityType": "columns"
     },
     {
-      "values": [
-        "debit",
-        "credit"
-      ],
+      "values": ["debit", "credit"],
       "name": "normal_balance",
       "schema": "public",
       "entityType": "enums"

@@ -1,15 +1,19 @@
-import { Button } from "#/components/ui/button.tsx";
-import { Calendar } from "#/components/ui/calendar.tsx";
-import { Field, FieldDescription, FieldGroup, FieldLabel } from "#/components/ui/field.tsx";
-import { Input } from "#/components/ui/input.tsx";
-import { Popover, PopoverContent, PopoverTrigger } from "#/components/ui/popover.tsx";
-import { useNavigate } from "@tanstack/react-router";
-import { format, parseISO } from "date-fns";
-import { CalendarIcon } from "lucide-react";
-import { useState } from "react";
-import { getBankUploadUrl } from "../../uploads/-server/uploads.server.ts";
-import { saveRecon, type ReconForm as ReconFormData, type UploadSummary } from "../-server/recon.server.ts";
-import { UploadPickerDialog } from "./upload-picker-dialog.tsx";
+import { Button } from "#/components/ui/button.tsx"
+import { Calendar } from "#/components/ui/calendar.tsx"
+import { Field, FieldDescription, FieldGroup, FieldLabel } from "#/components/ui/field.tsx"
+import { Input } from "#/components/ui/input.tsx"
+import { Popover, PopoverContent, PopoverTrigger } from "#/components/ui/popover.tsx"
+import { useNavigate } from "@tanstack/react-router"
+import { format, parseISO } from "date-fns"
+import { CalendarIcon } from "lucide-react"
+import { useState } from "react"
+import { getBankUploadUrl } from "../../uploads/-server/uploads.server.ts"
+import {
+  saveRecon,
+  type ReconForm as ReconFormData,
+  type UploadSummary,
+} from "../-server/recon.server.ts"
+import { UploadPickerDialog } from "./upload-picker-dialog.tsx"
 
 // Reconcile creates the reconciliation from these figures, or - when one was
 // already started - saves them only if they've changed, then continues to
@@ -19,58 +23,58 @@ export function ReconForm({
   bankAccountId,
   initial,
 }: {
-  bankAccountId: number;
-  initial: ReconFormData;
+  bankAccountId: number
+  initial: ReconFormData
 }) {
-  const navigate = useNavigate();
-  const openingBalanceDisabled = initial.openingBalanceLocked;
-  const [opening, setOpening] = useState(initial.openingBalance?.toFixed(2) ?? "");
-  const [closing, setClosing] = useState(initial.closingBalance?.toFixed(2) ?? "");
+  const navigate = useNavigate()
+  const openingBalanceDisabled = initial.openingBalanceLocked
+  const [opening, setOpening] = useState(initial.openingBalance?.toFixed(2) ?? "")
+  const [closing, setClosing] = useState(initial.closingBalance?.toFixed(2) ?? "")
   // A reconciliation already started keeps its own date; a new one starts
   // from the previous statement's end date, to be moved on to this one's.
-  const initialStatementDate = initial.statementDate ?? initial.previousStatementDate;
+  const initialStatementDate = initial.statementDate ?? initial.previousStatementDate
   const [statementDate, setStatementDate] = useState<Date | undefined>(
     initialStatementDate ? parseISO(initialStatementDate) : undefined,
-  );
-  const [datePickerOpen, setDatePickerOpen] = useState(false);
-  const [upload, setUpload] = useState<UploadSummary | null>(initial.upload);
-  const [pickerOpen, setPickerOpen] = useState(false);
-  const [viewing, setViewing] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  )
+  const [datePickerOpen, setDatePickerOpen] = useState(false)
+  const [upload, setUpload] = useState<UploadSummary | null>(initial.upload)
+  const [pickerOpen, setPickerOpen] = useState(false)
+  const [viewing, setViewing] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const canSubmit = opening.trim() !== "" && closing.trim() !== "" && statementDate !== undefined;
+  const canSubmit = opening.trim() !== "" && closing.trim() !== "" && statementDate !== undefined
 
   // Opens the linked statement in a new tab. The tab is opened straight away,
   // in response to the click, and pointed at the temporary link once it's
   // fetched - a tab opened after the await would be blocked as a pop-up.
   async function viewUpload(uploadId: number) {
-    setError(null);
-    setViewing(true);
-    const tab = window.open("", "_blank");
+    setError(null)
+    setViewing(true)
+    const tab = window.open("", "_blank")
     try {
-      const { url } = await getBankUploadUrl({ data: uploadId });
+      const { url } = await getBankUploadUrl({ data: uploadId })
       if (tab) {
-        tab.location.href = url;
+        tab.location.href = url
       } else {
-        window.location.href = url;
+        window.location.href = url
       }
     } catch (caught) {
-      tab?.close();
-      setError(caught instanceof Error ? caught.message : "Couldn't open the document.");
+      tab?.close()
+      setError(caught instanceof Error ? caught.message : "Couldn't open the document.")
     } finally {
-      setViewing(false);
+      setViewing(false)
     }
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+    event.preventDefault()
     if (!canSubmit || !statementDate) {
-      return;
+      return
     }
 
-    setSaving(true);
-    setError(null);
+    setSaving(true)
+    setError(null)
     try {
       const figures = {
         bankAccountId,
@@ -78,23 +82,23 @@ export function ReconForm({
         closingBalance: Number(closing),
         statementDate: format(statementDate, "yyyy-MM-dd"),
         bankUploadId: upload?.id ?? null,
-      };
+      }
       const changed =
         initial.reconId === null ||
         figures.bankUploadId !== (initial.upload?.id ?? null) ||
         figures.statementDate !== initial.statementDate ||
         figures.closingBalance !== initial.closingBalance ||
-        (!initial.openingBalanceLocked && figures.openingBalance !== initial.openingBalance);
+        (!initial.openingBalanceLocked && figures.openingBalance !== initial.openingBalance)
 
-      const reconId = changed ? (await saveRecon({ data: figures })).reconId : initial.reconId;
+      const reconId = changed ? (await saveRecon({ data: figures })).reconId : initial.reconId
       await navigate({
         to: "/books/banking/recon/session/$id",
         params: { id: String(reconId) },
-      });
+      })
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Couldn't save the reconciliation.");
+      setError(caught instanceof Error ? caught.message : "Couldn't save the reconciliation.")
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
   }
 
@@ -104,9 +108,7 @@ export function ReconForm({
         <Field>
           {initial.previousStatementDate ? (
             <>
-              <FieldLabel htmlFor="recon-statement-date">
-                Previous statement ended:
-              </FieldLabel>
+              <FieldLabel htmlFor="recon-statement-date">Previous statement ended:</FieldLabel>
               <p className="text-sm text-muted-foreground pb-2">
                 {format(parseISO(initial.previousStatementDate), "d MMM yyyy")}
               </p>
@@ -132,8 +134,8 @@ export function ReconForm({
                 selected={statementDate}
                 defaultMonth={statementDate}
                 onSelect={(selected) => {
-                  setStatementDate(selected);
-                  setDatePickerOpen(false);
+                  setStatementDate(selected)
+                  setDatePickerOpen(false)
                 }}
               />
             </PopoverContent>
@@ -185,14 +187,26 @@ export function ReconForm({
                 >
                   View
                 </Button>
-                <Button type="button" variant="link" size="sm" className="px-1.5" onClick={() => setUpload(null)}>
+                <Button
+                  type="button"
+                  variant="link"
+                  size="sm"
+                  className="px-1.5"
+                  onClick={() => setUpload(null)}
+                >
                   Unlink
                 </Button>
               </>
             ) : (
               <span className="text-muted-foreground">None linked.</span>
             )}
-            <Button type="button" variant="link" size="sm" className="px-1.5" onClick={() => setPickerOpen(true)}>
+            <Button
+              type="button"
+              variant="link"
+              size="sm"
+              className="px-1.5"
+              onClick={() => setPickerOpen(true)}
+            >
               {upload ? "Change" : "Link to an uploaded statement"}
             </Button>
           </div>
@@ -213,5 +227,5 @@ export function ReconForm({
         {saving ? "Saving..." : "Reconcile"}
       </Button>
     </form>
-  );
+  )
 }

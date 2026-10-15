@@ -1,21 +1,21 @@
-import { Button } from "#/components/ui/button.tsx";
+import { Button } from "#/components/ui/button.tsx"
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from "#/components/ui/dialog.tsx";
-import { Field, FieldLabel } from "#/components/ui/field.tsx";
-import { Input } from "#/components/ui/input.tsx";
-import { LoaderCircleIcon, SaveIcon } from "lucide-react";
-import { useState, type FormEvent } from "react";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "#/components/ui/dialog.tsx"
+import { Field, FieldLabel } from "#/components/ui/field.tsx"
+import { Input } from "#/components/ui/input.tsx"
+import { LoaderCircleIcon, SaveIcon } from "lucide-react"
+import { useState, type FormEvent } from "react"
 import {
-    MAX_UPLOAD_DESCRIPTION_LENGTH,
-    updateBankUploadDescription,
-    type BankUploadRow,
-} from "../-server/uploads.server.ts";
+  MAX_UPLOAD_DESCRIPTION_LENGTH,
+  updateBankUploadDescription,
+  type BankUploadRow,
+} from "../-server/uploads.server.ts"
 
 // Edits the description of an uploaded document. Mount it with a key on the
 // upload so each one starts from its own description.
@@ -24,33 +24,33 @@ export function EditUploadDescriptionDialog({
   onClose,
   onSaved,
 }: {
-  upload: Pick<BankUploadRow, "id" | "description">;
-  onClose: () => void;
+  upload: Pick<BankUploadRow, "id" | "description">
+  onClose: () => void
   /** Called after the description was saved, to reload the list. */
-  onSaved: () => void | Promise<unknown>;
+  onSaved: () => void | Promise<unknown>
 }) {
-  const [description, setDescription] = useState(upload.description);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [description, setDescription] = useState(upload.description)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const trimmed = description.trim();
-  const canSave = trimmed !== "" && trimmed !== upload.description && !saving;
+  const trimmed = description.trim()
+  const canSave = trimmed !== "" && trimmed !== upload.description && !saving
 
   async function save(event: FormEvent) {
-    event.preventDefault();
+    event.preventDefault()
     if (!canSave) {
-      return;
+      return
     }
-    setSaving(true);
-    setError(null);
+    setSaving(true)
+    setError(null)
     try {
-      await updateBankUploadDescription({ data: { id: upload.id, description: trimmed } });
-      await onSaved();
-      onClose();
+      await updateBankUploadDescription({ data: { id: upload.id, description: trimmed } })
+      await onSaved()
+      onClose()
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Couldn't save the description.");
+      setError(caught instanceof Error ? caught.message : "Couldn't save the description.")
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
   }
 
@@ -92,5 +92,5 @@ export function EditUploadDescriptionDialog({
         </form>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

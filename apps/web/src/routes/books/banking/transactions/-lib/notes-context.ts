@@ -1,10 +1,10 @@
-import { createContext } from "react";
+import { createContext } from "react"
 
 /** Note typed per row, keyed by journalLineId - saved with the row. */
 export type NotesState = {
-  notes: ReadonlyMap<number, string>;
-  onNoteChange: (journalLineId: number, note: string) => void;
-};
+  notes: ReadonlyMap<number, string>
+  onNoteChange: (journalLineId: number, note: string) => void
+}
 
 // The notes reach their cells through context rather than through getColumns.
 // flexRender mounts each cell function as a component, so a cell function
@@ -19,4 +19,4 @@ export type NotesState = {
 export const NotesContext = createContext<NotesState>({
   notes: new Map(),
   onNoteChange: () => {},
-});
+})

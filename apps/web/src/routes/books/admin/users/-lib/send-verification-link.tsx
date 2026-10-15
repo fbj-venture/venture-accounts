@@ -1,15 +1,18 @@
-import { useState } from "react";
-import { sendUserVerificationEmail } from "../-server/users.server.ts";
+import { useState } from "react"
+import { sendUserVerificationEmail } from "../-server/users.server.ts"
 
 // "No" for a user who hasn't verified their email - a link that emails them
 // a verification link (again).
 export function SendVerificationLink({ user }: { user: { id: string; email: string } }) {
   const [state, setState] = useState<
-    { status: "idle" } | { status: "sending" } | { status: "sent" } | { status: "error"; message: string }
-  >({ status: "idle" });
+    | { status: "idle" }
+    | { status: "sending" }
+    | { status: "sent" }
+    | { status: "error"; message: string }
+  >({ status: "idle" })
 
   if (state.status === "sent") {
-    return <span className="text-muted-foreground">Email sent</span>;
+    return <span className="text-muted-foreground">Email sent</span>
   }
 
   return (
@@ -20,15 +23,15 @@ export function SendVerificationLink({ user }: { user: { id: string; email: stri
         disabled={state.status === "sending"}
         title={`Email ${user.email} a link to verify their address`}
         onClick={async () => {
-          setState({ status: "sending" });
+          setState({ status: "sending" })
           try {
-            await sendUserVerificationEmail({ data: user.id });
-            setState({ status: "sent" });
+            await sendUserVerificationEmail({ data: user.id })
+            setState({ status: "sent" })
           } catch (caught) {
             setState({
               status: "error",
               message: caught instanceof Error ? caught.message : "Couldn't send the email.",
-            });
+            })
           }
         }}
       >
@@ -40,5 +43,5 @@ export function SendVerificationLink({ user }: { user: { id: string; email: stri
         </span>
       ) : null}
     </span>
-  );
+  )
 }

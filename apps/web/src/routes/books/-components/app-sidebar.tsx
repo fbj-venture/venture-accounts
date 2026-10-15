@@ -1,4 +1,4 @@
-"use client";
+"use client"
 
 import {
   BoxesIcon,
@@ -12,9 +12,9 @@ import {
   SearchIcon,
   SummaryIcon,
   UsersRoundIcon,
-  Wallet2Icon
-} from "lucide-react";
-import * as React from "react";
+  Wallet2Icon,
+} from "lucide-react"
+import * as React from "react"
 
 import {
   Sidebar,
@@ -22,14 +22,14 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
-} from "#/components/ui/sidebar.tsx";
-import type { NavSectionsOpen } from "#/hooks/use-nav-sections-open.ts";
-import type { SessionUser } from "@app/models";
-import type { NavItem } from "../-lib/nav-item.ts";
-import { AboutDialog } from "./about-dialog.tsx";
-import { NavAccounts } from "./nav-main.tsx";
-import { NavUsers } from "./nav-projects.tsx";
-import { NavUser } from "./nav-user.tsx";
+} from "#/components/ui/sidebar.tsx"
+import type { NavSectionsOpen } from "#/hooks/use-nav-sections-open.ts"
+import type { SessionUser } from "@app/models"
+import type { NavItem } from "../-lib/nav-item.ts"
+import { AboutDialog } from "./about-dialog.tsx"
+import { NavAccounts } from "./nav-main.tsx"
+import { NavUsers } from "./nav-projects.tsx"
+import { NavUser } from "./nav-user.tsx"
 
 // This is sample data.
 const mainNav: NavItem[] = [
@@ -41,24 +41,23 @@ const mainNav: NavItem[] = [
       {
         title: "Dashboard",
         icon: LayoutDashboardIcon,
-        url: "/books"
+        url: "/books",
       },
       {
         title: "Find Transactions",
         icon: SearchIcon,
-        url: "/books/banking/search"
+        url: "/books/banking/search",
       },
       {
         title: "Post Transactions",
         icon: ListPlusIcon,
-        url: "/books/banking/transactions"
+        url: "/books/banking/transactions",
       },
       {
         title: "Bank Account Recon",
         icon: ListTodoIcon,
-        url: "/books/banking/recon"
+        url: "/books/banking/recon",
       },
-      
     ],
   },
   {
@@ -74,37 +73,37 @@ const mainNav: NavItem[] = [
     ],
   },
   {
-    title:"Manage",
+    title: "Manage",
     isActive: false,
     icon: LogsIcon,
     items: [
       {
         title: "Accounts List",
         icon: BoxesIcon,
-        url: "/books/accounts"
+        url: "/books/accounts",
       },
       {
-        title:"Bank Accounts",
+        title: "Bank Accounts",
         icon: LandmarkIcon,
-        url: "/books/bank-account"
-      }
-    ]
+        url: "/books/bank-account",
+      },
+    ],
   },
   {
     title: "Reports",
     isActive: false,
     icon: SummaryIcon,
     items: [],
-  }
-];
+  },
+]
 
 const adminNav: NavItem[] = [
   {
     title: "Users",
     url: "/books/admin/users",
-    icon: UsersRoundIcon
-  }
-];
+    icon: UsersRoundIcon,
+  },
+]
 
 export function AppSidebar({
   sessionUser,
@@ -112,13 +111,13 @@ export function AppSidebar({
   navSections,
   ...props
 }: React.ComponentProps<typeof Sidebar> & {
-  sessionUser: SessionUser;
-  appCompany: string;
+  sessionUser: SessionUser
+  appCompany: string
   /** Which nav sections are open, as the server read them from the cookie. */
-  navSections: NavSectionsOpen;
+  navSections: NavSectionsOpen
 }) {
-  const [aboutOpen, setAboutOpen] = React.useState(false);
-  const isAdmin = sessionUser.role === "admin";
+  const [aboutOpen, setAboutOpen] = React.useState(false)
+  const isAdmin = sessionUser.role === "admin"
   const title = (
     <>
       <Wallet2Icon className="size-7 shrink-0 text-primary" />
@@ -128,7 +127,7 @@ export function AppSidebar({
         <span className="font-semibold text-primary">Accounts</span>
       </span>
     </>
-  );
+  )
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -157,5 +156,5 @@ export function AppSidebar({
       <SidebarRail />
       {isAdmin && <AboutDialog open={aboutOpen} onOpenChange={setAboutOpen} />}
     </Sidebar>
-  );
+  )
 }

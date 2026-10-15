@@ -1,6 +1,6 @@
-import { formatDate } from "#/lib/dates.ts";
-import { Button } from "#/components/ui/button.tsx";
-import { Checkbox } from "#/components/ui/checkbox.tsx";
+import { formatDate } from "#/lib/dates.ts"
+import { Button } from "#/components/ui/button.tsx"
+import { Checkbox } from "#/components/ui/checkbox.tsx"
 import {
   Table,
   TableBody,
@@ -8,15 +8,15 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "#/components/ui/table.tsx";
-import { formatZar } from "#/lib/currency.ts";
-import { useNavigate } from "@tanstack/react-router";
-import { SaveIcon, XIcon } from "lucide-react";
-import { useMemo, useState } from "react";
-import { markReconBalanced, saveReconLines, type ReconDetails } from "../-server/recon.server.ts";
+} from "#/components/ui/table.tsx"
+import { formatZar } from "#/lib/currency.ts"
+import { useNavigate } from "@tanstack/react-router"
+import { SaveIcon, XIcon } from "lucide-react"
+import { useMemo, useState } from "react"
+import { markReconBalanced, saveReconLines, type ReconDetails } from "../-server/recon.server.ts"
 
 const sameSet = (a: ReadonlySet<number>, b: ReadonlySet<number>) =>
-  a.size === b.size && [...a].every((id) => b.has(id));
+  a.size === b.size && [...a].every((id) => b.has(id))
 
 // Every line starts ticked (see `included` below). Ticking a line includes it in the running total, which starts from the
 // statement's opening balance (shown as the first row) and adds each ticked
@@ -34,72 +34,70 @@ export function ReconTransactionsTable({
   isBalanced,
   transactions,
 }: {
-  reconId: number;
-  openingBalance: number;
-  closingBalance: number;
-  isBalanced: boolean;
-  transactions: ReconDetails["transactions"];
+  reconId: number
+  openingBalance: number
+  closingBalance: number
+  isBalanced: boolean
+  transactions: ReconDetails["transactions"]
 }) {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
   // What the server holds, to know whether there is anything to save.
   const [saved, setSaved] = useState<ReadonlySet<number>>(
     () => new Set(transactions.filter((t) => t.included).map((t) => t.journalLineId)),
-  );
+  )
   // Everything starts ticked, since most lines are expected to be on the
   // statement - unless a selection was saved earlier, which wins. A fresh
   // reconciliation therefore starts unsaved, so it can be saved as it stands.
   const [included, setIncluded] = useState<ReadonlySet<number>>(() =>
-    saved.size > 0 || isBalanced
-      ? saved
-      : new Set(transactions.map((t) => t.journalLineId)),
-  );
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+    saved.size > 0 || isBalanced ? saved : new Set(transactions.map((t) => t.journalLineId)),
+  )
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   // Work in cents so float noise can't build up down a long list.
   const { runningTotals, totalCents } = useMemo(() => {
-    const totals = new Map<number, number>();
-    let cents = Math.round(openingBalance * 100);
+    const totals = new Map<number, number>()
+    let cents = Math.round(openingBalance * 100)
     for (const transaction of transactions) {
       if (included.has(transaction.journalLineId)) {
-        cents += Math.round(transaction.amount * 100);
-        totals.set(transaction.journalLineId, cents / 100);
+        cents += Math.round(transaction.amount * 100)
+        totals.set(transaction.journalLineId, cents / 100)
       }
     }
-    return { runningTotals: totals, totalCents: cents };
-  }, [openingBalance, transactions, included]);
+    return { runningTotals: totals, totalCents: cents }
+  }, [openingBalance, transactions, included])
 
   // What's still needed to reach the statement's closing balance.
-  const differenceCents = Math.round(closingBalance * 100) - totalCents;
-  const reachesClosingBalance = differenceCents === 0;
-  const canSave = !isBalanced && !busy && !sameSet(included, saved);
-  const canBalance = !isBalanced && !busy && reachesClosingBalance;
+  const differenceCents = Math.round(closingBalance * 100) - totalCents
+  const reachesClosingBalance = differenceCents === 0
+  const canSave = !isBalanced && !busy && !sameSet(included, saved)
+  const canBalance = !isBalanced && !busy && reachesClosingBalance
 
   function toggle(journalLineId: number, checked: boolean) {
     setIncluded((previous) => {
-      const next = new Set(previous);
+      const next = new Set(previous)
       if (checked) {
-        next.add(journalLineId);
+        next.add(journalLineId)
       } else {
-        next.delete(journalLineId);
+        next.delete(journalLineId)
       }
-      return next;
-    });
+      return next
+    })
   }
 
   async function run(action: () => Promise<void>) {
-    setBusy(true);
-    setError(null);
+    setBusy(true)
+    setError(null)
     try {
-      await action();
+      await action()
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Couldn't save the reconciliation.");
+      setError(caught instanceof Error ? caught.message : "Couldn't save the reconciliation.")
     } finally {
-      setBusy(false);
+      setBusy(false)
     }
   }
 
-  const selection = () => ({ reconId, includedLineIds: [...included] });
+  const selection = () => ({ reconId, includedLineIds: [...included] })
 
   return (
     <>
@@ -125,7 +123,7 @@ export function ReconTransactionsTable({
           </TableRow>
           {transactions.length ? (
             transactions.map((transaction) => {
-              const runningTotal = runningTotals.get(transaction.journalLineId);
+              const runningTotal = runningTotals.get(transaction.journalLineId)
               return (
                 <TableRow
                   key={transaction.journalLineId}
@@ -150,7 +148,7 @@ export function ReconTransactionsTable({
                     {runningTotal !== undefined ? formatZar(runningTotal) : ""}
                   </TableCell>
                 </TableRow>
-              );
+              )
             })
           ) : (
             <TableRow>
@@ -171,55 +169,55 @@ export function ReconTransactionsTable({
           This reconciliation is balanced.
         </p>
       ) : (
-      <div className="mt-4 flex items-end justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            disabled={!canSave}
-            onClick={() =>
-              run(async () => {
-                await saveReconLines({ data: selection() });
-                setSaved(included);
-              })
-            }
-          >
-            <SaveIcon />
-            Save for later
-          </Button>
-          {/* Leaves without saving: the ticks made on this page are dropped. */}
-          <Button
-            type="button"
-            variant="ghost"
-            disabled={busy}
-            onClick={() => navigate({ to: "/books/banking/recon" })}
-          >
-            <XIcon />
-            Cancel
-          </Button>
+        <div className="mt-4 flex items-end justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={!canSave}
+              onClick={() =>
+                run(async () => {
+                  await saveReconLines({ data: selection() })
+                  setSaved(included)
+                })
+              }
+            >
+              <SaveIcon />
+              Save for later
+            </Button>
+            {/* Leaves without saving: the ticks made on this page are dropped. */}
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={busy}
+              onClick={() => navigate({ to: "/books/banking/recon" })}
+            >
+              <XIcon />
+              Cancel
+            </Button>
+          </div>
+          <div className="flex flex-col items-end gap-2">
+            <p className="text-sm tabular-nums">
+              <span className="text-muted-foreground">Difference: </span>
+              <span className={reachesClosingBalance ? undefined : "font-medium text-destructive"}>
+                {formatZar(differenceCents / 100)}
+              </span>
+            </p>
+            <Button
+              type="button"
+              disabled={!canBalance}
+              onClick={() =>
+                run(async () => {
+                  await markReconBalanced({ data: selection() })
+                  await navigate({ to: "/books/banking/recon" })
+                })
+              }
+            >
+              Mark as Balanced
+            </Button>
+          </div>
         </div>
-        <div className="flex flex-col items-end gap-2">
-          <p className="text-sm tabular-nums">
-            <span className="text-muted-foreground">Difference: </span>
-            <span className={reachesClosingBalance ? undefined : "font-medium text-destructive"}>
-              {formatZar(differenceCents / 100)}
-            </span>
-          </p>
-          <Button
-            type="button"
-            disabled={!canBalance}
-            onClick={() =>
-              run(async () => {
-                await markReconBalanced({ data: selection() });
-                await navigate({ to: "/books/banking/recon" });
-              })
-            }
-          >
-            Mark as Balanced
-          </Button>
-        </div>
-      </div>
       )}
     </>
-  );
+  )
 }

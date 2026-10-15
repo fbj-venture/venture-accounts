@@ -1,21 +1,21 @@
-import { env } from "@app/env";
-import { authAccount, db, session, user, verification } from "@app/db/direct";
-import { and, count, eq, gt, like } from "drizzle-orm";
-import { betterAuth } from "better-auth";
-import { admin } from "better-auth/plugins";
-import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { tanstackStartCookies } from "better-auth/tanstack-start";
-import { APP_COMPANY } from "./app-company.ts";
-import { renderResetPasswordEmail, renderVerifyEmail } from "@app/email";
-import { sendEmail } from "@app/email/send";
+import { env } from "@app/env"
+import { authAccount, db, session, user, verification } from "@app/db/direct"
+import { and, count, eq, gt, like } from "drizzle-orm"
+import { betterAuth } from "better-auth"
+import { admin } from "better-auth/plugins"
+import { drizzleAdapter } from "better-auth/adapters/drizzle"
+import { tanstackStartCookies } from "better-auth/tanstack-start"
+import { APP_COMPANY } from "./app-company.ts"
+import { renderResetPasswordEmail, renderVerifyEmail } from "@app/email"
+import { sendEmail } from "@app/email/send"
 
 // Email clients load images from the web, so this must be a public absolute URL
 // (file is apps/web/public/img/venture-church.png). It will show broken in
 // emails sent from localhost.
-export const EMAIL_LOGO_URL = new URL("/img/venture-church.png", env.BETTER_AUTH_URL).toString();
+export const EMAIL_LOGO_URL = new URL("/img/venture-church.png", env.BETTER_AUTH_URL).toString()
 
 // Most reset emails one address gets in an hour.
-const RESET_EMAILS_PER_HOUR = 3;
+const RESET_EMAILS_PER_HOUR = 3
 
 export const auth = betterAuth({
   baseURL: env.BETTER_AUTH_URL,
@@ -50,15 +50,20 @@ export const auth = betterAuth({
             like(verification.identifier, "reset-password:%"),
             gt(verification.createdAt, new Date(Date.now() - 60 * 60 * 1000)),
           ),
-        );
+        )
       if (recent > RESET_EMAILS_PER_HOUR) {
-        return;
+        return
       }
       await sendEmail({
         to: target.email,
         subject: `Reset your ${APP_COMPANY} Accounts password`,
-        html: await renderResetPasswordEmail({ name: target.name, company: APP_COMPANY, url, logoUrl: EMAIL_LOGO_URL }),
-      });
+        html: await renderResetPasswordEmail({
+          name: target.name,
+          company: APP_COMPANY,
+          url,
+          logoUrl: EMAIL_LOGO_URL,
+        }),
+      })
     },
   },
   emailVerification: {
@@ -69,8 +74,13 @@ export const auth = betterAuth({
       await sendEmail({
         to: user.email,
         subject: `Verify your email address for ${APP_COMPANY} Accounts`,
-        html: await renderVerifyEmail({ name: user.name, company: APP_COMPANY, url, logoUrl: EMAIL_LOGO_URL }),
-      });
+        html: await renderVerifyEmail({
+          name: user.name,
+          company: APP_COMPANY,
+          url,
+          logoUrl: EMAIL_LOGO_URL,
+        }),
+      })
     },
   },
   // Explicit rather than relying on the isProduction default, so dev/staging
@@ -88,4 +98,4 @@ export const auth = betterAuth({
   },
   // Must be last (see better-auth/tanstack-start docs).
   plugins: [admin(), tanstackStartCookies()],
-});
+})

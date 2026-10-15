@@ -1,9 +1,9 @@
-import { Button } from "#/components/ui/button.tsx";
-import { Input } from "#/components/ui/input.tsx";
-import { isValidAmountFilter } from "#/lib/amount-filter.ts";
-import { cn } from "#/lib/utils.ts";
-import { HelpCircleIcon } from "lucide-react";
-import { useState } from "react";
+import { Button } from "#/components/ui/button.tsx"
+import { Input } from "#/components/ui/input.tsx"
+import { isValidAmountFilter } from "#/lib/amount-filter.ts"
+import { cn } from "#/lib/utils.ts"
+import { HelpCircleIcon } from "lucide-react"
+import { useState } from "react"
 
 export function AmountFilterHelp() {
   return (
@@ -14,28 +14,27 @@ export function AmountFilterHelp() {
           A plain number, e.g. <code>150</code> - matches that amount exactly.
         </li>
         <li>
-          A comparison, e.g. <code>&lt;300</code>, <code>&lt;=300</code>,{" "}
-          <code>&gt;50</code>, <code>&gt;=50</code>, <code>=42</code>.
+          A comparison, e.g. <code>&lt;300</code>, <code>&lt;=300</code>, <code>&gt;50</code>,{" "}
+          <code>&gt;=50</code>, <code>=42</code>.
         </li>
         <li>
-          A range, written as two numbers either side of an operator, e.g.{" "}
-          <code>300 &lt; 500</code> or <code>500 &gt; 300</code> - both mean amounts
-          between 300 and 500. Use <code>&lt;=</code> or <code>&gt;=</code> to include
-          the endpoints.
+          A range, written as two numbers either side of an operator, e.g. <code>300 &lt; 500</code>{" "}
+          or <code>500 &gt; 300</code> - both mean amounts between 300 and 500. Use{" "}
+          <code>&lt;=</code> or <code>&gt;=</code> to include the endpoints.
         </li>
         <li>
-          Multiple expressions combined with <code>&amp;</code>, all of which must
-          match, e.g. <code>&gt;100 &amp; &lt;500</code>.
+          Multiple expressions combined with <code>&amp;</code>, all of which must match, e.g.{" "}
+          <code>&gt;100 &amp; &lt;500</code>.
         </li>
         <li>
           Alternatives combined with <code>|</code> (or), any of which may match, e.g.{" "}
-          <code>42 | 100</code> or <code>&lt;-1000 | &gt;1000</code>. <code>&amp;</code>{" "}
-          is applied before <code>|</code>, so <code>&lt;50 | &gt;100 &amp; &lt;200</code>{" "}
-          means under 50, or between 100 and 200.
+          <code>42 | 100</code> or <code>&lt;-1000 | &gt;1000</code>. <code>&amp;</code> is applied
+          before <code>|</code>, so <code>&lt;50 | &gt;100 &amp; &lt;200</code> means under 50, or
+          between 100 and 200.
         </li>
       </ul>
     </div>
-  );
+  )
 }
 
 // A text box for an amount expression (">100 & <500"), with a help toggle.
@@ -49,23 +48,23 @@ export function AmountFilterInput({
   helpOpen,
   onHelpOpenChange,
 }: {
-  id?: string;
-  value: string;
-  onValueChange: (value: string) => void;
+  id?: string
+  value: string
+  onValueChange: (value: string) => void
   /** Width etc. for the text box. */
-  className?: string;
+  className?: string
   /**
    * Pass both to show the help yourself (render <AmountFilterHelp /> where
    * it fits - e.g. across a whole filter bar); otherwise it opens under the box.
    */
-  helpOpen?: boolean;
-  onHelpOpenChange?: (open: boolean) => void;
+  helpOpen?: boolean
+  onHelpOpenChange?: (open: boolean) => void
 }) {
-  const [ownHelpOpen, setOwnHelpOpen] = useState(false);
-  const controlled = helpOpen !== undefined && onHelpOpenChange !== undefined;
-  const showHelp = controlled ? helpOpen : ownHelpOpen;
-  const setShowHelp = controlled ? onHelpOpenChange : setOwnHelpOpen;
-  const state = value.trim() === "" ? "empty" : isValidAmountFilter(value) ? "valid" : "invalid";
+  const [ownHelpOpen, setOwnHelpOpen] = useState(false)
+  const controlled = helpOpen !== undefined && onHelpOpenChange !== undefined
+  const showHelp = controlled ? helpOpen : ownHelpOpen
+  const setShowHelp = controlled ? onHelpOpenChange : setOwnHelpOpen
+  const state = value.trim() === "" ? "empty" : isValidAmountFilter(value) ? "valid" : "invalid"
 
   return (
     <div>
@@ -96,5 +95,5 @@ export function AmountFilterInput({
       </div>
       {showHelp && !controlled ? <AmountFilterHelp /> : null}
     </div>
-  );
+  )
 }

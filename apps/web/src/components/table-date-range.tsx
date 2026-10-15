@@ -1,31 +1,27 @@
-import { currentYear } from "#/lib/dates.ts";
-import { Button } from "#/components/ui/button.tsx";
-import { Calendar } from "#/components/ui/calendar.tsx";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "#/components/ui/popover.tsx";
+import { currentYear } from "#/lib/dates.ts"
+import { Button } from "#/components/ui/button.tsx"
+import { Calendar } from "#/components/ui/calendar.tsx"
+import { Popover, PopoverContent, PopoverTrigger } from "#/components/ui/popover.tsx"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "#/components/ui/select.tsx";
-import { endOfYear, format, startOfYear } from "date-fns";
-import { CalendarIcon } from "lucide-react";
-import { useEffect, useState } from "react";
-import type { DateRange } from "react-day-picker";
+} from "#/components/ui/select.tsx"
+import { endOfYear, format, startOfYear } from "date-fns"
+import { CalendarIcon } from "lucide-react"
+import { useEffect, useState } from "react"
+import type { DateRange } from "react-day-picker"
 
 function formatRangeLabel(range: DateRange | undefined) {
   if (!range?.from) {
-    return "Filter by date";
+    return "Filter by date"
   }
   if (!range.to) {
-    return format(range.from, "d MMM yyyy");
+    return format(range.from, "d MMM yyyy")
   }
-  return `${format(range.from, "d MMM yyyy")} - ${format(range.to, "d MMM yyyy")}`;
+  return `${format(range.from, "d MMM yyyy")} - ${format(range.to, "d MMM yyyy")}`
 }
 
 // Generic date-range filter for any table - reused across the app rather
@@ -35,40 +31,40 @@ export function TableDateRange({
   onRangeChange,
   years,
 }: {
-  range: DateRange | undefined;
-  onRangeChange: (range: DateRange | undefined) => void;
+  range: DateRange | undefined
+  onRangeChange: (range: DateRange | undefined) => void
   /** Years to offer in the quick-select dropdown, spanning the dataset. */
-  years: number[];
+  years: number[]
 }) {
-  const [open, setOpen] = useState(false);
-  const [selectedYear, setSelectedYear] = useState(() => String(currentYear()));
+  const [open, setOpen] = useState(false)
+  const [selectedYear, setSelectedYear] = useState(() => String(currentYear()))
   // Picking dates/years only edits this draft; the table only re-filters
   // once "Apply" commits it via onRangeChange.
-  const [draftRange, setDraftRange] = useState(range);
+  const [draftRange, setDraftRange] = useState(range)
   // Which month the calendar is showing - kept separate from draftRange so
   // picking a year can move the calendar there even before any day is picked.
-  const [month, setMonth] = useState(() => range?.from ?? new Date());
+  const [month, setMonth] = useState(() => range?.from ?? new Date())
 
   // Keep the draft in sync with the applied range - covers Clear (which
   // applies immediately) and the popover being reopened later.
   useEffect(() => {
-    setDraftRange(range);
+    setDraftRange(range)
     if (range?.from) {
-      setMonth(range.from);
+      setMonth(range.from)
     }
-  }, [range]);
+  }, [range])
 
   function applyYear(year: string) {
-    setSelectedYear(year);
-    const yearStart = startOfYear(new Date(Number(year), 0, 1));
-    setDraftRange({ from: yearStart, to: endOfYear(yearStart) });
-    setMonth(yearStart);
+    setSelectedYear(year)
+    const yearStart = startOfYear(new Date(Number(year), 0, 1))
+    setDraftRange({ from: yearStart, to: endOfYear(yearStart) })
+    setMonth(yearStart)
   }
 
   function clear() {
-    setDraftRange(undefined);
-    onRangeChange(undefined);
-    setOpen(false);
+    setDraftRange(undefined)
+    onRangeChange(undefined)
+    setOpen(false)
   }
 
   return (
@@ -100,8 +96,8 @@ export function TableDateRange({
             <Button
               size="sm"
               onClick={() => {
-                onRangeChange(draftRange);
-                setOpen(false);
+                onRangeChange(draftRange)
+                setOpen(false)
               }}
               disabled={!draftRange?.from}
             >
@@ -119,5 +115,5 @@ export function TableDateRange({
         />
       </PopoverContent>
     </Popover>
-  );
+  )
 }

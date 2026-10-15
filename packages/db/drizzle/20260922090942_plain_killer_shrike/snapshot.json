@@ -1,8 +1,6 @@
 {
   "id": "573ac6c5-890f-4af5-9ed9-97b9cc9b544d",
-  "prevIds": [
-    "a4f73815-3fa3-4f76-a07a-d3e38a924bef"
-  ],
+  "prevIds": ["a4f73815-3fa3-4f76-a07a-d3e38a924bef"],
   "version": "8",
   "dialect": "postgres",
   "ddl": [
@@ -17,9 +15,7 @@
       "entityType": "tables"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "account_type_pkey",
       "schema": "public",
@@ -67,9 +63,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "name"
-      ],
+      "columns": ["name"],
       "nullsNotDistinct": false,
       "name": "account_type_name_unique",
       "schema": "public",
@@ -83,9 +77,7 @@
       "entityType": "tables"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "account_pkey",
       "schema": "public",
@@ -133,9 +125,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "name"
-      ],
+      "columns": ["name"],
       "nullsNotDistinct": false,
       "name": "account_name_unique",
       "schema": "public",
@@ -144,14 +134,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "account_type"
-      ],
+      "columns": ["account_type"],
       "schemaTo": "public",
       "tableTo": "account_type",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "account_account_type_account_type_id_fk",

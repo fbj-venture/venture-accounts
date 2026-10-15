@@ -1,11 +1,11 @@
-import { Button } from "#/components/ui/button.tsx";
-import { Checkbox } from "#/components/ui/checkbox.tsx";
-import { Input } from "#/components/ui/input.tsx";
-import { Popover, PopoverContent, PopoverTrigger } from "#/components/ui/popover.tsx";
-import { ChevronsUpDownIcon } from "lucide-react";
-import { useMemo, useState } from "react";
+import { Button } from "#/components/ui/button.tsx"
+import { Checkbox } from "#/components/ui/checkbox.tsx"
+import { Input } from "#/components/ui/input.tsx"
+import { Popover, PopoverContent, PopoverTrigger } from "#/components/ui/popover.tsx"
+import { ChevronsUpDownIcon } from "lucide-react"
+import { useMemo, useState } from "react"
 
-export type MultiSelectOption = { value: number; label: string };
+export type MultiSelectOption = { value: number; label: string }
 
 // A dropdown of checkable options with a search box, for choosing any number
 // of them (including none). The button summarises what's ticked.
@@ -18,22 +18,24 @@ export function MultiSelect({
   className,
   showAllButton = false,
 }: {
-  id?: string;
-  options: MultiSelectOption[];
-  value: number[];
-  onValueChange: (value: number[]) => void;
-  placeholder: string;
-  className?: string;
+  id?: string
+  options: MultiSelectOption[]
+  value: number[]
+  onValueChange: (value: number[]) => void
+  placeholder: string
+  className?: string
   /** Adds an "All" button that ticks every option (not just those the search shows). */
-  showAllButton?: boolean;
+  showAllButton?: boolean
 }) {
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState("")
 
-  const selected = useMemo(() => new Set(value), [value]);
+  const selected = useMemo(() => new Set(value), [value])
   const visible = useMemo(() => {
-    const needle = search.trim().toLowerCase();
-    return needle ? options.filter((option) => option.label.toLowerCase().includes(needle)) : options;
-  }, [options, search]);
+    const needle = search.trim().toLowerCase()
+    return needle
+      ? options.filter((option) => option.label.toLowerCase().includes(needle))
+      : options
+  }, [options, search])
 
   const summary =
     value.length === 0
@@ -43,12 +45,12 @@ export function MultiSelect({
             .filter((option) => selected.has(option.value))
             .map((option) => option.label)
             .join(", ")
-        : `${value.length} selected`;
+        : `${value.length} selected`
 
   function toggle(optionValue: number, checked: boolean) {
     onValueChange(
       checked ? [...value, optionValue] : value.filter((candidate) => candidate !== optionValue),
-    );
+    )
   }
 
   return (
@@ -120,5 +122,5 @@ export function MultiSelect({
         ) : null}
       </PopoverContent>
     </Popover>
-  );
+  )
 }

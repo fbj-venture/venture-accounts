@@ -1,29 +1,18 @@
-import { requireUser } from "#/lib/require-user.server.ts";
-import {
-  account,
-  bankAccount,
-  bankUpload,
-  db,
-  recon,
-  withCreate,
-  withUpdate,
-} from "@app/db/direct";
-import { createServerFn } from "@tanstack/react-start";
-import {
-  and,
-  desc,
-  eq,
-  isNotNull,
-  ne,
-  notExists,
-} from "drizzle-orm";
+import { requireUser } from "#/lib/require-user.server.ts"
+import { account, bankAccount, bankUpload, db, recon, withCreate, withUpdate } from "@app/db/direct"
+import { createServerFn } from "@tanstack/react-start"
+import { and, desc, eq, isNotNull, ne, notExists } from "drizzle-orm"
 
-import { applyReconSelection, listReconLines, resolveReconSetup } from "./internal/recon-queries.server.ts";
+import {
+  applyReconSelection,
+  listReconLines,
+  resolveReconSetup,
+} from "./internal/recon-queries.server.ts"
 
 // Keep ALL database code inside handlers or the helpers they call - see
 // transactions/-server/transactions.functions.ts for why.
 
-export type ReconForm = Awaited<ReturnType<typeof getReconForm>>;
+export type ReconForm = Awaited<ReturnType<typeof getReconForm>>
 
 // What the reconciliation form starts with for a bank account: the open
 // (not yet balanced) reconciliation if there is one, otherwise a fresh one.
@@ -31,9 +20,9 @@ export const getReconForm = createServerFn({ method: "GET" })
   .validator((bankAccountId: number) => bankAccountId)
   .handler(async ({ data: bankAccountId }) => {
     const { openRecon, openingBalance, openingBalanceLocked, previousStatementDate } =
-      await resolveReconSetup(bankAccountId);
+      await resolveReconSetup(bankAccountId)
     // The statement the open reconciliation is linked to, if any.
-    let upload: UploadSummary | null = null;
+    let upload: UploadSummary | null = null
     if (openRecon?.bankUploadId) {
       const [row] = await db
         .select({
@@ -42,8 +31,8 @@ export const getReconForm = createServerFn({ method: "GET" })
           uploadedAt: bankUpload.createdAt,
         })
         .from(bankUpload)
-        .where(eq(bankUpload.id, openRecon.bankUploadId));
-      upload = row ?? null;
+        .where(eq(bankUpload.id, openRecon.bankUploadId))
+      upload = row ?? null
     }
     return {
       reconId: openRecon?.id ?? null,
@@ -54,17 +43,17 @@ export const getReconForm = createServerFn({ method: "GET" })
       // yyyy-MM-dd, as stored.
       statementDate: openRecon?.statementDate ?? null,
       upload,
-    };
-  });
+    }
+  })
 
-export type UploadSummary = { id: number; description: string; uploadedAt: Date; };
+export type UploadSummary = { id: number; description: string; uploadedAt: Date }
 
 // The bank account's uploads that no reconciliation is linked to yet,
 // newest first.
 export const listUnlinkedUploads = createServerFn({ method: "GET" })
   .validator((bankAccountId: number) => bankAccountId)
   .handler(async ({ data: bankAccountId }) => {
-    await requireUser();
+    await requireUser()
     return db
       .select({
         id: bankUpload.id,
@@ -76,13 +65,15 @@ export const listUnlinkedUploads = createServerFn({ method: "GET" })
       .where(
         and(
           eq(bankUpload.bankId, bankAccountId),
-          notExists(db.select({ one: recon.id }).from(recon).where(eq(recon.bankUploadId, bankUpload.id))),
+          notExists(
+            db.select({ one: recon.id }).from(recon).where(eq(recon.bankUploadId, bankUpload.id)),
+          ),
         ),
       )
-      .orderBy(desc(bankUpload.createdAt), desc(bankUpload.id));
-  });
+      .orderBy(desc(bankUpload.createdAt), desc(bankUpload.id))
+  })
 
-export type ReconHistoryItem = Awaited<ReturnType<typeof listReconHistory>>[number];
+export type ReconHistoryItem = Awaited<ReturnType<typeof listReconHistory>>[number]
 
 // A bank account's balanced reconciliations, most recent first.
 export const listReconHistory = createServerFn({ method: "GET" })
@@ -101,24 +92,24 @@ export const listReconHistory = createServerFn({ method: "GET" })
       .from(recon)
       .leftJoin(bankUpload, eq(bankUpload.id, recon.bankUploadId))
       .where(and(eq(recon.bankAccountId, bankAccountId), isNotNull(recon.ballancedAt)))
-      .orderBy(desc(recon.statementDate), desc(recon.id));
+      .orderBy(desc(recon.statementDate), desc(recon.id))
     return rows.map(({ ballancedAt, ...row }) => ({
       ...row,
       balancedAt: ballancedAt!.toISOString(),
-    }));
-  });
+    }))
+  })
 
 // Links a reconciliation to an uploaded statement, or - with null - unlinks it.
 export const setReconUpload = createServerFn({ method: "POST" })
-  .validator((data: { reconId: number; bankUploadId: number | null; }) => data)
+  .validator((data: { reconId: number; bankUploadId: number | null }) => data)
   .handler(async ({ data }) => {
-    const { id: userId } = await requireUser();
+    const { id: userId } = await requireUser()
     const [row] = await db
       .select({ bankAccountId: recon.bankAccountId })
       .from(recon)
-      .where(eq(recon.id, data.reconId));
+      .where(eq(recon.id, data.reconId))
     if (!row) {
-      throw new Error("Reconciliation not found.");
+      throw new Error("Reconciliation not found.")
     }
     if (data.bankUploadId !== null) {
       const [upload] = await db
@@ -135,46 +126,48 @@ export const setReconUpload = createServerFn({ method: "POST" })
                 .where(and(eq(recon.bankUploadId, bankUpload.id), ne(recon.id, data.reconId))),
             ),
           ),
-        );
+        )
       if (!upload) {
-        throw new Error("That upload can't be linked - it may already be linked to another reconciliation.");
+        throw new Error(
+          "That upload can't be linked - it may already be linked to another reconciliation.",
+        )
       }
     }
     await db
       .update(recon)
       .set(withUpdate(userId, { bankUploadId: data.bankUploadId }))
-      .where(eq(recon.id, data.reconId));
-  });
+      .where(eq(recon.id, data.reconId))
+  })
 
 type SaveReconInput = {
-  bankAccountId: number;
+  bankAccountId: number
   /** Ignored when the opening balance is locked - the server decides it. */
-  openingBalance: number | null;
-  closingBalance: number;
+  openingBalance: number | null
+  closingBalance: number
   /** yyyy-MM-dd */
-  statementDate: string;
+  statementDate: string
   /** The uploaded statement this reconciliation is linked to, if any. */
-  bankUploadId: number | null;
-};
+  bankUploadId: number | null
+}
 
 export const saveRecon = createServerFn({ method: "POST" })
   .validator((data: SaveReconInput) => data)
   .handler(async ({ data }) => {
-    const { id: userId } = await requireUser();
+    const { id: userId } = await requireUser()
     if (!/^\d{4}-\d{2}-\d{2}$/.test(data.statementDate)) {
-      throw new Error("Statement date is not a valid date.");
+      throw new Error("Statement date is not a valid date.")
     }
     if (!Number.isFinite(data.closingBalance)) {
-      throw new Error("Closing balance is not a number.");
+      throw new Error("Closing balance is not a number.")
     }
 
     // Never trust the client for a locked opening balance.
     const { openRecon, openingBalance, openingBalanceLocked } = await resolveReconSetup(
       data.bankAccountId,
-    );
-    const opening = openingBalanceLocked ? openingBalance : data.openingBalance;
+    )
+    const opening = openingBalanceLocked ? openingBalance : data.openingBalance
     if (opening === null || !Number.isFinite(opening)) {
-      throw new Error("Opening balance is required.");
+      throw new Error("Opening balance is required.")
     }
 
     if (data.bankUploadId !== null) {
@@ -198,9 +191,11 @@ export const saveRecon = createServerFn({ method: "POST" })
                 ),
             ),
           ),
-        );
+        )
       if (!upload) {
-        throw new Error("That upload can't be linked - it may already be linked to another reconciliation.");
+        throw new Error(
+          "That upload can't be linked - it may already be linked to another reconciliation.",
+        )
       }
     }
 
@@ -209,19 +204,19 @@ export const saveRecon = createServerFn({ method: "POST" })
       closingBallance: data.closingBalance,
       statementDate: data.statementDate,
       bankUploadId: data.bankUploadId,
-    };
+    }
     if (openRecon) {
-      await db.update(recon).set(withUpdate(userId, values)).where(eq(recon.id, openRecon.id));
-      return { reconId: openRecon.id };
+      await db.update(recon).set(withUpdate(userId, values)).where(eq(recon.id, openRecon.id))
+      return { reconId: openRecon.id }
     }
     const [created] = await db
       .insert(recon)
       .values(withCreate(userId, { bankAccountId: data.bankAccountId, ...values }))
-      .returning({ id: recon.id });
-    return { reconId: created!.id };
-  });
+      .returning({ id: recon.id })
+    return { reconId: created!.id }
+  })
 
-export type ReconDetails = NonNullable<Awaited<ReturnType<typeof getReconDetails>>>;
+export type ReconDetails = NonNullable<Awaited<ReturnType<typeof getReconDetails>>>
 
 // Everything the reconciliation page shows for one reconciliation: its bank
 // account, the statement figures and the lines it lists - see listReconLines.
@@ -244,9 +239,9 @@ export const getReconDetails = createServerFn({ method: "GET" })
       .from(recon)
       .innerJoin(bankAccount, eq(bankAccount.id, recon.bankAccountId))
       .innerJoin(account, eq(account.id, bankAccount.id))
-      .where(eq(recon.id, reconId));
+      .where(eq(recon.id, reconId))
     if (!row) {
-      return null;
+      return null
     }
 
     const transactions = await listReconLines(db, {
@@ -254,7 +249,7 @@ export const getReconDetails = createServerFn({ method: "GET" })
       bankAccountId: row.bankAccountId,
       statementDate: row.statementDate,
       isBalanced: row.ballancedAt !== null,
-    });
+    })
 
     return {
       recon: {
@@ -272,12 +267,15 @@ export const getReconDetails = createServerFn({ method: "GET" })
         accountNumber: row.accountNumber,
       },
       transactions,
-    };
-  });
+    }
+  })
 
-type ReconSelection = { reconId: number; includedLineIds: number[]; };
+type ReconSelection = { reconId: number; includedLineIds: number[] }
 
-async function loadOpenRecon(tx: Parameters<Parameters<typeof db.transaction>[0]>[0], reconId: number) {
+async function loadOpenRecon(
+  tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
+  reconId: number,
+) {
   const [row] = await tx
     .select({
       id: recon.id,
@@ -289,14 +287,14 @@ async function loadOpenRecon(tx: Parameters<Parameters<typeof db.transaction>[0]
     })
     .from(recon)
     .where(eq(recon.id, reconId))
-    .for("update");
+    .for("update")
   if (!row) {
-    throw new Error("Reconciliation not found.");
+    throw new Error("Reconciliation not found.")
   }
   if (row.ballancedAt) {
-    throw new Error("This reconciliation is already balanced.");
+    throw new Error("This reconciliation is already balanced.")
   }
-  return { ...row, isBalanced: false };
+  return { ...row, isBalanced: false }
 }
 
 // Saves which transactions are ticked off: they become reconciled and are
@@ -305,12 +303,12 @@ async function loadOpenRecon(tx: Parameters<Parameters<typeof db.transaction>[0]
 export const saveReconLines = createServerFn({ method: "POST" })
   .validator((data: ReconSelection) => data)
   .handler(async ({ data }) => {
-    const { id: userId } = await requireUser();
+    const { id: userId } = await requireUser()
     await db.transaction(async (tx) => {
-      const row = await loadOpenRecon(tx, data.reconId);
-      await applyReconSelection(tx, row, data.includedLineIds, userId);
-    });
-  });
+      const row = await loadOpenRecon(tx, data.reconId)
+      await applyReconSelection(tx, row, data.includedLineIds, userId)
+    })
+  })
 
 // Saves the ticks as above, then - only if the opening balance plus the
 // ticked lines equals the closing balance, checked here rather than trusted
@@ -318,19 +316,19 @@ export const saveReconLines = createServerFn({ method: "POST" })
 export const markReconBalanced = createServerFn({ method: "POST" })
   .validator((data: ReconSelection) => data)
   .handler(async ({ data }) => {
-    const { id: userId } = await requireUser();
+    const { id: userId } = await requireUser()
     await db.transaction(async (tx) => {
-      const row = await loadOpenRecon(tx, data.reconId);
-      const linesCents = await applyReconSelection(tx, row, data.includedLineIds, userId);
-      const totalCents = Math.round(row.openingBalance * 100) + linesCents;
+      const row = await loadOpenRecon(tx, data.reconId)
+      const linesCents = await applyReconSelection(tx, row, data.includedLineIds, userId)
+      const totalCents = Math.round(row.openingBalance * 100) + linesCents
       if (totalCents !== Math.round(row.closingBalance * 100)) {
         throw new Error(
           `The running total (${totalCents / 100}) doesn't equal the closing balance (${row.closingBalance}) - nothing was saved.`,
-        );
+        )
       }
       await tx
         .update(recon)
         .set(withUpdate(userId, { ballancedAt: new Date() }))
-        .where(eq(recon.id, row.id));
-    });
-  });
+        .where(eq(recon.id, row.id))
+    })
+  })

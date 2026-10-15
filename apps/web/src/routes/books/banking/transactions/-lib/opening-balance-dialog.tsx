@@ -1,22 +1,22 @@
-import { Button } from "#/components/ui/button.tsx";
-import { Calendar } from "#/components/ui/calendar.tsx";
+import { Button } from "#/components/ui/button.tsx"
+import { Calendar } from "#/components/ui/calendar.tsx"
 import {
-    Dialog,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "#/components/ui/dialog.tsx";
-import { Field, FieldGroup, FieldLabel } from "#/components/ui/field.tsx";
-import { Input } from "#/components/ui/input.tsx";
-import { Popover, PopoverContent, PopoverTrigger } from "#/components/ui/popover.tsx";
-import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
-import { useState } from "react";
-import { setOpeningBalance } from "../../-server/bank-accounts.server.ts";
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "#/components/ui/dialog.tsx"
+import { Field, FieldGroup, FieldLabel } from "#/components/ui/field.tsx"
+import { Input } from "#/components/ui/input.tsx"
+import { Popover, PopoverContent, PopoverTrigger } from "#/components/ui/popover.tsx"
+import { format } from "date-fns"
+import { CalendarIcon } from "lucide-react"
+import { useState } from "react"
+import { setOpeningBalance } from "../../-server/bank-accounts.server.ts"
 
-const DEFAULT_NOTE = "Opening Balance Equity";
+const DEFAULT_NOTE = "Opening Balance Equity"
 
 // The Button that opens this is only shown once getOpeningBalance (see
 // ../../-server/bank-accounts-fn.ts) confirms the account has none yet.
@@ -24,43 +24,43 @@ export function OpeningBalanceDialog({
   accountId,
   onSaved,
 }: {
-  accountId: number;
-  onSaved: () => void;
+  accountId: number
+  onSaved: () => void
 }) {
-  const [open, setOpen] = useState(false);
-  const [date, setDate] = useState<Date | undefined>(undefined);
-  const [datePickerOpen, setDatePickerOpen] = useState(false);
-  const [note, setNote] = useState(DEFAULT_NOTE);
-  const [amount, setAmount] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [open, setOpen] = useState(false)
+  const [date, setDate] = useState<Date | undefined>(undefined)
+  const [datePickerOpen, setDatePickerOpen] = useState(false)
+  const [note, setNote] = useState(DEFAULT_NOTE)
+  const [amount, setAmount] = useState("")
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   function reset() {
-    setDate(undefined);
-    setNote(DEFAULT_NOTE);
-    setAmount("");
-    setError(null);
+    setDate(undefined)
+    setNote(DEFAULT_NOTE)
+    setAmount("")
+    setError(null)
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+    event.preventDefault()
     if (!date || !note.trim() || amount.trim() === "") {
-      return;
+      return
     }
 
-    setSaving(true);
-    setError(null);
+    setSaving(true)
+    setError(null)
     try {
       await setOpeningBalance({
         data: { accountId, date, note: note.trim(), amount: Number(amount) },
-      });
-      setOpen(false);
-      reset();
-      onSaved();
+      })
+      setOpen(false)
+      reset()
+      onSaved()
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Couldn't set the opening ballance.");
+      setError(caught instanceof Error ? caught.message : "Couldn't set the opening ballance.")
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
   }
 
@@ -68,9 +68,9 @@ export function OpeningBalanceDialog({
     <Dialog
       open={open}
       onOpenChange={(next) => {
-        setOpen(next);
+        setOpen(next)
         if (!next) {
-          reset();
+          reset()
         }
       }}
     >
@@ -103,8 +103,8 @@ export function OpeningBalanceDialog({
                     captionLayout="dropdown"
                     selected={date}
                     onSelect={(selected) => {
-                      setDate(selected);
-                      setDatePickerOpen(false);
+                      setDate(selected)
+                      setDatePickerOpen(false)
                     }}
                   />
                 </PopoverContent>
@@ -145,5 +145,5 @@ export function OpeningBalanceDialog({
         </form>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

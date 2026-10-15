@@ -1,99 +1,96 @@
 import {
-    AlertDialog,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from '#/components/ui/alert-dialog.tsx';
-import { ButtonGroup } from '#/components/ui/button-group.tsx';
-import { Button } from '#/components/ui/button.tsx';
-import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card.tsx';
-import { Field, FieldLabel } from '#/components/ui/field.tsx';
-import { Input } from '#/components/ui/input.tsx';
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "#/components/ui/alert-dialog.tsx"
+import { ButtonGroup } from "#/components/ui/button-group.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import { Card, CardContent, CardHeader, CardTitle } from "#/components/ui/card.tsx"
+import { Field, FieldLabel } from "#/components/ui/field.tsx"
+import { Input } from "#/components/ui/input.tsx"
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '#/components/ui/select.tsx';
-import { APP_COMPANY } from "#/lib/app-company.ts";
-import { formatDateTime } from '#/lib/dates.ts';
-import { cn } from '#/lib/utils.ts';
-import { useSetBreadcrumbs } from '#/routes/books/-lib/breadcrumbs.ts';
-import { createFileRoute, notFound, useRouter } from '@tanstack/react-router';
-import { SaveIcon, Trash2Icon, UserCheckIcon, UserXIcon } from 'lucide-react';
-import { useState, type ReactNode } from 'react';
-import { SendVerificationLink } from './-lib/send-verification-link.tsx';
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "#/components/ui/select.tsx"
+import { APP_COMPANY } from "#/lib/app-company.ts"
+import { formatDateTime } from "#/lib/dates.ts"
+import { cn } from "#/lib/utils.ts"
+import { useSetBreadcrumbs } from "#/routes/books/-lib/breadcrumbs.ts"
+import { createFileRoute, notFound, useRouter } from "@tanstack/react-router"
+import { SaveIcon, Trash2Icon, UserCheckIcon, UserXIcon } from "lucide-react"
+import { useState, type ReactNode } from "react"
+import { SendVerificationLink } from "./-lib/send-verification-link.tsx"
 import {
-    USER_ROLES,
-    deactivateUser,
-    deleteUser,
-    getUser,
-    reactivateUser,
-    updateUser,
-} from './-server/users.server.ts';
+  USER_ROLES,
+  deactivateUser,
+  deleteUser,
+  getUser,
+  reactivateUser,
+  updateUser,
+} from "./-server/users.server.ts"
 
-export const Route = createFileRoute('/books/admin/users/$id')({
+export const Route = createFileRoute("/books/admin/users/$id")({
   loader: async ({ params }) => {
-    const user = await getUser({ data: params.id });
+    const user = await getUser({ data: params.id })
     if (!user) {
-      throw notFound();
+      throw notFound()
     }
-    return { user };
+    return { user }
   },
   component: RouteComponent,
-});
+})
 
 // The action buttons are plain outline buttons that only turn primary under
 // the pointer (same hover as the Edit button on the users table).
 const actionButton =
-  'cursor-pointer hover:border-primary hover:bg-primary hover:text-primary-foreground dark:hover:bg-primary';
+  "cursor-pointer hover:border-primary hover:bg-primary hover:text-primary-foreground dark:hover:bg-primary"
 
 function RouteComponent() {
-  const router = useRouter();
-  const { user: signedInUser } = Route.useRouteContext();
-  const { user } = Route.useLoaderData();
-  useSetBreadcrumbs([
-    { title: 'Users', url: '/books/admin/users' },
-    { title: user.name },
-  ]);
+  const router = useRouter()
+  const { user: signedInUser } = Route.useRouteContext()
+  const { user } = Route.useLoaderData()
+  useSetBreadcrumbs([{ title: "Users", url: "/books/admin/users" }, { title: user.name }])
 
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [reason, setReason] = useState('');
-  const [deleteOpen, setDeleteOpen] = useState(false);
-  const [name, setName] = useState(user.name);
-  const [role, setRole] = useState(user.role);
-  const [saved, setSaved] = useState(false);
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [reason, setReason] = useState("")
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [name, setName] = useState(user.name)
+  const [role, setRole] = useState(user.role)
+  const [saved, setSaved] = useState(false)
 
   // A ban with an expiry date lapses on its own, so it only counts while
   // it's still in the future (same rule as the users table).
-  const isEnabled = !user.banned || (user.banExpires !== null && user.banExpires <= new Date());
-  const isSelf = user.id === signedInUser.id;
+  const isEnabled = !user.banned || (user.banExpires !== null && user.banExpires <= new Date())
+  const isSelf = user.id === signedInUser.id
 
   // leaveTo: the action leaves nothing to show here (the user is gone, or
   // you've signed yourself out), so go there afterwards instead of reloading.
-  async function change(action: () => Promise<void>, leaveTo?: '/' | '/books/admin/users') {
-    setBusy(true);
-    setError(null);
+  async function change(action: () => Promise<void>, leaveTo?: "/" | "/books/admin/users") {
+    setBusy(true)
+    setError(null)
     try {
-      await action();
-      setDialogOpen(false);
-      setReason('');
+      await action()
+      setDialogOpen(false)
+      setReason("")
       if (leaveTo) {
-        await router.navigate({ to: leaveTo });
-        return;
+        await router.navigate({ to: leaveTo })
+        return
       }
-      await router.invalidate();
+      await router.invalidate()
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Couldn't change the user.");
+      setError(caught instanceof Error ? caught.message : "Couldn't change the user.")
     } finally {
-      setBusy(false);
+      setBusy(false)
     }
   }
 
@@ -101,22 +98,22 @@ function RouteComponent() {
   // something else, so the dropdown never shows blank.
   const roleOptions: string[] = USER_ROLES.includes(user.role as (typeof USER_ROLES)[number])
     ? [...USER_ROLES]
-    : [user.role, ...USER_ROLES];
-  const canSave = !busy && name.trim() !== '' && (name.trim() !== user.name || role !== user.role);
+    : [user.role, ...USER_ROLES]
+  const canSave = !busy && name.trim() !== "" && (name.trim() !== user.name || role !== user.role)
 
   const details: [string, ReactNode][] = [
-    ['Email', user.email],
-    ['Email verified', user.emailVerified ? 'Yes' : <SendVerificationLink user={user} />],
-    ['Status', isEnabled ? 'Active' : 'Deactivated'],
+    ["Email", user.email],
+    ["Email verified", user.emailVerified ? "Yes" : <SendVerificationLink user={user} />],
+    ["Status", isEnabled ? "Active" : "Deactivated"],
     ...(!isEnabled && user.banReason
-      ? [['Deactivation reason', user.banReason] as [string, ReactNode]]
+      ? [["Deactivation reason", user.banReason] as [string, ReactNode]]
       : []),
     ...(!isEnabled && user.banExpires
-      ? [['Deactivated until', formatDateTime(user.banExpires)] as [string, ReactNode]]
+      ? [["Deactivated until", formatDateTime(user.banExpires)] as [string, ReactNode]]
       : []),
-    ['Created', formatDateTime(user.createdAt)],
-    ['Last updated', formatDateTime(user.updatedAt)],
-  ];
+    ["Created", formatDateTime(user.createdAt)],
+    ["Last updated", formatDateTime(user.updatedAt)],
+  ]
 
   return (
     <>
@@ -130,16 +127,16 @@ function RouteComponent() {
           disabled={!canSave}
         >
           <SaveIcon />
-          {busy ? 'Saving...' : 'Save'}
+          {busy ? "Saving..." : "Save"}
         </Button>
         {isEnabled ? (
           <AlertDialog
             open={dialogOpen}
             onOpenChange={(open) => {
-              setDialogOpen(open);
+              setDialogOpen(open)
               if (!open) {
-                setReason('');
-                setError(null);
+                setReason("")
+                setError(null)
               }
             }}
           >
@@ -157,7 +154,7 @@ function RouteComponent() {
                   reactivate them.
                   {isSelf
                     ? " This is your own account: you'll be signed out now, and if no other administrator can reactivate you, you'll be locked out."
-                    : ''}
+                    : ""}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <Field>
@@ -179,11 +176,11 @@ function RouteComponent() {
                 <AlertDialogCancel disabled={busy}>Cancel</AlertDialogCancel>
                 <Button
                   variant="destructive"
-                  disabled={busy || reason.trim() === ''}
+                  disabled={busy || reason.trim() === ""}
                   onClick={() =>
                     change(
                       () => deactivateUser({ data: { id: user.id, reason: reason.trim() } }),
-                      isSelf ? '/' : undefined,
+                      isSelf ? "/" : undefined,
                     )
                   }
                 >
@@ -206,9 +203,9 @@ function RouteComponent() {
         <AlertDialog
           open={deleteOpen}
           onOpenChange={(open) => {
-            setDeleteOpen(open);
+            setDeleteOpen(open)
             if (!open) {
-              setError(null);
+              setError(null)
             }
           }}
         >
@@ -227,8 +224,8 @@ function RouteComponent() {
             <AlertDialogHeader>
               <AlertDialogTitle>Delete {user.name}?</AlertDialogTitle>
               <AlertDialogDescription>
-                This permanently deletes the user, along with their sign-in details and sessions.
-                It can't be undone. To only stop them signing in, deactivate them instead.
+                This permanently deletes the user, along with their sign-in details and sessions. It
+                can't be undone. To only stop them signing in, deactivate them instead.
               </AlertDialogDescription>
             </AlertDialogHeader>
             {error ? (
@@ -241,7 +238,7 @@ function RouteComponent() {
               <Button
                 variant="destructive"
                 disabled={busy}
-                onClick={() => change(() => deleteUser({ data: user.id }), '/books/admin/users')}
+                onClick={() => change(() => deleteUser({ data: user.id }), "/books/admin/users")}
               >
                 Delete
               </Button>
@@ -264,15 +261,15 @@ function RouteComponent() {
             id="user-form"
             className="grid gap-4"
             onSubmit={(event) => {
-              event.preventDefault();
+              event.preventDefault()
               if (!canSave) {
-                return;
+                return
               }
-              change(async () => {
-                await updateUser({ data: { id: user.id, name: name.trim(), role } });
-                setName(name.trim());
-                setSaved(true);
-              });
+              void change(async () => {
+                await updateUser({ data: { id: user.id, name: name.trim(), role } })
+                setName(name.trim())
+                setSaved(true)
+              })
             }}
           >
             <Field>
@@ -281,8 +278,8 @@ function RouteComponent() {
                 id="user-name"
                 value={name}
                 onChange={(event) => {
-                  setName(event.target.value);
-                  setSaved(false);
+                  setName(event.target.value)
+                  setSaved(false)
                 }}
                 required
               />
@@ -292,8 +289,8 @@ function RouteComponent() {
               <Select
                 value={role}
                 onValueChange={(next) => {
-                  setRole(next);
-                  setSaved(false);
+                  setRole(next)
+                  setSaved(false)
                 }}
               >
                 <SelectTrigger id="user-role" className="w-full capitalize">
@@ -314,9 +311,18 @@ function RouteComponent() {
               <div key={label} className="contents">
                 <dt className="text-muted-foreground">{label}</dt>
                 <dd
-                  className={cn(label === 'Deactivation reason' && 'font-medium text-destructive')}
+                  className={cn(label === "Deactivation reason" && "font-medium text-destructive")}
                 >
-                  {label == "Email" ? <a className="link" href={`mailto:${value}?subject=${APP_COMPANY} Accounts`}>{value}</a> : value}
+                  {label == "Email" ? (
+                    <a
+                      className="link"
+                      href={`mailto:${typeof value === "string" ? value : ""}?subject=${APP_COMPANY} Accounts`}
+                    >
+                      {value}
+                    </a>
+                  ) : (
+                    value
+                  )}
                 </dd>
               </div>
             ))}
@@ -324,5 +330,5 @@ function RouteComponent() {
         </CardContent>
       </Card>
     </>
-  );
+  )
 }

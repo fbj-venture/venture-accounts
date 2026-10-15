@@ -1,33 +1,33 @@
-import { Button } from "#/components/ui/button.tsx";
+import { Button } from "#/components/ui/button.tsx"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "#/components/ui/select.tsx";
+} from "#/components/ui/select.tsx"
 import {
   TABLE_PAGE_SIZE_OPTIONS,
   type TablePageSize,
   useTablePageSize,
-} from "#/hooks/use-table-page-size.ts";
+} from "#/hooks/use-table-page-size.ts"
 // The subset of useLegacyTable's pagination API this control needs -
 // narrower than LegacyReactTable<TData> so callers don't have to fight
 // table generics just to render pagination controls.
 type PaginatedTable = {
-  getState: () => { pagination: { pageIndex: number } };
-  getPageCount: () => number;
-  getCanPreviousPage: () => boolean;
-  getCanNextPage: () => boolean;
-  previousPage: () => void;
-  nextPage: () => void;
-};
+  getState: () => { pagination: { pageIndex: number } }
+  getPageCount: () => number
+  getCanPreviousPage: () => boolean
+  getCanNextPage: () => boolean
+  previousPage: () => void
+  nextPage: () => void
+}
 
 // Generic pagination bar for any table built with useLegacyTable's
 // pagination row model; page size is shared across every table via
 // useTablePageSize (localStorage-backed).
 export function TablePagination({ table }: { table: PaginatedTable }) {
-  const [pageSize, setPageSize] = useTablePageSize();
+  const [pageSize, setPageSize] = useTablePageSize()
 
   return (
     <div className="flex items-center justify-between gap-4 pt-4">
@@ -74,5 +74,5 @@ export function TablePagination({ table }: { table: PaginatedTable }) {
         </div>
       </div>
     </div>
-  );
+  )
 }

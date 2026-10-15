@@ -4,15 +4,15 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "#/components/ui/dialog.tsx";
-import { APP_INFO } from "#/lib/app-info.ts";
+} from "#/components/ui/dialog.tsx"
+import { APP_INFO } from "#/lib/app-info.ts"
 
 export function AboutDialog({
   open,
   onOpenChange,
 }: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+  open: boolean
+  onOpenChange: (open: boolean) => void
 }) {
   const published = APP_INFO.publishedAt
     ? new Date(APP_INFO.publishedAt).toLocaleString("en-ZA", {
@@ -23,7 +23,7 @@ export function AboutDialog({
         minute: "2-digit",
         timeZone: "Africa/Johannesburg",
       })
-    : "Not published (development build)";
+    : "Not published (development build)"
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -40,5 +40,5 @@ export function AboutDialog({
         </dl>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

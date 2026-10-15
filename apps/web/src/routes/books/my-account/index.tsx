@@ -1,34 +1,34 @@
-import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx';
-import { Button } from '#/components/ui/button.tsx';
-import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card.tsx';
-import { Field, FieldDescription, FieldLabel } from '#/components/ui/field.tsx';
-import { Input } from '#/components/ui/input.tsx';
-import { useSetBreadcrumbs } from '#/routes/books/-lib/breadcrumbs.ts';
-import { createFileRoute, useRouter } from '@tanstack/react-router';
-import { SaveIcon, UserIcon } from 'lucide-react';
-import { useRef, useState } from 'react';
-import { updateMyProfile } from './-server/my-account.server.ts';
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import { Card, CardContent, CardHeader, CardTitle } from "#/components/ui/card.tsx"
+import { Field, FieldDescription, FieldLabel } from "#/components/ui/field.tsx"
+import { Input } from "#/components/ui/input.tsx"
+import { useSetBreadcrumbs } from "#/routes/books/-lib/breadcrumbs.ts"
+import { createFileRoute, useRouter } from "@tanstack/react-router"
+import { SaveIcon, UserIcon } from "lucide-react"
+import { useRef, useState } from "react"
+import { updateMyProfile } from "./-server/my-account.server.ts"
 
-export const Route = createFileRoute('/books/my-account/')({
+export const Route = createFileRoute("/books/my-account/")({
   component: RouteComponent,
-});
+})
 
-const AVATAR_SIZE = 128;
+const AVATAR_SIZE = 128
 
 // Centre-crops the picked picture to a square and shrinks it to a small JPEG
 // data URL, so what's stored stays a few kilobytes whatever the original.
 async function toAvatarDataUrl(file: File): Promise<string> {
-  const url = URL.createObjectURL(file);
+  const url = URL.createObjectURL(file)
   try {
-    const img = new Image();
-    img.src = url;
-    await img.decode();
-    const side = Math.min(img.naturalWidth, img.naturalHeight);
-    const canvas = document.createElement('canvas');
-    canvas.width = canvas.height = AVATAR_SIZE;
-    const context = canvas.getContext('2d');
+    const img = new Image()
+    img.src = url
+    await img.decode()
+    const side = Math.min(img.naturalWidth, img.naturalHeight)
+    const canvas = document.createElement("canvas")
+    canvas.width = canvas.height = AVATAR_SIZE
+    const context = canvas.getContext("2d")
     if (!context) {
-      throw new Error("Couldn't process the image.");
+      throw new Error("Couldn't process the image.")
     }
     context.drawImage(
       img,
@@ -40,58 +40,60 @@ async function toAvatarDataUrl(file: File): Promise<string> {
       0,
       AVATAR_SIZE,
       AVATAR_SIZE,
-    );
-    return canvas.toDataURL('image/jpeg', 0.85);
+    )
+    return canvas.toDataURL("image/jpeg", 0.85)
   } finally {
-    URL.revokeObjectURL(url);
+    URL.revokeObjectURL(url)
   }
 }
 
 function RouteComponent() {
-  const router = useRouter();
-  const { user } = Route.useRouteContext();
-  useSetBreadcrumbs([{ title: 'Dashboard', url: '/books' }, { title: 'My Account' }]);
+  const router = useRouter()
+  const { user } = Route.useRouteContext()
+  useSetBreadcrumbs([{ title: "Dashboard", url: "/books" }, { title: "My Account" }])
 
-  const fileInput = useRef<HTMLInputElement>(null);
-  const [name, setName] = useState(user.name);
-  const [image, setImage] = useState<string | null>(user.image ?? null);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
+  const fileInput = useRef<HTMLInputElement>(null)
+  const [name, setName] = useState(user.name)
+  const [image, setImage] = useState<string | null>(user.image ?? null)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [saved, setSaved] = useState(false)
 
   const canSave =
-    !busy && name.trim() !== '' && (name.trim() !== user.name || image !== (user.image ?? null));
+    !busy && name.trim() !== "" && (name.trim() !== user.name || image !== (user.image ?? null))
 
   async function pickAvatar(file: File | undefined) {
     if (!file) {
-      return;
+      return
     }
-    setError(null);
+    setError(null)
     try {
-      setImage(await toAvatarDataUrl(file));
-      setSaved(false);
+      setImage(await toAvatarDataUrl(file))
+      setSaved(false)
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "That file couldn't be used as a picture.");
+      setError(
+        caught instanceof Error ? caught.message : "That file couldn't be used as a picture.",
+      )
     }
   }
 
   async function save(event: React.FormEvent) {
-    event.preventDefault();
+    event.preventDefault()
     if (!canSave) {
-      return;
+      return
     }
-    setBusy(true);
-    setError(null);
+    setBusy(true)
+    setError(null)
     try {
-      await updateMyProfile({ data: { name: name.trim(), image } });
-      setName(name.trim());
-      setSaved(true);
+      await updateMyProfile({ data: { name: name.trim(), image } })
+      setName(name.trim())
+      setSaved(true)
       // Re-reads the session so the sidebar shows the new name and avatar.
-      await router.invalidate();
+      await router.invalidate()
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Couldn't save your details.");
+      setError(caught instanceof Error ? caught.message : "Couldn't save your details.")
     } finally {
-      setBusy(false);
+      setBusy(false)
     }
   }
 
@@ -117,9 +119,9 @@ function RouteComponent() {
                   type="file"
                   accept="image/*"
                   className="hidden"
-                  onChange={(event) => {
-                    pickAvatar(event.target.files?.[0]);
-                    event.target.value = '';
+                  onChange={async (event) => {
+                    await pickAvatar(event.target.files?.[0])
+                    event.target.value = ""
                   }}
                 />
                 <Button
@@ -128,7 +130,7 @@ function RouteComponent() {
                   disabled={busy}
                   onClick={() => fileInput.current?.click()}
                 >
-                  {image ? 'Change avatar' : 'Set avatar'}
+                  {image ? "Change avatar" : "Set avatar"}
                 </Button>
                 {image ? (
                   <Button
@@ -136,8 +138,8 @@ function RouteComponent() {
                     variant="outline"
                     disabled={busy}
                     onClick={() => {
-                      setImage(null);
-                      setSaved(false);
+                      setImage(null)
+                      setSaved(false)
                     }}
                   >
                     Remove
@@ -151,8 +153,8 @@ function RouteComponent() {
                 id="my-name"
                 value={name}
                 onChange={(event) => {
-                  setName(event.target.value);
-                  setSaved(false);
+                  setName(event.target.value)
+                  setSaved(false)
                 }}
                 required
               />
@@ -173,12 +175,12 @@ function RouteComponent() {
             <div>
               <Button type="submit" disabled={!canSave}>
                 <SaveIcon />
-                {busy ? 'Saving...' : 'Save'}
+                {busy ? "Saving..." : "Save"}
               </Button>
             </div>
           </form>
         </CardContent>
       </Card>
     </>
-  );
+  )
 }

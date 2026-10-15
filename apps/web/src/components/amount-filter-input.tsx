@@ -27,6 +27,12 @@ export function AmountFilterHelp() {
           Multiple expressions combined with <code>&amp;</code>, all of which must
           match, e.g. <code>&gt;100 &amp; &lt;500</code>.
         </li>
+        <li>
+          Alternatives combined with <code>|</code> (or), any of which may match, e.g.{" "}
+          <code>42 | 100</code> or <code>&lt;-1000 | &gt;1000</code>. <code>&amp;</code>{" "}
+          is applied before <code>|</code>, so <code>&lt;50 | &gt;100 &amp; &lt;200</code>{" "}
+          means under 50, or between 100 and 200.
+        </li>
       </ul>
     </div>
   );
@@ -66,7 +72,7 @@ export function AmountFilterInput({
       <div className="flex items-center gap-2">
         <Input
           id={id}
-          placeholder="e.g. <300 or >100 & <500"
+          placeholder="e.g. <300, >100 & <500 or 42 | 100"
           value={value}
           onChange={(event) => onValueChange(event.target.value)}
           aria-invalid={state === "invalid"}

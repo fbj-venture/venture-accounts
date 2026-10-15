@@ -15,11 +15,27 @@ const BOUND_PATTERN = /^(<=|<|>=|>|=)\s*(-?\d+(?:\.\d+)?)$/;
  *   ("300 < 500" or "500 > 300" - both mean 300 < amount < 500)
  * - multiple expressions combined with "&", all of which must match
  *   ("<500 & >100" or "100 < 500 & >200")
+ * - alternatives combined with "|", any of which may match
+ *   ("42 | 100" or "<-1000 | >1000"). "&" binds tighter than "|", so
+ *   "<50 | >100 & <200" means "<50", or between 100 and 200.
  *
  * Unparseable segments are ignored; returns null if none parsed
  * (no filter applied).
  */
 export function parseAmountFilter(input: string): AmountPredicate | null {
+  const alternatives = input
+    .split("|")
+    .map(parseConjunction)
+    .filter((predicate): predicate is AmountPredicate => predicate !== null);
+
+  if (alternatives.length === 0) {
+    return null;
+  }
+
+  return (amount) => alternatives.some((predicate) => predicate(amount));
+}
+
+function parseConjunction(input: string): AmountPredicate | null {
   const predicates = input
     .split("&")
     .map(parseSingleExpression)
@@ -80,10 +96,17 @@ function parseSingleExpression(input: string): AmountPredicate | null {
 
 /**
  * Whether the whole input is a usable amount filter: not blank, and every
- * "&"-separated expression parses. (parseAmountFilter is more forgiving - it
- * silently skips segments it can't read - which suits filtering a table but
- * not telling the user their expression is right.)
+ * "|"- and "&"-separated expression parses. (parseAmountFilter is more
+ * forgiving - it silently skips segments it can't read - which suits
+ * filtering a table but not telling the user their expression is right.)
  */
 export function isValidAmountFilter(input: string): boolean {
-  return input.trim() !== "" && input.split("&").every((part) => parseSingleExpression(part) !== null);
+  return (
+    input.trim() !== "" &&
+    input
+      .split("|")
+      .every((alternative) =>
+        alternative.split("&").every((part) => parseSingleExpression(part) !== null),
+      )
+  );
 }

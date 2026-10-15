@@ -23,20 +23,28 @@
 * [ ] User
 ** [ ] Trial ballance
 *** [x] Investigation
+*** [ ] Show on page
+*** [ ] Export to PDF
 ** [ ] Profit and loss
+*** [ ] Investigation
+*** [ ] Show on page
+*** [ ] Export to PDF
 ** [ ] Cash flow
+*** [ ] Investigation
 * [ ] Bookkeeper
 ** [ ] Trial ballance
+*** [ ] Investigation
 ** [ ] General ledge
+*** [ ] Investigation
 ** [ ] Income statement
+*** [ ] Investigation
 ** [ ] Ballance sheet
+*** [ ] Investigation
 
 == Todo
 
-* [ ] Move away from ai-crafted vanilla JS to frameworks
-** [ ] Refactor for Tanstack Form + Zod
 * [ ] Code audit
-* [ ] Personal preferences
+* [ ] My Account
 ** [ ] Link social login to an existing account
 * [ ] Split transaction over multiple Accounts
 ** [ ] Select `split` from the Accounts drop-down to popup a dialog for adding split line
@@ -46,7 +54,6 @@
 * [ ] Uploads
 ** [ ] Upload + Link invoices/receipts to JournalLines
 * [ ] Manually add missing transactions
-* [ ] Reports - What do auditors, bookkeepers, and users need?
 * [ ] Data
 ** [ ] Backups (manual/automatic)
 

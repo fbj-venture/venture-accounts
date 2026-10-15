@@ -11,7 +11,7 @@
     "lint": "pnpm -r --no-bail typecheck",
     "clean": "rimraf ./.output/",
     "build": "pnpm --filter web build",
-    "start": "node .output/server/index.mjs",
+    "start": "varlock run -- node .output/server/index.mjs",
     "preview": "varlock run -- node .output/server/index.mjs",
     "prepare": "vp config"
   },

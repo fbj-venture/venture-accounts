@@ -64,7 +64,10 @@ function getColumns(): LegacyColumnDef<BankAccountRow>[] {
 }
 
 export function BankAccountsTable({ data }: { data: BankAccountRow[] }) {
-  const [sorting, setSorting] = useState<SortingState>([])
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: "bankName", desc: false },
+    { id: "description", desc: false },
+  ])
 
   const columns = useMemo(() => getColumns(), [])
 

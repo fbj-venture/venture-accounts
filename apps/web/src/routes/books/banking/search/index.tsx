@@ -5,7 +5,7 @@ import { Button } from "#/components/ui/button.tsx"
 import { Card, CardContent, CardHeader, CardTitle } from "#/components/ui/card.tsx"
 import { Checkbox } from "#/components/ui/checkbox.tsx"
 import { Field, FieldLabel } from "#/components/ui/field.tsx"
-import { Input } from "#/components/ui/input.tsx"
+import { SearchInput } from "#/components/search-input.tsx"
 import { isValidAmountFilter } from "#/lib/amount-filter.ts"
 import { useStartingYear } from "#/lib/starting-year.ts"
 import { yearsFromStart } from "#/lib/years.ts"
@@ -16,7 +16,7 @@ import { format } from "date-fns"
 import { SearchIcon, XIcon } from "lucide-react"
 import { useMemo, useRef, useState } from "react"
 import type { DateRange } from "react-day-picker"
-import { loadBankAccounts } from "../-server/bank-accounts-cache.ts"
+import { loadActiveBankAccounts } from "../-server/bank-accounts-cache.ts"
 import { getAccountOptions } from "../transactions/-server/account-options.server.ts"
 import { SearchResultsTable } from "./-lib/search-results-table.tsx"
 import {
@@ -34,7 +34,7 @@ export const Route = createFileRoute("/books/banking/search/")({
   },
   loader: async () => {
     const [bankAccounts, accountOptions, isAdmin] = await Promise.all([
-      loadBankAccounts(),
+      loadActiveBankAccounts(),
       getAccountOptions(),
       getIsAdmin(),
     ])
@@ -255,10 +255,10 @@ function RouteComponent() {
             </div>
             <Field>
               <FieldLabel htmlFor="search-description">Description</FieldLabel>
-              <Input
+              <SearchInput
                 id="search-description"
                 value={criteria.description}
-                onChange={(event) => update({ description: event.target.value })}
+                onValueChange={(description) => update({ description })}
                 placeholder="Contains... (any case)"
               />
             </Field>

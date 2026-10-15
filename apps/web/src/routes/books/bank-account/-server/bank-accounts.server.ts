@@ -5,7 +5,7 @@ import {
   MAX_ACCOUNT_NUMBER_LENGTH,
   MAX_BANK_NAME_LENGTH,
 } from "#/routes/books/accounts/-server/accounts.server.ts"
-import { account, accountType, bankAccount, db, withUpdate } from "@app/db/direct"
+import { account, accountType, bankAccount, db, withCreate, withUpdate } from "@app/db/direct"
 import { createServerFn } from "@tanstack/react-start"
 import { and, asc, eq, ne, sql } from "drizzle-orm"
 
@@ -65,6 +65,94 @@ export const getBankAccount = createServerFn({ method: "GET" })
   })
 
 export const MAX_DESCRIPTION_LENGTH = 500
+
+// The Account Type of a new bank account: account_type's fixed id for Asset
+// (see packages/db/scripts/seed-account-types.ts).
+const ASSET_ACCOUNT_TYPE_ID = 1
+
+// Adds a bank account: the ledger Account (an Asset) and the bank details
+// behind it, in one transaction so a failure can't leave only one half. The
+// rules are those of updateBankAccountDetails.
+export const createBankAccount = createServerFn({ method: "POST" })
+  .validator(
+    (data: {
+      accountName: string
+      bankName: string
+      bankDescription: string
+      accountNumber: string
+    }) => data,
+  )
+  .handler(async ({ data }) => {
+    const { id: userId } = await requireUser()
+    const accountName = data.accountName.trim()
+    const bankName = data.bankName.trim()
+    const bankDescription = data.bankDescription.trim()
+    const accountNumber = data.accountNumber.replace(/\s+/g, "")
+
+    if (accountName === "") {
+      throw new Error("The account name can't be empty.")
+    }
+    if (accountName.length > MAX_ACCOUNT_NAME_LENGTH) {
+      throw new Error(`The account name can be at most ${MAX_ACCOUNT_NAME_LENGTH} characters.`)
+    }
+    if (bankName === "") {
+      throw new Error("The bank name can't be empty.")
+    }
+    if (bankName.length > MAX_BANK_NAME_LENGTH) {
+      throw new Error(`The bank name can be at most ${MAX_BANK_NAME_LENGTH} characters.`)
+    }
+    if (bankDescription === "") {
+      throw new Error("The bank account description can't be empty.")
+    }
+    if (bankDescription.length > MAX_DESCRIPTION_LENGTH) {
+      throw new Error(`A description can be at most ${MAX_DESCRIPTION_LENGTH} characters.`)
+    }
+    if (!/^\d+$/.test(accountNumber) || accountNumber.length > MAX_ACCOUNT_NUMBER_LENGTH) {
+      throw new Error(
+        `The account number must be digits only, as printed on the statement (at most ${MAX_ACCOUNT_NUMBER_LENGTH}).`,
+      )
+    }
+
+    await db.transaction(async (tx) => {
+      // Names are unique; "Salaries" and "salaries" would only be confusing.
+      const [nameClash] = await tx
+        .select({ id: account.id })
+        .from(account)
+        .where(sql`lower(${account.name}) = lower(${accountName})`)
+      if (nameClash) {
+        throw new Error(`An account called "${accountName}" already exists.`)
+      }
+      const [numberClash] = await tx
+        .select({ id: bankAccount.id })
+        .from(bankAccount)
+        .where(eq(bankAccount.accountNumber, accountNumber))
+      if (numberClash) {
+        throw new Error(`Another bank account already has the number ${accountNumber}.`)
+      }
+
+      const [created] = await tx
+        .insert(account)
+        .values(
+          withCreate(userId, {
+            name: accountName,
+            description: bankDescription,
+            isArchived: false,
+            account_type: ASSET_ACCOUNT_TYPE_ID,
+            parentId: null,
+          }),
+        )
+        .returning({ id: account.id })
+      await tx.insert(bankAccount).values(
+        withCreate(userId, {
+          id: created!.id,
+          bankName,
+          description: bankDescription,
+          accountNumber,
+          isArchived: false,
+        }),
+      )
+    })
+  })
 
 // Saves the Account and its bank details together, in one transaction so a
 // failure can't leave one half changed. The rules are those of renaming an

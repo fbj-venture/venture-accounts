@@ -1,7 +1,7 @@
 import { requireUser } from "#/lib/require-user.server.ts"
 import { account, bankAccount, db, journal, journalLine, withCreate } from "@app/db/direct"
 import { createServerFn } from "@tanstack/react-start"
-import { and, eq, ne } from "drizzle-orm"
+import { and, eq, ne, sql } from "drizzle-orm"
 import { alias } from "drizzle-orm/pg-core"
 import {
   findOpeningBalance,
@@ -17,10 +17,14 @@ const bankAccountColumns = {
   description: account.description,
   bankName: bankAccount.bankName,
   accountNumber: bankAccount.accountNumber,
+  // Archived on either half: the Account or its bank details.
+  isArchived: sql<boolean>`${account.isArchived} or ${bankAccount.isArchived}`,
 }
 
 export type BankAccountDetails = Awaited<ReturnType<typeof getBankAccounts>>[number]
 
+// Every bank account, archived ones included, so a page for an archived one
+// can still be opened. Lists and drop-downs use loadActiveBankAccounts.
 export const getBankAccounts = createServerFn({ method: "GET" }).handler(async () => {
   return db
     .select(bankAccountColumns)

@@ -1,6 +1,6 @@
 import { account, bankAccount, db, journalLine } from "@app/db/direct"
 import { createServerFn } from "@tanstack/react-start"
-import { eq, sql } from "drizzle-orm"
+import { and, eq, sql } from "drizzle-orm"
 
 export type BankAccountBalance = Awaited<ReturnType<typeof getBankAccountBalances>>[number]
 
@@ -18,6 +18,7 @@ export const getBankAccountBalances = createServerFn({ method: "GET" }).handler(
     .from(bankAccount)
     .innerJoin(account, eq(account.id, bankAccount.id))
     .leftJoin(journalLine, eq(journalLine.accountId, account.id))
+    .where(and(eq(account.isArchived, false), eq(bankAccount.isArchived, false)))
     .groupBy(account.id, account.name)
     .orderBy(account.name)
 })

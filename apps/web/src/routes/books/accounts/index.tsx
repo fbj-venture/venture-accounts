@@ -1,7 +1,12 @@
 import { MultiSelect } from "#/components/multi-select.tsx"
 import { Button } from "#/components/ui/button.tsx"
 import { Field, FieldLabel } from "#/components/ui/field.tsx"
-import { Input } from "#/components/ui/input.tsx"
+import {
+  ArchivedFilterCheckbox,
+  matchesArchivedFilter,
+  type ArchivedFilter,
+} from "#/components/archived-filter.tsx"
+import { SearchInput } from "#/components/search-input.tsx"
 import { Separator } from "#/components/ui/separator.tsx"
 import { useSetBreadcrumbs } from "#/routes/books/-lib/breadcrumbs.ts"
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query"
@@ -65,16 +70,18 @@ function RouteComponent() {
   // Matched anywhere in the name (a sub-account's includes its parent's) or
   // the description, ignoring case.
   const [search, setSearch] = useState("")
+  const [archivedFilter, setArchivedFilter] = useState<ArchivedFilter>("unarchived")
   const shown = useMemo(() => {
     const needle = search.trim().toLowerCase()
     return accounts.filter(
       (row) =>
         (typeIds.length === 0 || typeIds.includes(row.accountTypeId)) &&
+        matchesArchivedFilter(archivedFilter, row.isArchived) &&
         (needle === "" ||
           row.fullName.toLowerCase().includes(needle) ||
           (row.description ?? "").toLowerCase().includes(needle)),
     )
-  }, [accounts, typeIds, search])
+  }, [accounts, typeIds, archivedFilter, search])
 
   return (
     <>
@@ -82,12 +89,11 @@ function RouteComponent() {
       <div className="mt-2 flex items-end gap-4">
         <Field className="max-w-xs">
           <FieldLabel htmlFor="accounts-search">Search</FieldLabel>
-          <Input
+          <SearchInput
             id="accounts-search"
-            type="search"
             placeholder="Search name or description..."
             value={search}
-            onChange={(event) => setSearch(event.target.value)}
+            onValueChange={setSearch}
             autoComplete="off"
           />
         </Field>
@@ -101,6 +107,13 @@ function RouteComponent() {
             placeholder="All account types"
           />
         </Field>
+        <div className="flex h-9 items-center">
+          <ArchivedFilterCheckbox
+            id="accounts-archived"
+            value={archivedFilter}
+            onValueChange={setArchivedFilter}
+          />
+        </div>
         <Separator orientation="vertical" className="data-[orientation=vertical]:h-9" />
         <Button type="button" onClick={() => setAdding(true)}>
           <PlusIcon />

@@ -1,6 +1,6 @@
 import { AmountFilterHelp, AmountFilterInput } from "#/components/amount-filter-input.tsx"
 import { TableDateRange } from "#/components/table-date-range.tsx"
-import { Input } from "#/components/ui/input.tsx"
+import { SearchInput } from "#/components/search-input.tsx"
 import { Label } from "#/components/ui/label.tsx"
 import { useState } from "react"
 import type { DateRange } from "react-day-picker"
@@ -35,11 +35,12 @@ export function TableFilterBar({
         <div className="flex items-end gap-2">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="transaction-description-filter">Description</Label>
-            <Input
+            <SearchInput
               id="transaction-description-filter"
               placeholder="Search description..."
+              autoComplete="off"
               value={descriptionFilter}
-              onChange={(event) => onDescriptionFilterChange(event.target.value)}
+              onValueChange={onDescriptionFilterChange}
               className="w-[200px]"
             />
           </div>

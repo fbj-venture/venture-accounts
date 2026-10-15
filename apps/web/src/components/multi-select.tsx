@@ -28,6 +28,15 @@ export function MultiSelect({
   showAllButton?: boolean
 }) {
   const [search, setSearch] = useState("")
+  const [open, setOpen] = useState(false)
+
+  function changeOpen(next: boolean) {
+    setOpen(next)
+    if (!next) {
+      setSearch("")
+    }
+  }
+  const closePopover = () => changeOpen(false)
 
   const selected = useMemo(() => new Set(value), [value])
   const visible = useMemo(() => {
@@ -54,7 +63,7 @@ export function MultiSelect({
   }
 
   return (
-    <Popover onOpenChange={(open) => !open && setSearch("")}>
+    <Popover open={open} onOpenChange={changeOpen}>
       <PopoverTrigger asChild>
         <Button
           id={id}
@@ -68,7 +77,11 @@ export function MultiSelect({
           <ChevronsUpDownIcon className="size-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-(--radix-popover-trigger-width) min-w-64 p-2" align="start">
+      <PopoverContent
+        className="w-(--radix-popover-trigger-width) min-w-64 p-2"
+        align="start"
+        onEscapeKeyDown={() => closePopover()}
+      >
         <Input
           placeholder="Search..."
           value={search}
@@ -93,33 +106,33 @@ export function MultiSelect({
             ))
           )}
         </div>
-        {showAllButton || value.length > 0 ? (
-          <div className="mt-2 flex gap-2">
-            {showAllButton ? (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="flex-1"
-                disabled={options.length === 0 || value.length === options.length}
-                onClick={() => onValueChange(options.map((option) => option.value))}
-              >
-                All
-              </Button>
-            ) : null}
-            {value.length > 0 ? (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="flex-1"
-                onClick={() => onValueChange([])}
-              >
-                Clear selection
-              </Button>
-            ) : null}
-          </div>
-        ) : null}
+        <div className="mt-2 flex gap-2">
+          {showAllButton ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="flex-1"
+              disabled={options.length === 0 || value.length === options.length}
+              onClick={() => onValueChange(options.map((option) => option.value))}
+            >
+              All
+            </Button>
+          ) : null}
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="flex-1"
+            disabled={value.length === 0}
+            onClick={() => onValueChange([])}
+          >
+            Clear selection
+          </Button>
+          <Button type="button" size="sm" className="flex-1" onClick={() => closePopover()}>
+            OK
+          </Button>
+        </div>
       </PopoverContent>
     </Popover>
   )

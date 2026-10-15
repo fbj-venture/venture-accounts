@@ -19,6 +19,8 @@ const BOUND_PATTERN = /^(<=|<|>=|>|=)\s*(-?\d+(?:\.\d+)?)$/
  *   ("42 | 100" or "<-1000 | >1000"). "&" binds tighter than "|", so
  *   "<50 | >100 & <200" means "<50", or between 100 and 200.
  *
+ * Numbers may use "_" as a thousands separator ("1_000.50").
+ *
  * Unparseable segments are ignored; returns null if none parsed
  * (no filter applied).
  */
@@ -49,7 +51,12 @@ function parseConjunction(input: string): AmountPredicate | null {
 }
 
 function parseSingleExpression(input: string): AmountPredicate | null {
-  const trimmed = input.trim()
+  const withSeparators = input.trim()
+  // An underscore is a thousands separator ("1_000"), allowed only between digits.
+  if (/(?:^|\D)_|_(?:\D|$)/.test(withSeparators)) {
+    return null
+  }
+  const trimmed = withSeparators.replaceAll("_", "")
   if (!trimmed) {
     return null
   }

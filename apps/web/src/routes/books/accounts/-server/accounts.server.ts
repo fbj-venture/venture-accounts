@@ -9,11 +9,21 @@ import { alias } from "drizzle-orm/pg-core"
 // transactions/-components/transactions-fn.ts for why.
 
 export const MAX_ACCOUNT_NAME_LENGTH = 100
+export const MAX_ACCOUNT_DESCRIPTION_LENGTH = 500
+
+// An empty description is stored as null; too long is refused.
+function cleanDescription(description: string) {
+  const trimmed = description.trim()
+  if (trimmed.length > MAX_ACCOUNT_DESCRIPTION_LENGTH) {
+    throw new Error(`The description can be at most ${MAX_ACCOUNT_DESCRIPTION_LENGTH} characters.`)
+  }
+  return trimmed === "" ? null : trimmed
+}
 
 // Renames one Account and/or archives it. Every Journal Line points at the account by id, so the
 // new name shows on past and future transactions alike - nothing is rewritten.
 export const renameAccount = createServerFn({ method: "POST" })
-  .validator((data: { id: number; name: string; isArchived: boolean }) => data)
+  .validator((data: { id: number; name: string; description: string; isArchived: boolean }) => data)
   .handler(async ({ data }) => {
     const { id: userId } = await requireUser()
     const name = data.name.trim()
@@ -23,9 +33,14 @@ export const renameAccount = createServerFn({ method: "POST" })
     if (name.length > MAX_ACCOUNT_NAME_LENGTH) {
       throw new Error(`The name can be at most ${MAX_ACCOUNT_NAME_LENGTH} characters.`)
     }
+    const description = cleanDescription(data.description)
 
     const [existing] = await db
-      .select({ name: account.name, isArchived: account.isArchived })
+      .select({
+        name: account.name,
+        description: account.description,
+        isArchived: account.isArchived,
+      })
       .from(account)
       .where(eq(account.id, data.id))
     if (!existing) {
@@ -36,7 +51,11 @@ export const renameAccount = createServerFn({ method: "POST" })
     if (renaming && existing.name === OPENING_BALANCE_EQUITY_ACCOUNT) {
       throw new Error(`"${existing.name}" is used by the app by name, so it can't be renamed.`)
     }
-    if (!renaming && data.isArchived === existing.isArchived) {
+    if (
+      !renaming &&
+      data.isArchived === existing.isArchived &&
+      description === existing.description
+    ) {
       return
     }
 
@@ -53,7 +72,7 @@ export const renameAccount = createServerFn({ method: "POST" })
 
     await db
       .update(account)
-      .set(withUpdate(userId, { name, isArchived: data.isArchived }))
+      .set(withUpdate(userId, { name, description, isArchived: data.isArchived }))
       .where(eq(account.id, data.id))
   })
 
@@ -62,8 +81,13 @@ export const renameAccount = createServerFn({ method: "POST" })
 // itself a sub-account can be a parent (a sub-account is shown as "Parent:Child").
 export const createAccount = createServerFn({ method: "POST" })
   .validator(
-    (data: { name: string; isArchived: boolean; accountTypeId: number; parentId: number | null }) =>
-      data,
+    (data: {
+      name: string
+      description: string
+      isArchived: boolean
+      accountTypeId: number
+      parentId: number | null
+    }) => data,
   )
   .handler(async ({ data }) => {
     const { id: userId } = await requireUser()
@@ -74,6 +98,7 @@ export const createAccount = createServerFn({ method: "POST" })
     if (name.length > MAX_ACCOUNT_NAME_LENGTH) {
       throw new Error(`The name can be at most ${MAX_ACCOUNT_NAME_LENGTH} characters.`)
     }
+    const description = cleanDescription(data.description)
 
     let accountTypeId = data.accountTypeId
     if (data.parentId !== null) {
@@ -110,6 +135,7 @@ export const createAccount = createServerFn({ method: "POST" })
     await db.insert(account).values(
       withCreate(userId, {
         name,
+        description,
         isArchived: data.isArchived,
         account_type: accountTypeId,
         parentId: data.parentId,

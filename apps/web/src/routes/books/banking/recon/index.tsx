@@ -2,12 +2,12 @@ import { cn } from "#/lib/utils.ts"
 import { BankAccountCard } from "#/routes/books/-components/bank-account-card.tsx"
 import { Link, createFileRoute, useRouterState } from "@tanstack/react-router"
 import { useEffect } from "react"
-import { loadBankAccounts } from "../-server/bank-accounts-cache.ts"
+import { loadActiveBankAccounts } from "../-server/bank-accounts-cache.ts"
 import { useSetBreadcrumbs } from "../../-lib/breadcrumbs.ts"
 
 export const Route = createFileRoute("/books/banking/recon/")({
   beforeLoad: async () => {
-    const bankAccounts = await loadBankAccounts()
+    const bankAccounts = await loadActiveBankAccounts()
     return { bankAccounts }
   },
   component: RouteComponent,

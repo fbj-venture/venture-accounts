@@ -1,6 +1,6 @@
 import { SortableHeader } from "#/components/sortable-header.tsx"
 import { Button } from "#/components/ui/button.tsx"
-import { Input } from "#/components/ui/input.tsx"
+import { SearchInput } from "#/components/search-input.tsx"
 import {
   Table,
   TableBody,
@@ -184,14 +184,13 @@ function RouteComponent() {
         </p>
       ) : (
         <>
-          <Input
-            type="search"
+          <SearchInput
             aria-label="Search uploads"
             placeholder="Search description..."
             value={search}
-            onChange={(event) => setSearch(event.target.value)}
+            onValueChange={setSearch}
             autoComplete="off"
-            className="mt-4 w-[320px]"
+            className="mt-4 w-xs"
           />
           <div className="mt-4 max-w-4xl rounded-md border">
             <Table>

@@ -19,7 +19,11 @@ import {
 } from "#/components/ui/select.tsx"
 import { LoaderCircleIcon, PlusIcon } from "lucide-react"
 import { useState, type FormEvent } from "react"
-import { MAX_ACCOUNT_NAME_LENGTH, createAccount } from "../-server/accounts.server.ts"
+import {
+  MAX_ACCOUNT_DESCRIPTION_LENGTH,
+  MAX_ACCOUNT_NAME_LENGTH,
+  createAccount,
+} from "../-server/accounts.server.ts"
 
 // The value of the <no parent> choice: a Select item can't have an empty one.
 const NO_PARENT = "none"
@@ -42,6 +46,7 @@ export function AddAccountDialog({
   onAdded: () => void | Promise<unknown>
 }) {
   const [name, setName] = useState("")
+  const [description, setDescription] = useState("")
   const [parentValue, setParentValue] = useState(NO_PARENT)
   const [typeValue, setTypeValue] = useState("")
   const [isArchived, setIsArchived] = useState(false)
@@ -74,6 +79,7 @@ export function AddAccountDialog({
       await createAccount({
         data: {
           name: trimmed,
+          description,
           isArchived,
           accountTypeId: Number(typeValue),
           parentId: parent ? parent.id : null,
@@ -106,6 +112,16 @@ export function AddAccountDialog({
               maxLength={MAX_ACCOUNT_NAME_LENGTH}
               onChange={(event) => setName(event.target.value)}
               autoFocus
+              autoComplete="off"
+            />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="add-account-description">Description</FieldLabel>
+            <Input
+              id="add-account-description"
+              value={description}
+              maxLength={MAX_ACCOUNT_DESCRIPTION_LENGTH}
+              onChange={(event) => setDescription(event.target.value)}
               autoComplete="off"
             />
           </Field>

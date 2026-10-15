@@ -19,6 +19,13 @@ export function loadBankAccounts(): Promise<BankAccountDetails[]> {
   return cached
 }
 
+// The bank accounts to offer in lists, cards and drop-downs: archived ones are
+// left out (loadBankAccount below still finds them, for their own pages).
+export async function loadActiveBankAccounts(): Promise<BankAccountDetails[]> {
+  const bankAccounts = await loadBankAccounts()
+  return bankAccounts.filter((bankAccount) => !bankAccount.isArchived)
+}
+
 // The bank account with this id (a route param), or null if there isn't one.
 export async function loadBankAccount(id: string): Promise<BankAccountDetails | null> {
   const accountId = Number(id)

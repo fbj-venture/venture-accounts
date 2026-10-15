@@ -1,5 +1,5 @@
 import { Button } from "#/components/ui/button.tsx"
-import { Input } from "#/components/ui/input.tsx"
+import { SearchInput } from "#/components/search-input.tsx"
 import { isValidAmountFilter } from "#/lib/amount-filter.ts"
 import { cn } from "#/lib/utils.ts"
 import { HelpCircleIcon } from "lucide-react"
@@ -31,6 +31,9 @@ export function AmountFilterHelp() {
           <code>42 | 100</code> or <code>&lt;-1000 | &gt;1000</code>. <code>&amp;</code> is applied
           before <code>|</code>, so <code>&lt;50 | &gt;100 &amp; &lt;200</code> means under 50, or
           between 100 and 200.
+        </li>
+        <li>
+          Numbers may use <code>_</code> as a thousands separator, e.g. <code>1_000.50</code>.
         </li>
       </ul>
     </div>
@@ -69,14 +72,15 @@ export function AmountFilterInput({
   return (
     <div>
       <div className="flex items-center gap-2">
-        <Input
+        <SearchInput
           id={id}
           placeholder="e.g. <300, >100 & <500 or 42 | 100"
+          autoComplete="off"
           value={value}
-          onChange={(event) => onValueChange(event.target.value)}
+          onValueChange={onValueChange}
           aria-invalid={state === "invalid"}
-          className={cn(
-            className,
+          className={className}
+          inputClassName={cn(
             state === "invalid" && "border-destructive focus-visible:ring-destructive/30",
             state === "valid" &&
               "border-green-600 focus-visible:border-green-600 focus-visible:ring-green-600/30",

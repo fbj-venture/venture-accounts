@@ -1,5 +1,5 @@
 import { Card, CardDescription, CardHeader, CardTitle } from "#/components/ui/card.tsx"
-import { Input } from "#/components/ui/input.tsx"
+import { SearchInput } from "#/components/search-input.tsx"
 import { useSetBreadcrumbs } from "#/routes/books/-lib/breadcrumbs.ts"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { FileTextIcon } from "lucide-react"
@@ -39,14 +39,13 @@ function RouteComponent() {
     <>
       <h2 className="pb-2">Kind of Import</h2>
       <p className="py-2 text-sm text-muted-foreground">Choose what you want to import.</p>
-      <Input
-        type="search"
+      <SearchInput
         aria-label="Filter kinds of import"
         placeholder="Filter by title..."
         value={filter}
-        onChange={(event) => setFilter(event.target.value)}
+        onValueChange={setFilter}
         autoComplete="off"
-        className="mt-2 w-[320px]"
+        className="mt-2 w-xs"
       />
       {shown.length === 0 ? (
         <p className="mt-4 text-sm text-muted-foreground">No kind of import matches.</p>

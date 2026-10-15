@@ -1,7 +1,7 @@
 import type { AccountOptions } from "#/components/account-selector.tsx"
 import { account, accountType, bankAccount, db } from "@app/db/direct"
 import { createServerFn } from "@tanstack/react-start"
-import { asc, eq } from "drizzle-orm"
+import { and, asc, eq, isNull, or } from "drizzle-orm"
 import { alias } from "drizzle-orm/pg-core"
 
 // Everything a transaction can be posted against, split the way the
@@ -24,7 +24,13 @@ export const getAccountOptions = createServerFn({ method: "GET" }).handler(
       .innerJoin(accountType, eq(accountType.id, account.account_type))
       .leftJoin(parent, eq(parent.id, account.parentId))
       .leftJoin(bankAccount, eq(bankAccount.id, account.id))
-      .where(eq(account.isArchived, false))
+      .where(
+        and(
+          eq(account.isArchived, false),
+          // A bank account archived on its bank details is left out too.
+          or(isNull(bankAccount.id), eq(bankAccount.isArchived, false)),
+        ),
+      )
       .orderBy(asc(account.name))
 
     // Order by Account Type, reversing the canonical order its fixed ids

@@ -1,11 +1,19 @@
-import { Checkbox } from "#/components/ui/checkbox.tsx"
-import { Field, FieldLabel } from "#/components/ui/field.tsx"
-import { Input } from "#/components/ui/input.tsx"
+import {
+  ArchivedFilterCheckbox,
+  matchesArchivedFilter,
+  type ArchivedFilter,
+} from "#/components/archived-filter.tsx"
+import { SearchInput } from "#/components/search-input.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import { Separator } from "#/components/ui/separator.tsx"
 import { useSetBreadcrumbs } from "#/routes/books/-lib/breadcrumbs.ts"
-import { useSuspenseQuery } from "@tanstack/react-query"
-import { createFileRoute } from "@tanstack/react-router"
+import { accountKeys } from "#/routes/books/accounts/-lib/accounts-queries.ts"
+import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query"
+import { createFileRoute, useRouter } from "@tanstack/react-router"
+import { PlusIcon } from "lucide-react"
 import { useMemo, useState } from "react"
-import { bankAccountsQuery } from "./-lib/bank-accounts-queries.ts"
+import { AddBankAccountDialog } from "./-lib/add-bank-account-dialog.tsx"
+import { bankAccountKeys, bankAccountsQuery } from "./-lib/bank-accounts-queries.ts"
 import { BankAccountsTable } from "./-lib/bank-accounts-table.tsx"
 
 export const Route = createFileRoute("/books/bank-account/")({
@@ -21,39 +29,31 @@ export const Route = createFileRoute("/books/bank-account/")({
   component: RouteComponent,
 })
 
-// The archived filter is a tri-state checkbox: indeterminate shows every bank
-// account, ticked only the archived ones, unticked only the active ones.
-type ArchivedFilter = "all" | "archived" | "unarchived"
-
-const NEXT_FILTER: Record<ArchivedFilter, ArchivedFilter> = {
-  all: "archived",
-  archived: "unarchived",
-  unarchived: "all",
-}
-
-const FILTER_CHECKED = {
-  all: "indeterminate",
-  archived: true,
-  unarchived: false,
-} as const
-
-const FILTER_LABEL: Record<ArchivedFilter, string> = {
-  all: "Show archived: all",
-  archived: "Show archived: archived only",
-  unarchived: "Show archived: only unarchived",
-}
-
 function RouteComponent() {
   useSetBreadcrumbs([{ title: "Dashboard", url: "/books" }, { title: "Bank accounts" }])
   const { data: bankAccounts } = useSuspenseQuery(bankAccountsQuery)
-  const [filter, setFilter] = useState<ArchivedFilter>("all")
+  const [filter, setFilter] = useState<ArchivedFilter>("unarchived")
   const [search, setSearch] = useState("")
+  const [adding, setAdding] = useState(false)
+  const router = useRouter()
+  const queryClient = useQueryClient()
+
+  // Resolves once the reloaded list has arrived, so the dialog doesn't close
+  // on the old list. The Accounts page and the account selectors (still route
+  // loader data) show the new account too.
+  const refresh = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: bankAccountKeys.all }),
+      queryClient.invalidateQueries({ queryKey: accountKeys.all }),
+    ])
+    await router.invalidate({ sync: true })
+  }
 
   const shown = useMemo(() => {
     const needle = search.trim().toLowerCase()
     return bankAccounts.filter(
       (row) =>
-        (filter === "all" || row.isArchived === (filter === "archived")) &&
+        matchesArchivedFilter(filter, row.isArchived) &&
         (needle === "" ||
           [row.bankName, row.accountNumber, row.description].some((text) =>
             text.toLowerCase().includes(needle),
@@ -63,25 +63,27 @@ function RouteComponent() {
 
   return (
     <>
-      <h2 className="pb-2">Bank accounts</h2>
+      <h2 className="pb-2">Bank Accounts</h2>
       <div className="mt-2 flex flex-wrap items-center gap-x-6 gap-y-2">
-        <Input
-          type="search"
+        <SearchInput
           aria-label="Search bank accounts"
           placeholder="Search bank, account number or description..."
           value={search}
-          onChange={(event) => setSearch(event.target.value)}
-          className="w-[320px]"
+          onValueChange={setSearch}
+          className="w-xs"
         />
-        <Field orientation="horizontal" className="w-fit">
-          <Checkbox
-            id="bank-accounts-archived"
-            checked={FILTER_CHECKED[filter]}
-            onCheckedChange={() => setFilter(NEXT_FILTER[filter])}
-          />
-          <FieldLabel htmlFor="bank-accounts-archived">{FILTER_LABEL[filter]}</FieldLabel>
-        </Field>
+        <ArchivedFilterCheckbox
+          id="bank-accounts-archived"
+          value={filter}
+          onValueChange={setFilter}
+        />
+        <Separator orientation="vertical" className="data-[orientation=vertical]:h-9" />
+        <Button type="button" onClick={() => setAdding(true)}>
+          <PlusIcon />
+          Add
+        </Button>
       </div>
+      {adding ? <AddBankAccountDialog onClose={() => setAdding(false)} onAdded={refresh} /> : null}
       <p className="py-2 text-sm text-muted-foreground">
         {shown.length === 1 ? "1 bank account." : `${shown.length} bank accounts.`}
       </p>

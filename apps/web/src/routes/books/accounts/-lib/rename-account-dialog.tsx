@@ -22,6 +22,7 @@ import { Input } from "#/components/ui/input.tsx"
 import { LoaderCircleIcon, SaveIcon, TriangleAlertIcon } from "lucide-react"
 import { useState, type FormEvent } from "react"
 import {
+  MAX_ACCOUNT_DESCRIPTION_LENGTH,
   MAX_ACCOUNT_NAME_LENGTH,
   renameAccount,
   type AccountRow,
@@ -41,6 +42,7 @@ export function RenameAccountDialog({
   onRenamed: () => void | Promise<unknown>
 }) {
   const [name, setName] = useState(account.name)
+  const [description, setDescription] = useState(account.description ?? "")
   const [isArchived, setIsArchived] = useState(account.isArchived)
   const [confirming, setConfirming] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -49,7 +51,8 @@ export function RenameAccountDialog({
   const trimmed = name.trim()
   const renaming = trimmed !== account.name
   const archiveChanged = isArchived !== account.isArchived
-  const canSave = trimmed !== "" && (renaming || archiveChanged) && !saving
+  const descriptionChanged = description.trim() !== (account.description ?? "")
+  const canSave = trimmed !== "" && (renaming || archiveChanged || descriptionChanged) && !saving
 
   function askToConfirm(event: FormEvent) {
     event.preventDefault()
@@ -62,7 +65,7 @@ export function RenameAccountDialog({
     setSaving(true)
     setError(null)
     try {
-      await renameAccount({ data: { id: account.id, name: trimmed, isArchived } })
+      await renameAccount({ data: { id: account.id, name: trimmed, description, isArchived } })
       await onRenamed()
       onClose()
     } catch (caught) {
@@ -94,6 +97,16 @@ export function RenameAccountDialog({
                 maxLength={MAX_ACCOUNT_NAME_LENGTH}
                 onChange={(event) => setName(event.target.value)}
                 autoFocus
+                autoComplete="off"
+              />
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="rename-account-description">Description</FieldLabel>
+              <Input
+                id="rename-account-description"
+                value={description}
+                maxLength={MAX_ACCOUNT_DESCRIPTION_LENGTH}
+                onChange={(event) => setDescription(event.target.value)}
                 autoComplete="off"
               />
             </Field>
@@ -135,6 +148,7 @@ export function RenameAccountDialog({
               {renaming
                 ? `"${account.name}" will be renamed to "${trimmed}". Every transaction linked to this account, past and future, will show the new name. `
                 : ""}
+              {descriptionChanged ? "The description will be updated. " : ""}
               {archiveChanged
                 ? isArchived
                   ? "The account will be archived."

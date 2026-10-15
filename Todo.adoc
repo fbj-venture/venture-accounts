@@ -14,6 +14,9 @@
 
 == 0.10
 
+* [ ] Integrations
+** [ ] Move from `t3.env` to `varlock` (https://varlock.dev/)
+** [ ] Integrate PostHog (https://posthog.com/)
 * [ ] Import
 ** [ ] Version 2 Hash algorithm for transaction importing      
 ** [ ] Add a new PDF importer for current Standard Bank items (Check the hash is the same as for a statement)

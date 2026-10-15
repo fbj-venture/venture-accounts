@@ -1,13 +1,13 @@
-import { devtools } from '@tanstack/devtools-vite';
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { defineConfig, loadEnv } from 'vite';
+import { devtools } from "@tanstack/devtools-vite";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { defineConfig, loadEnv, lazyPlugins } from "vite-plus";
 
-import { tanstackStart } from '@tanstack/react-start/plugin/vite';
+import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 
-import { nitro } from 'nitro/vite';
-import tailwindcss from '@tailwindcss/vite';
-import viteReact from '@vitejs/plugin-react';
+import { nitro } from "nitro/vite";
+import tailwindcss from "@tailwindcss/vite";
+import viteReact from "@vitejs/plugin-react";
 
 // Nitro's default output.dir ("{rootDir}/.output") is relative to this app,
 // so it lands in apps/web/.output. Deploy platforms (and the root "preview"
@@ -40,7 +40,7 @@ const config = defineConfig(({ mode, command }) => ({
     __APP_COMPANY__: JSON.stringify(loadEnv(mode, rootDir, "").APP_COMPANY || "Venture"),
   },
   resolve: { tsconfigPaths: true },
-  plugins: [
+  plugins: lazyPlugins(() => [
     devtools({ eventBusConfig: { port: 6206 } }),
     nitro({
       output: { dir: outputDir },
@@ -57,7 +57,7 @@ const config = defineConfig(({ mode, command }) => ({
       },
     }),
     viteReact(),
-  ],
-}))
+  ]),
+}));
 
-export default config
+export default config;

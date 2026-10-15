@@ -13,9 +13,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@app/env": "workspace:*",
     "@aws-sdk/client-s3": "^3.1146.0",
-    "@aws-sdk/s3-request-presigner": "^3.1146.0"
+    "@aws-sdk/s3-request-presigner": "^3.1146.0",
+    "varlock": "^1.23.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

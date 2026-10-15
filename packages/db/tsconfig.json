@@ -5,5 +5,5 @@
     "noEmit": false,
     "types": ["node"]
   },
-  "include": ["src", "scripts", "drizzle.config.ts"]
+  "include": ["../../env.d.ts", "src", "scripts", "drizzle.config.ts"]
 }

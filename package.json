@@ -1,6 +1,6 @@
 {
   "name": "venture-accounts",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "description": "A simple web-based Bank Account bookkeeping tool",
   "keywords": [],
   "license": "ISC",
@@ -12,10 +12,11 @@
     "clean": "rimraf ./.output/",
     "build": "pnpm --filter web build",
     "start": "node .output/server/index.mjs",
-    "preview": "node --env-file=.env .output/server/index.mjs",
+    "preview": "varlock run -- node .output/server/index.mjs",
     "prepare": "vp config"
   },
   "dependencies": {
+    "@varlock/vite-integration": "^1.5.4",
     "varlock": "^1.23.0"
   },
   "devDependencies": {

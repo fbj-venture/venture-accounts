@@ -2,10 +2,10 @@
 // just the AWS S3 client pointed at the bucket's endpoint. Server-only: import
 // it from handlers / server modules, never from browser-reachable code.
 //
-// Storage is optional. Without the S3_* settings (see @app/env) isStorageConfigured()
+// Storage is optional. Without the S3_* settings (see .env.schema) isStorageConfigured()
 // is false and uploadFile() throws, so callers that can live without it
 // check first.
-import { env } from "@app/env"
+import { ENV } from "varlock/env"
 import {
   DeleteObjectCommand,
   GetObjectCommand,
@@ -23,7 +23,7 @@ type Config = {
 }
 
 function getConfig(): Config | undefined {
-  const { S3_ENDPOINT, S3_REGION, S3_BUCKET, S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY } = env
+  const { S3_ENDPOINT, S3_REGION, S3_BUCKET, S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY } = ENV
   if (!S3_ENDPOINT || !S3_BUCKET || !S3_ACCESS_KEY_ID || !S3_SECRET_ACCESS_KEY) {
     return undefined
   }

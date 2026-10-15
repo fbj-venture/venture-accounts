@@ -15,14 +15,14 @@
     "dev": "email dev --dir src/templates --port 3001"
   },
   "dependencies": {
-    "@app/env": "workspace:*",
     "@react-email/components": "^1.0.12",
     "@react-email/render": "^2.1.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-email": "^6.11.0",
     "resend": "^6.32.1",
-    "tailwindcss": "^4.3.3"
+    "tailwindcss": "^4.3.3",
+    "varlock": "^1.23.0"
   },
   "devDependencies": {
     "@types/node": "^26.6.4",

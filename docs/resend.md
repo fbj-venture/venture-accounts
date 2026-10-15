@@ -31,7 +31,7 @@ The API key is the password your code uses to send mail. Treat it like a databas
 
 ## 3. Put the key in the project's environment
 
-This project reads every environment variable through `@app/env` (see `packages/env/src/index.ts`), which validates them at startup. Don't read `process.env` directly.
+This project manages environment variables with [varlock](https://varlock.dev/): `.env.schema` (committed) declares and validates them, and code reads them via `import { ENV } from "varlock/env"`. Don't read `process.env` directly.
 
 **a) Add the variables to `.env`** (the repo root `.env`, which is gitignored):
 
@@ -41,18 +41,13 @@ RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxx
 EMAIL_FROM=Venture Accounts <onboarding@resend.dev>
 ```
 
-**b) List them in `.env.example`** (no real values - this file is committed):
+**b) They are declared in `.env.schema`** (committed - no real values), which also validates them (`RESEND_API_KEY` must start with `re_`):
 
 ```ini
+# @required @sensitive @type=string(startsWith=re_)
 RESEND_API_KEY=
+# @required
 EMAIL_FROM=
-```
-
-**c) Declare them in the schema**, in `packages/env/src/index.ts`, inside `server: { ... }`:
-
-```ts
-RESEND_API_KEY: z.string().startsWith("re_"),
-EMAIL_FROM: z.string().min(1),
 ```
 
 Two consequences of that being required:
@@ -222,9 +217,9 @@ Once the domain shows **Verified**:
 | `Couldn't send email: API key is invalid`                     | Wrong or truncated key, a stray space/quote in `.env`, or the dev server wasn't restarted after editing `.env`.                                                                 |
 | `You can only send testing emails to your own email address`  | Still using `onboarding@resend.dev` with a recipient that isn't the account owner. Verify a domain (step 6).                                                                    |
 | `The ... domain is not verified`                              | `EMAIL_FROM` uses a domain that is not yet **Verified** in the dashboard, or has a typo.                                                                                        |
-| App refuses to start, naming `RESEND_API_KEY` or `EMAIL_FROM` | The variable is missing in that environment (e.g. Railway) - `@app/env` validates at startup.                                                                                   |
+| App refuses to start, naming `RESEND_API_KEY` or `EMAIL_FROM` | The variable is missing in that environment (e.g. Railway) - varlock validates at startup.                                                                                      |
 | Sent, but nothing arrives                                     | Open **Emails** in the dashboard and click the message: it shows _Delivered_, _Bounced_ or _Complained_, with the reason. Also check spam, and that DNS (SPF/DKIM) is verified. |
-| White screen / hydration errors after adding email code       | A server-only import (`send.server.ts`, `@app/env`) is reachable from browser code. Move it inside a `createServerFn` handler.                                                  |
+| White screen / hydration errors after adding email code       | A server-only import (`send.server.ts`, `varlock/env`) is reachable from browser code. Move it inside a `createServerFn` handler.                                               |
 
 ## 8. Before relying on it in production
 

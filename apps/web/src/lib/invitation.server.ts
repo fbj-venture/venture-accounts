@@ -1,4 +1,4 @@
-import { env } from "@app/env"
+import { ENV } from "varlock/env"
 import { randomBytes } from "node:crypto"
 import { auth, EMAIL_LOGO_URL } from "./auth.ts"
 import { APP_COMPANY } from "./app-company.ts"
@@ -24,7 +24,7 @@ export async function sendInvitationEmail(user: { id: string; name: string; emai
     expiresAt: new Date(Date.now() + INVITATION_DAYS * 24 * 60 * 60 * 1000),
   })
 
-  const url = new URL("/set-password", env.BETTER_AUTH_URL)
+  const url = new URL("/set-password", ENV.BETTER_AUTH_URL)
   url.searchParams.set("token", token)
 
   await sendEmail({

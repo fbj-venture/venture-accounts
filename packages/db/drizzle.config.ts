@@ -1,4 +1,4 @@
-import { env } from "@app/env"
+import { ENV } from "varlock/env"
 import { defineConfig } from "drizzle-kit"
 
 export default defineConfig({
@@ -6,6 +6,6 @@ export default defineConfig({
   schema: "./src/schema.ts",
   out: "./drizzle",
   dbCredentials: {
-    url: env.DATABASE_URL,
+    url: ENV.DATABASE_URL,
   },
 })

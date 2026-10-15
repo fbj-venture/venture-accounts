@@ -1,4 +1,4 @@
-import { env } from "@app/env"
+import { ENV } from "varlock/env"
 import { authAccount, db, session, user, verification } from "@app/db/direct"
 import { and, count, eq, gt, like } from "drizzle-orm"
 import { betterAuth } from "better-auth"
@@ -12,15 +12,21 @@ import { sendEmail } from "@app/email/send"
 // Email clients load images from the web, so this must be a public absolute URL
 // (file is apps/web/public/img/venture-church.png). It will show broken in
 // emails sent from localhost.
-export const EMAIL_LOGO_URL = new URL("/img/venture-church.png", env.BETTER_AUTH_URL).toString()
+export const EMAIL_LOGO_URL = new URL("/img/venture-church.png", ENV.BETTER_AUTH_URL).toString()
 
 // Most reset emails one address gets in an hour.
 const RESET_EMAILS_PER_HOUR = 3
 
 export const auth = betterAuth({
-  baseURL: env.BETTER_AUTH_URL,
-  trustedOrigins: [env.BETTER_AUTH_URL, ...env.BETTER_AUTH_TRUSTED_ORIGINS],
-  secret: env.BETTER_AUTH_SECRET,
+  baseURL: ENV.BETTER_AUTH_URL,
+  trustedOrigins: [
+    ENV.BETTER_AUTH_URL,
+    ...(ENV.BETTER_AUTH_TRUSTED_ORIGINS ?? "")
+      .split(",")
+      .map((origin) => origin.trim())
+      .filter(Boolean),
+  ],
+  secret: ENV.BETTER_AUTH_SECRET,
   database: drizzleAdapter(db, {
     provider: "pg",
     schemaName: "auth",

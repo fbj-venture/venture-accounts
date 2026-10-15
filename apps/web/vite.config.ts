@@ -1,3 +1,4 @@
+import { varlockVitePlugin } from "@varlock/vite-integration"
 import { devtools } from "@tanstack/devtools-vite"
 import { readFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
@@ -18,7 +19,7 @@ const outputDir = fileURLToPath(new URL("../../.output", import.meta.url))
 // APP_COMPANY comes from the workspace root .env (or the platform's real
 // environment variables) and is inlined at build time as __APP_COMPANY__, so
 // the same value is available to browser and server code alike - see
-// src/lib/app-company.ts. Mirrors the default in @app/env.
+// src/lib/app-company.ts. Mirrors the default in .env.schema.
 const rootDir = fileURLToPath(new URL("../..", import.meta.url))
 
 // Name, description and version come from the workspace root package.json.
@@ -41,6 +42,7 @@ const config = defineConfig(({ mode, command }) => ({
   },
   resolve: { tsconfigPaths: true },
   plugins: lazyPlugins(() => [
+    varlockVitePlugin(),
     devtools({ eventBusConfig: { port: 6206 } }),
     nitro({
       output: { dir: outputDir },

@@ -1,6 +1,6 @@
 import { drizzle } from "drizzle-orm/node-postgres"
 import { Pool } from "pg"
-import { env } from "@app/env"
+import { ENV } from "varlock/env"
 import { relations } from "./relations.js"
 
 // A real TCP connection with its own session/connection pool - for a
@@ -14,7 +14,7 @@ import { relations } from "./relations.js"
 // caching, so this must not reuse DATABASE_URL (which is pooled, for the
 // HTTP driver).
 const pool = new Pool({
-  connectionString: env.DATABASE_URL_UNPOOLED,
+  connectionString: ENV.DATABASE_URL_UNPOOLED,
 })
 
 // Drizzle v1 takes a single config object; `relations` (not v0's `schema`)

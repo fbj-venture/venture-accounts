@@ -6,5 +6,5 @@
     "noEmit": false,
     "types": ["node"]
   },
-  "include": ["src"]
+  "include": ["../../env.d.ts", "src"]
 }

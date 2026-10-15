@@ -12,18 +12,18 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx scripts/migrate.ts",
-    "script": "tsx",
-    "seed:account-types": "tsx scripts/seed-account-types.ts",
-    "seed:bank-accounts": "tsx scripts/seed-bank-accounts.ts",
-    "seed:accounts": "tsx scripts/import-accounts.ts"
+    "db:generate": "varlock run -- drizzle-kit generate",
+    "db:migrate": "varlock run -- tsx scripts/migrate.ts",
+    "script": "varlock run -- tsx",
+    "seed:account-types": "varlock run -- tsx scripts/seed-account-types.ts",
+    "seed:bank-accounts": "varlock run -- tsx scripts/seed-bank-accounts.ts",
+    "seed:accounts": "varlock run -- tsx scripts/import-accounts.ts"
   },
   "dependencies": {
-    "@app/env": "workspace:*",
     "@neondatabase/serverless": "^1.1.0",
     "drizzle-orm": "^1.0.0-rc.4",
-    "pg": "^8.23.0"
+    "pg": "^8.23.0",
+    "varlock": "^1.23.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
@@ -31,5 +31,8 @@
     "drizzle-kit": "^1.0.0-rc.4",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"
+  },
+  "varlock": {
+    "loadPath": "../../"
   }
 }

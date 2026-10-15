@@ -11,14 +11,13 @@
     "build": "vp build",
     "preview": "vp preview",
     "typecheck": "tsc --noEmit",
-    "create-user": "tsx scripts/create-user.ts",
-    "send-test-email": "tsx scripts/send-test-email.ts"
+    "create-user": "varlock run -- tsx scripts/create-user.ts",
+    "send-test-email": "varlock run -- tsx scripts/send-test-email.ts"
   },
   "dependencies": {
     "@app/bank-statement-importer": "workspace:*",
     "@app/db": "workspace:*",
     "@app/email": "workspace:*",
-    "@app/env": "workspace:*",
     "@app/models": "workspace:*",
     "@app/storage": "workspace:*",
     "@tailwindcss/vite": "^4.1.18",
@@ -44,6 +43,7 @@
     "react-dom": "^19.2.0",
     "tailwind-merge": "^3.7.0",
     "tailwindcss": "^4.1.18",
+    "varlock": "^1.23.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
@@ -57,5 +57,8 @@
     "typescript": "^6.0.2",
     "vite": "catalog:",
     "vite-plus": "catalog:"
+  },
+  "varlock": {
+    "loadPath": "../../"
   }
 }

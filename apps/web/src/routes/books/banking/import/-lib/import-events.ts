@@ -17,7 +17,10 @@ export function toDisplayLines(events: UploadEvent[]): string[] {
       case "extracted":
         lines.push(
           `Found ${event.rowCount} transaction${event.rowCount === 1 ? "" : "s"} ` +
-            `for account ${event.accountNumber}, statement dated ${event.statementDate}.`,
+            `for account ${event.accountNumber}, statement dated ${event.statementDate}.` +
+            (event.pendingSkipped
+              ? ` ${event.pendingSkipped} pending item${event.pendingSkipped === 1 ? "" : "s"} skipped.`
+              : ""),
         )
         break
       case "importing": {

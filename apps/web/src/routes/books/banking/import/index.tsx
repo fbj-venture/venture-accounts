@@ -1,5 +1,5 @@
-import { Card, CardDescription, CardHeader, CardTitle } from "#/components/ui/card.tsx"
 import { SearchInput } from "#/components/search-input.tsx"
+import { Card, CardDescription, CardHeader, CardTitle } from "#/components/ui/card.tsx"
 import { useSetBreadcrumbs } from "#/routes/books/-lib/breadcrumbs.ts"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { FileTextIcon } from "lucide-react"
@@ -13,15 +13,16 @@ export const Route = createFileRoute("/books/banking/import/")({
 // next to this file) for each new importer.
 const IMPORTERS = [
   {
-    title: "Standard Bank Statement PDF",
+    title: "Standard Bank Statement (PDF)",
     description:
       "Upload a Standard Bank statement in PDF format. The bank account and statement date are read from the statement.",
     to: "/books/banking/import/sb-statement",
   },
   {
-    title: "Standard Bank Transactions TSV",
-    description: "Upload a tab-separated (.tsv) file of transactions exported from Standard Bank.",
-    to: "/books/banking/import/sb-csv",
+    title: "Standard Bank Transaction History (PDF)",
+    description:
+      "Upload a Transaction History Statement downloaded from the bank's website, to import transactions before the monthly statement is issued.",
+    to: "/books/banking/import/sb-history",
   },
 ] as const
 

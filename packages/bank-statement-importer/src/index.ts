@@ -15,6 +15,7 @@ import {
   type ImportRowProgress,
 } from "./db-import.js"
 import { extractAccountNumber, extractStatementDate, extractTableRows } from "./extractor.js"
+import { extractHistory, isHistoryStatement, isoToStatementDate } from "./extractor-history.js"
 import type { ImportRow } from "./import-row.js"
 import { statementDateToIso, toTransactions } from "./transaction.js"
 ;(globalThis as { pdfjsWorker?: unknown }).pdfjsWorker = pdfjsWorker
@@ -68,7 +69,14 @@ export async function readPdfFileFromFile(filePath: string, userId: string): Pro
 // than waiting for the whole import to finish.
 export type ImportEvent =
   | { phase: "extracting" }
-  | { phase: "extracted"; statementDate: string; accountNumber: string; rowCount: number }
+  | {
+      phase: "extracted"
+      statementDate: string
+      accountNumber: string
+      rowCount: number
+      /** Items left out because they are still pending at the bank (history layout only). */
+      pendingSkipped?: number
+    }
   | ({ phase: "importing" } & ImportRowProgress)
   | { phase: "done"; imported: number; skipped: number; total: number }
 
@@ -79,6 +87,14 @@ export async function readPdfStream(data: Uint8Array, userId: string): Promise<T
 // What an upload is described as when the caller doesn't say.
 export const DEFAULT_UPLOAD_DESCRIPTION = "Uploading bank statement"
 
+// The two PDFs a bank account can be imported from. "statement" is the
+// official monthly statement; "history" is the Transaction History Statement
+// downloaded from the bank's website at any time, which can include
+// transactions that are not on a monthly statement yet. Both give the same
+// import hash for the same transaction (see canonical-hash.ts), so a
+// transaction imported from one is skipped when it turns up in the other.
+export type PdfLayout = "statement" | "history"
+
 // userId is the signed-in user the imported entries are attributed to
 // (createdBy/updatedBy). options.description is saved with the uploaded PDF
 // (see storeStatementPdf).
@@ -86,18 +102,14 @@ export async function readPdfStreamWithProgress(
   data: Uint8Array,
   userId: string,
   onEvent: (event: ImportEvent) => void,
-  options: { description?: string } = {},
+  options: { description?: string; layout?: PdfLayout } = {},
 ): Promise<Transaction[]> {
   onEvent({ phase: "extracting" })
 
-  const { rows, statementDate, accountNumber } = await extractTextFromPdf(new Uint8Array(data))
-
-  if (!statementDate) {
-    throw new Error("Could not find the statement date on the first page.")
-  }
-  if (!accountNumber) {
-    throw new Error("Could not find the account number on the first page.")
-  }
+  const bytes = new Uint8Array(data)
+  const extracted =
+    options.layout === "history" ? await extractHistoryPdf(bytes) : await extractStatementPdf(bytes)
+  const { accountNumber, statementDate, transactions } = extracted
 
   // Find the Bank Account
   const accountDetails = await findAccountByBankAccountNumber(accountNumber)
@@ -105,19 +117,18 @@ export async function readPdfStreamWithProgress(
     throw new Error(`Could not fund the Bank-Account or Account for '${accountNumber}'`)
   }
 
-  const transactions = toTransactions(rows, statementDate, accountNumber)
-
   onEvent({
     phase: "extracted",
     statementDate,
     accountNumber,
     rowCount: transactions.length,
+    ...(extracted.pendingSkipped ? { pendingSkipped: extracted.pendingSkipped } : {}),
   })
 
   await storeStatementPdf(data, {
     bankId: accountDetails.account.id,
     accountNumber,
-    statementDate,
+    fileName: extracted.fileName(data),
     userId,
     description: options.description?.trim() || DEFAULT_UPLOAD_DESCRIPTION,
   })
@@ -142,8 +153,9 @@ export async function readPdfStreamWithProgress(
 // Keeps the original statement PDF in file storage (still password
 // protected, exactly as uploaded) and records it as a bank upload, so an
 // imported entry can be traced back to its source document. Stored at
-// statements/<accountNumber>/<yyyy-MM-dd>.pdf by the statement date, so
-// re-importing the same statement overwrites rather than duplicates. Skipped
+// statements/<accountNumber>/<fileName>, named so that re-importing the same
+// statement overwrites rather than duplicates (see extractStatementPdf and
+// extractHistoryPdf for the names). Skipped
 // when storage isn't configured; a failed upload fails the import, so a
 // stored file and the entries it produced never disagree.
 async function storeStatementPdf(
@@ -151,7 +163,7 @@ async function storeStatementPdf(
   statement: {
     bankId: number
     accountNumber: string
-    statementDate: string
+    fileName: string
     userId: string
     description: string
   },
@@ -160,7 +172,7 @@ async function storeStatementPdf(
     return
   }
   const folder = statement.accountNumber.replace(/[^0-9A-Za-z-]/g, "")
-  const key = `statements/${folder}/${statementDateToIso(statement.statementDate)}.pdf`
+  const key = `statements/${folder}/${statement.fileName}`
   await uploadFile(key, data, "application/pdf")
   await recordBankUpload(
     statement.bankId,
@@ -169,6 +181,78 @@ async function storeStatementPdf(
     statement.description,
     statement.userId,
   )
+}
+
+// What either layout is read into, ready to import.
+type ExtractedPdf = {
+  accountNumber: string
+  /** Shown in progress messages, e.g. "12 March 2024". */
+  statementDate: string
+  transactions: Transaction[]
+  pendingSkipped?: number
+  /** Where the PDF is kept under the account's folder in file storage. */
+  fileName: (data: Uint8Array) => string
+}
+
+// The official monthly statement. Named by its statement date, one per month.
+async function extractStatementPdf(data: Uint8Array): Promise<ExtractedPdf> {
+  // pdf.js takes over the bytes it is given, so every read gets its own copy.
+  const { rows, statementDate, accountNumber } = await extractTextFromPdf(new Uint8Array(data))
+
+  if (!statementDate || !accountNumber) {
+    // Say so when it is the other layout, rather than a vague "not found".
+    const pages = await readPageItems(data, 1)
+    if (pages[0] && isHistoryStatement(pages[0])) {
+      throw new Error(
+        'This is a "Transaction History Statement". Import it with "Standard Bank Transaction History PDF" instead.',
+      )
+    }
+  }
+  if (!statementDate) {
+    throw new Error("Could not find the statement date on the first page.")
+  }
+  if (!accountNumber) {
+    throw new Error("Could not find the account number on the first page.")
+  }
+
+  return {
+    accountNumber,
+    statementDate,
+    transactions: toTransactions(rows, statementDate, accountNumber),
+    fileName: () => `${statementDateToIso(statementDate)}.pdf`,
+  }
+}
+
+// A Transaction History Statement. Several can be downloaded for the same
+// account on one day, and later ones replace nothing, so each is named by the
+// last day it covers plus a short fingerprint of its contents.
+async function extractHistoryPdf(data: Uint8Array): Promise<ExtractedPdf> {
+  const history = extractHistory(await readPageItems(data))
+
+  return {
+    accountNumber: history.accountNumber,
+    statementDate: isoToStatementDate(history.rangeEnd),
+    transactions: history.transactions,
+    pendingSkipped: history.pendingCount,
+    fileName: (bytes) =>
+      `ad-hoc/${history.rangeEnd}-${createHash("sha256").update(bytes).digest("hex").slice(0, 8)}.pdf`,
+  }
+}
+
+// The text of each page (or just the first `limit`).
+async function readPageItems(data: Uint8Array, limit = Infinity) {
+  const loadingTask = getDocument({
+    data: new Uint8Array(data),
+    standardFontDataUrl: getStandardFontDataUrl(),
+  })
+  const pdf = await loadingTask.promise
+  const pages = []
+  for (let pageNumber = 1; pageNumber <= Math.min(pdf.numPages, limit); pageNumber++) {
+    const page = await pdf.getPage(pageNumber)
+    pages.push((await page.getTextContent()).items)
+  }
+  await loadingTask.destroy()
+  return pages
 }
 
 async function extractTextFromPdf(

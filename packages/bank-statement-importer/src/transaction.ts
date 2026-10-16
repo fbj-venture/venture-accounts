@@ -105,8 +105,19 @@ export function toTransactions(
   statementDate: string,
   accountNumber: string,
 ): Transaction[] {
-  const transactions = rows.map((row) => toTransaction(row, statementDate))
-  const key = (transaction: (typeof transactions)[number]) =>
+  return withHashes(
+    rows.map((row) => toTransaction(row, statementDate)),
+    accountNumber,
+  )
+}
+
+// Adds the import hash to transactions read from any statement layout, given
+// in file order.
+export function withHashes(
+  transactions: Omit<Transaction, "hash">[],
+  accountNumber: string,
+): Transaction[] {
+  const key = (transaction: Omit<Transaction, "hash">) =>
     `${toIsoDate(transaction.date)}|${toCents(transaction.amount)}`
   const occurrences = occurrenceNumbers(transactions, key)
 

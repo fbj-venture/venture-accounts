@@ -1,7 +1,7 @@
 import type { PDFPageProxy } from "pdfjs-dist/legacy/build/pdf.mjs"
 import type { ImportRow } from "./import-row.js"
 
-type TextContentItem = Awaited<ReturnType<PDFPageProxy["getTextContent"]>>["items"][number]
+export type TextContentItem = Awaited<ReturnType<PDFPageProxy["getTextContent"]>>["items"][number]
 
 const HEADER_PATTERN = /Details\s+Service\s+Fee\s+Debits\s+Credits\s+Date\s+Balance/
 
@@ -40,7 +40,7 @@ const ACCOUNT_NUMBER_PATTERN = /Account Number\s+([\d ]+\d)/
 
 type ParsedTransactionLine = Omit<ImportRow, "rowIndex">
 
-function buildLines(items: TextContentItem[]): string[] {
+export function buildLines(items: TextContentItem[]): string[] {
   const lines: string[] = []
   let currentLine = ""
 

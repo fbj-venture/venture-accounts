@@ -8,348 +8,343 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as BooksRouteRouteImport } from './routes/books/route'
-import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
-import { Route as SetPasswordRouteImport } from './routes/set-password'
-import { Route as BooksIndexRouteImport } from './routes/books/index'
-import { Route as BooksAdminRouteRouteImport } from './routes/books/admin/route'
-import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
-import { Route as ApiBooksImportRouteImport } from './routes/api/books/import'
-import { Route as BooksAccountsIndexRouteImport } from './routes/books/accounts/index'
-import { Route as BooksBankAccountIndexRouteImport } from './routes/books/bank-account/index'
-import { Route as BooksBankAccountIdRouteImport } from './routes/books/bank-account/$id'
-import { Route as BooksBankingTransactionsRouteRouteImport } from './routes/books/banking/transactions/route'
-import { Route as BooksMyAccountIndexRouteImport } from './routes/books/my-account/index'
-import { Route as BooksSettingsIndexRouteImport } from './routes/books/settings/index'
-import { Route as BooksAdminUsersIndexRouteImport } from './routes/books/admin/users/index'
-import { Route as BooksAdminUsersIdRouteImport } from './routes/books/admin/users/$id'
-import { Route as BooksAdminUsersNewRouteImport } from './routes/books/admin/users/new'
-import { Route as BooksBankingImportIndexRouteImport } from './routes/books/banking/import/index'
-import { Route as BooksBankingImportSbCsvRouteImport } from './routes/books/banking/import/sb-csv'
-import { Route as BooksBankingImportSbStatementRouteImport } from './routes/books/banking/import/sb-statement'
-import { Route as BooksBankingReconIndexRouteImport } from './routes/books/banking/recon/index'
-import { Route as BooksBankingReconIdRouteImport } from './routes/books/banking/recon/$id'
-import { Route as BooksBankingSearchIndexRouteImport } from './routes/books/banking/search/index'
-import { Route as BooksBankingTransactionsIndexRouteImport } from './routes/books/banking/transactions/index'
-import { Route as BooksBankingTransactionsIdRouteImport } from './routes/books/banking/transactions/$id'
-import { Route as BooksBankingUploadsIdRouteImport } from './routes/books/banking/uploads/$id'
-import { Route as BooksBankingReconSessionIdRouteImport } from './routes/books/banking/recon/session.$id'
+import { Route as rootRouteImport } from "./routes/__root"
+import { Route as IndexRouteImport } from "./routes/index"
+import { Route as BooksRouteRouteImport } from "./routes/books/route"
+import { Route as ForgotPasswordRouteImport } from "./routes/forgot-password"
+import { Route as SetPasswordRouteImport } from "./routes/set-password"
+import { Route as BooksIndexRouteImport } from "./routes/books/index"
+import { Route as BooksAdminRouteRouteImport } from "./routes/books/admin/route"
+import { Route as ApiAuthSplatRouteImport } from "./routes/api/auth/$"
+import { Route as ApiBooksImportRouteImport } from "./routes/api/books/import"
+import { Route as BooksAccountsIndexRouteImport } from "./routes/books/accounts/index"
+import { Route as BooksBankAccountIndexRouteImport } from "./routes/books/bank-account/index"
+import { Route as BooksBankAccountIdRouteImport } from "./routes/books/bank-account/$id"
+import { Route as BooksBankingTransactionsRouteRouteImport } from "./routes/books/banking/transactions/route"
+import { Route as BooksMyAccountIndexRouteImport } from "./routes/books/my-account/index"
+import { Route as BooksSettingsIndexRouteImport } from "./routes/books/settings/index"
+import { Route as BooksAdminUsersIndexRouteImport } from "./routes/books/admin/users/index"
+import { Route as BooksAdminUsersIdRouteImport } from "./routes/books/admin/users/$id"
+import { Route as BooksAdminUsersNewRouteImport } from "./routes/books/admin/users/new"
+import { Route as BooksBankingImportIndexRouteImport } from "./routes/books/banking/import/index"
+import { Route as BooksBankingImportSbHistoryRouteImport } from "./routes/books/banking/import/sb-history"
+import { Route as BooksBankingImportSbStatementRouteImport } from "./routes/books/banking/import/sb-statement"
+import { Route as BooksBankingReconIndexRouteImport } from "./routes/books/banking/recon/index"
+import { Route as BooksBankingReconIdRouteImport } from "./routes/books/banking/recon/$id"
+import { Route as BooksBankingSearchIndexRouteImport } from "./routes/books/banking/search/index"
+import { Route as BooksBankingTransactionsIndexRouteImport } from "./routes/books/banking/transactions/index"
+import { Route as BooksBankingTransactionsIdRouteImport } from "./routes/books/banking/transactions/$id"
+import { Route as BooksBankingUploadsIdRouteImport } from "./routes/books/banking/uploads/$id"
+import { Route as BooksBankingReconSessionIdRouteImport } from "./routes/books/banking/recon/session.$id"
 
 const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+  id: "/",
+  path: "/",
   getParentRoute: () => rootRouteImport,
 } as any)
 const BooksRouteRoute = BooksRouteRouteImport.update({
-  id: '/books',
-  path: '/books',
+  id: "/books",
+  path: "/books",
   getParentRoute: () => rootRouteImport,
 } as any)
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
-  id: '/forgot-password',
-  path: '/forgot-password',
+  id: "/forgot-password",
+  path: "/forgot-password",
   getParentRoute: () => rootRouteImport,
 } as any)
 const SetPasswordRoute = SetPasswordRouteImport.update({
-  id: '/set-password',
-  path: '/set-password',
+  id: "/set-password",
+  path: "/set-password",
   getParentRoute: () => rootRouteImport,
 } as any)
 const BooksIndexRoute = BooksIndexRouteImport.update({
-  id: '/',
-  path: '/',
+  id: "/",
+  path: "/",
   getParentRoute: () => BooksRouteRoute,
 } as any)
 const BooksAdminRouteRoute = BooksAdminRouteRouteImport.update({
-  id: '/admin',
-  path: '/admin',
+  id: "/admin",
+  path: "/admin",
   getParentRoute: () => BooksRouteRoute,
 } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
-  id: '/api/auth/$',
-  path: '/api/auth/$',
+  id: "/api/auth/$",
+  path: "/api/auth/$",
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiBooksImportRoute = ApiBooksImportRouteImport.update({
-  id: '/api/books/import',
-  path: '/api/books/import',
+  id: "/api/books/import",
+  path: "/api/books/import",
   getParentRoute: () => rootRouteImport,
 } as any)
 const BooksAccountsIndexRoute = BooksAccountsIndexRouteImport.update({
-  id: '/accounts/',
-  path: '/accounts/',
+  id: "/accounts/",
+  path: "/accounts/",
   getParentRoute: () => BooksRouteRoute,
 } as any)
 const BooksBankAccountIndexRoute = BooksBankAccountIndexRouteImport.update({
-  id: '/bank-account/',
-  path: '/bank-account/',
+  id: "/bank-account/",
+  path: "/bank-account/",
   getParentRoute: () => BooksRouteRoute,
 } as any)
 const BooksBankAccountIdRoute = BooksBankAccountIdRouteImport.update({
-  id: '/bank-account/$id',
-  path: '/bank-account/$id',
+  id: "/bank-account/$id",
+  path: "/bank-account/$id",
   getParentRoute: () => BooksRouteRoute,
 } as any)
-const BooksBankingTransactionsRouteRoute =
-  BooksBankingTransactionsRouteRouteImport.update({
-    id: '/banking/transactions',
-    path: '/banking/transactions',
-    getParentRoute: () => BooksRouteRoute,
-  } as any)
+const BooksBankingTransactionsRouteRoute = BooksBankingTransactionsRouteRouteImport.update({
+  id: "/banking/transactions",
+  path: "/banking/transactions",
+  getParentRoute: () => BooksRouteRoute,
+} as any)
 const BooksMyAccountIndexRoute = BooksMyAccountIndexRouteImport.update({
-  id: '/my-account/',
-  path: '/my-account/',
+  id: "/my-account/",
+  path: "/my-account/",
   getParentRoute: () => BooksRouteRoute,
 } as any)
 const BooksSettingsIndexRoute = BooksSettingsIndexRouteImport.update({
-  id: '/settings/',
-  path: '/settings/',
+  id: "/settings/",
+  path: "/settings/",
   getParentRoute: () => BooksRouteRoute,
 } as any)
 const BooksAdminUsersIndexRoute = BooksAdminUsersIndexRouteImport.update({
-  id: '/users/',
-  path: '/users/',
+  id: "/users/",
+  path: "/users/",
   getParentRoute: () => BooksAdminRouteRoute,
 } as any)
 const BooksAdminUsersIdRoute = BooksAdminUsersIdRouteImport.update({
-  id: '/users/$id',
-  path: '/users/$id',
+  id: "/users/$id",
+  path: "/users/$id",
   getParentRoute: () => BooksAdminRouteRoute,
 } as any)
 const BooksAdminUsersNewRoute = BooksAdminUsersNewRouteImport.update({
-  id: '/users/new',
-  path: '/users/new',
+  id: "/users/new",
+  path: "/users/new",
   getParentRoute: () => BooksAdminRouteRoute,
 } as any)
 const BooksBankingImportIndexRoute = BooksBankingImportIndexRouteImport.update({
-  id: '/banking/import/',
-  path: '/banking/import/',
+  id: "/banking/import/",
+  path: "/banking/import/",
   getParentRoute: () => BooksRouteRoute,
 } as any)
-const BooksBankingImportSbCsvRoute = BooksBankingImportSbCsvRouteImport.update({
-  id: '/banking/import/sb-csv',
-  path: '/banking/import/sb-csv',
+const BooksBankingImportSbHistoryRoute = BooksBankingImportSbHistoryRouteImport.update({
+  id: "/banking/import/sb-history",
+  path: "/banking/import/sb-history",
   getParentRoute: () => BooksRouteRoute,
 } as any)
-const BooksBankingImportSbStatementRoute =
-  BooksBankingImportSbStatementRouteImport.update({
-    id: '/banking/import/sb-statement',
-    path: '/banking/import/sb-statement',
-    getParentRoute: () => BooksRouteRoute,
-  } as any)
+const BooksBankingImportSbStatementRoute = BooksBankingImportSbStatementRouteImport.update({
+  id: "/banking/import/sb-statement",
+  path: "/banking/import/sb-statement",
+  getParentRoute: () => BooksRouteRoute,
+} as any)
 const BooksBankingReconIndexRoute = BooksBankingReconIndexRouteImport.update({
-  id: '/banking/recon/',
-  path: '/banking/recon/',
+  id: "/banking/recon/",
+  path: "/banking/recon/",
   getParentRoute: () => BooksRouteRoute,
 } as any)
 const BooksBankingReconIdRoute = BooksBankingReconIdRouteImport.update({
-  id: '/banking/recon/$id',
-  path: '/banking/recon/$id',
+  id: "/banking/recon/$id",
+  path: "/banking/recon/$id",
   getParentRoute: () => BooksRouteRoute,
 } as any)
 const BooksBankingSearchIndexRoute = BooksBankingSearchIndexRouteImport.update({
-  id: '/banking/search/',
-  path: '/banking/search/',
+  id: "/banking/search/",
+  path: "/banking/search/",
   getParentRoute: () => BooksRouteRoute,
 } as any)
-const BooksBankingTransactionsIndexRoute =
-  BooksBankingTransactionsIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => BooksBankingTransactionsRouteRoute,
-  } as any)
-const BooksBankingTransactionsIdRoute =
-  BooksBankingTransactionsIdRouteImport.update({
-    id: '/$id',
-    path: '/$id',
-    getParentRoute: () => BooksBankingTransactionsRouteRoute,
-  } as any)
+const BooksBankingTransactionsIndexRoute = BooksBankingTransactionsIndexRouteImport.update({
+  id: "/",
+  path: "/",
+  getParentRoute: () => BooksBankingTransactionsRouteRoute,
+} as any)
+const BooksBankingTransactionsIdRoute = BooksBankingTransactionsIdRouteImport.update({
+  id: "/$id",
+  path: "/$id",
+  getParentRoute: () => BooksBankingTransactionsRouteRoute,
+} as any)
 const BooksBankingUploadsIdRoute = BooksBankingUploadsIdRouteImport.update({
-  id: '/banking/uploads/$id',
-  path: '/banking/uploads/$id',
+  id: "/banking/uploads/$id",
+  path: "/banking/uploads/$id",
   getParentRoute: () => BooksRouteRoute,
 } as any)
-const BooksBankingReconSessionIdRoute =
-  BooksBankingReconSessionIdRouteImport.update({
-    id: '/banking/recon/session/$id',
-    path: '/banking/recon/session/$id',
-    getParentRoute: () => BooksRouteRoute,
-  } as any)
+const BooksBankingReconSessionIdRoute = BooksBankingReconSessionIdRouteImport.update({
+  id: "/banking/recon/session/$id",
+  path: "/banking/recon/session/$id",
+  getParentRoute: () => BooksRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/books': typeof BooksRouteRouteWithChildren
-  '/forgot-password': typeof ForgotPasswordRoute
-  '/set-password': typeof SetPasswordRoute
-  '/books/admin': typeof BooksAdminRouteRouteWithChildren
-  '/books/': typeof BooksIndexRoute
-  '/books/banking/transactions': typeof BooksBankingTransactionsRouteRouteWithChildren
-  '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/books/import': typeof ApiBooksImportRoute
-  '/books/bank-account/$id': typeof BooksBankAccountIdRoute
-  '/books/accounts/': typeof BooksAccountsIndexRoute
-  '/books/bank-account/': typeof BooksBankAccountIndexRoute
-  '/books/my-account/': typeof BooksMyAccountIndexRoute
-  '/books/settings/': typeof BooksSettingsIndexRoute
-  '/books/admin/users/$id': typeof BooksAdminUsersIdRoute
-  '/books/admin/users/new': typeof BooksAdminUsersNewRoute
-  '/books/banking/import/sb-csv': typeof BooksBankingImportSbCsvRoute
-  '/books/banking/import/sb-statement': typeof BooksBankingImportSbStatementRoute
-  '/books/banking/recon/$id': typeof BooksBankingReconIdRoute
-  '/books/banking/transactions/$id': typeof BooksBankingTransactionsIdRoute
-  '/books/banking/uploads/$id': typeof BooksBankingUploadsIdRoute
-  '/books/admin/users/': typeof BooksAdminUsersIndexRoute
-  '/books/banking/import/': typeof BooksBankingImportIndexRoute
-  '/books/banking/recon/': typeof BooksBankingReconIndexRoute
-  '/books/banking/search/': typeof BooksBankingSearchIndexRoute
-  '/books/banking/transactions/': typeof BooksBankingTransactionsIndexRoute
-  '/books/banking/recon/session/$id': typeof BooksBankingReconSessionIdRoute
+  "/": typeof IndexRoute
+  "/books": typeof BooksRouteRouteWithChildren
+  "/forgot-password": typeof ForgotPasswordRoute
+  "/set-password": typeof SetPasswordRoute
+  "/books/admin": typeof BooksAdminRouteRouteWithChildren
+  "/books/": typeof BooksIndexRoute
+  "/books/banking/transactions": typeof BooksBankingTransactionsRouteRouteWithChildren
+  "/api/auth/$": typeof ApiAuthSplatRoute
+  "/api/books/import": typeof ApiBooksImportRoute
+  "/books/bank-account/$id": typeof BooksBankAccountIdRoute
+  "/books/accounts/": typeof BooksAccountsIndexRoute
+  "/books/bank-account/": typeof BooksBankAccountIndexRoute
+  "/books/my-account/": typeof BooksMyAccountIndexRoute
+  "/books/settings/": typeof BooksSettingsIndexRoute
+  "/books/admin/users/$id": typeof BooksAdminUsersIdRoute
+  "/books/admin/users/new": typeof BooksAdminUsersNewRoute
+  "/books/banking/import/sb-history": typeof BooksBankingImportSbHistoryRoute
+  "/books/banking/import/sb-statement": typeof BooksBankingImportSbStatementRoute
+  "/books/banking/recon/$id": typeof BooksBankingReconIdRoute
+  "/books/banking/transactions/$id": typeof BooksBankingTransactionsIdRoute
+  "/books/banking/uploads/$id": typeof BooksBankingUploadsIdRoute
+  "/books/admin/users/": typeof BooksAdminUsersIndexRoute
+  "/books/banking/import/": typeof BooksBankingImportIndexRoute
+  "/books/banking/recon/": typeof BooksBankingReconIndexRoute
+  "/books/banking/search/": typeof BooksBankingSearchIndexRoute
+  "/books/banking/transactions/": typeof BooksBankingTransactionsIndexRoute
+  "/books/banking/recon/session/$id": typeof BooksBankingReconSessionIdRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/forgot-password': typeof ForgotPasswordRoute
-  '/set-password': typeof SetPasswordRoute
-  '/books/admin': typeof BooksAdminRouteRouteWithChildren
-  '/books': typeof BooksIndexRoute
-  '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/books/import': typeof ApiBooksImportRoute
-  '/books/bank-account/$id': typeof BooksBankAccountIdRoute
-  '/books/accounts': typeof BooksAccountsIndexRoute
-  '/books/bank-account': typeof BooksBankAccountIndexRoute
-  '/books/my-account': typeof BooksMyAccountIndexRoute
-  '/books/settings': typeof BooksSettingsIndexRoute
-  '/books/admin/users/$id': typeof BooksAdminUsersIdRoute
-  '/books/admin/users/new': typeof BooksAdminUsersNewRoute
-  '/books/banking/import/sb-csv': typeof BooksBankingImportSbCsvRoute
-  '/books/banking/import/sb-statement': typeof BooksBankingImportSbStatementRoute
-  '/books/banking/recon/$id': typeof BooksBankingReconIdRoute
-  '/books/banking/transactions/$id': typeof BooksBankingTransactionsIdRoute
-  '/books/banking/uploads/$id': typeof BooksBankingUploadsIdRoute
-  '/books/admin/users': typeof BooksAdminUsersIndexRoute
-  '/books/banking/import': typeof BooksBankingImportIndexRoute
-  '/books/banking/recon': typeof BooksBankingReconIndexRoute
-  '/books/banking/search': typeof BooksBankingSearchIndexRoute
-  '/books/banking/transactions': typeof BooksBankingTransactionsIndexRoute
-  '/books/banking/recon/session/$id': typeof BooksBankingReconSessionIdRoute
+  "/": typeof IndexRoute
+  "/forgot-password": typeof ForgotPasswordRoute
+  "/set-password": typeof SetPasswordRoute
+  "/books/admin": typeof BooksAdminRouteRouteWithChildren
+  "/books": typeof BooksIndexRoute
+  "/api/auth/$": typeof ApiAuthSplatRoute
+  "/api/books/import": typeof ApiBooksImportRoute
+  "/books/bank-account/$id": typeof BooksBankAccountIdRoute
+  "/books/accounts": typeof BooksAccountsIndexRoute
+  "/books/bank-account": typeof BooksBankAccountIndexRoute
+  "/books/my-account": typeof BooksMyAccountIndexRoute
+  "/books/settings": typeof BooksSettingsIndexRoute
+  "/books/admin/users/$id": typeof BooksAdminUsersIdRoute
+  "/books/admin/users/new": typeof BooksAdminUsersNewRoute
+  "/books/banking/import/sb-history": typeof BooksBankingImportSbHistoryRoute
+  "/books/banking/import/sb-statement": typeof BooksBankingImportSbStatementRoute
+  "/books/banking/recon/$id": typeof BooksBankingReconIdRoute
+  "/books/banking/transactions/$id": typeof BooksBankingTransactionsIdRoute
+  "/books/banking/uploads/$id": typeof BooksBankingUploadsIdRoute
+  "/books/admin/users": typeof BooksAdminUsersIndexRoute
+  "/books/banking/import": typeof BooksBankingImportIndexRoute
+  "/books/banking/recon": typeof BooksBankingReconIndexRoute
+  "/books/banking/search": typeof BooksBankingSearchIndexRoute
+  "/books/banking/transactions": typeof BooksBankingTransactionsIndexRoute
+  "/books/banking/recon/session/$id": typeof BooksBankingReconSessionIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/books': typeof BooksRouteRouteWithChildren
-  '/forgot-password': typeof ForgotPasswordRoute
-  '/set-password': typeof SetPasswordRoute
-  '/books/admin': typeof BooksAdminRouteRouteWithChildren
-  '/books/': typeof BooksIndexRoute
-  '/books/banking/transactions': typeof BooksBankingTransactionsRouteRouteWithChildren
-  '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/books/import': typeof ApiBooksImportRoute
-  '/books/bank-account/$id': typeof BooksBankAccountIdRoute
-  '/books/accounts/': typeof BooksAccountsIndexRoute
-  '/books/bank-account/': typeof BooksBankAccountIndexRoute
-  '/books/my-account/': typeof BooksMyAccountIndexRoute
-  '/books/settings/': typeof BooksSettingsIndexRoute
-  '/books/admin/users/$id': typeof BooksAdminUsersIdRoute
-  '/books/admin/users/new': typeof BooksAdminUsersNewRoute
-  '/books/banking/import/sb-csv': typeof BooksBankingImportSbCsvRoute
-  '/books/banking/import/sb-statement': typeof BooksBankingImportSbStatementRoute
-  '/books/banking/recon/$id': typeof BooksBankingReconIdRoute
-  '/books/banking/transactions/$id': typeof BooksBankingTransactionsIdRoute
-  '/books/banking/uploads/$id': typeof BooksBankingUploadsIdRoute
-  '/books/admin/users/': typeof BooksAdminUsersIndexRoute
-  '/books/banking/import/': typeof BooksBankingImportIndexRoute
-  '/books/banking/recon/': typeof BooksBankingReconIndexRoute
-  '/books/banking/search/': typeof BooksBankingSearchIndexRoute
-  '/books/banking/transactions/': typeof BooksBankingTransactionsIndexRoute
-  '/books/banking/recon/session/$id': typeof BooksBankingReconSessionIdRoute
+  "/": typeof IndexRoute
+  "/books": typeof BooksRouteRouteWithChildren
+  "/forgot-password": typeof ForgotPasswordRoute
+  "/set-password": typeof SetPasswordRoute
+  "/books/admin": typeof BooksAdminRouteRouteWithChildren
+  "/books/": typeof BooksIndexRoute
+  "/books/banking/transactions": typeof BooksBankingTransactionsRouteRouteWithChildren
+  "/api/auth/$": typeof ApiAuthSplatRoute
+  "/api/books/import": typeof ApiBooksImportRoute
+  "/books/bank-account/$id": typeof BooksBankAccountIdRoute
+  "/books/accounts/": typeof BooksAccountsIndexRoute
+  "/books/bank-account/": typeof BooksBankAccountIndexRoute
+  "/books/my-account/": typeof BooksMyAccountIndexRoute
+  "/books/settings/": typeof BooksSettingsIndexRoute
+  "/books/admin/users/$id": typeof BooksAdminUsersIdRoute
+  "/books/admin/users/new": typeof BooksAdminUsersNewRoute
+  "/books/banking/import/sb-history": typeof BooksBankingImportSbHistoryRoute
+  "/books/banking/import/sb-statement": typeof BooksBankingImportSbStatementRoute
+  "/books/banking/recon/$id": typeof BooksBankingReconIdRoute
+  "/books/banking/transactions/$id": typeof BooksBankingTransactionsIdRoute
+  "/books/banking/uploads/$id": typeof BooksBankingUploadsIdRoute
+  "/books/admin/users/": typeof BooksAdminUsersIndexRoute
+  "/books/banking/import/": typeof BooksBankingImportIndexRoute
+  "/books/banking/recon/": typeof BooksBankingReconIndexRoute
+  "/books/banking/search/": typeof BooksBankingSearchIndexRoute
+  "/books/banking/transactions/": typeof BooksBankingTransactionsIndexRoute
+  "/books/banking/recon/session/$id": typeof BooksBankingReconSessionIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
-    | '/books'
-    | '/forgot-password'
-    | '/set-password'
-    | '/books/admin'
-    | '/books/'
-    | '/books/banking/transactions'
-    | '/api/auth/$'
-    | '/api/books/import'
-    | '/books/bank-account/$id'
-    | '/books/accounts/'
-    | '/books/bank-account/'
-    | '/books/my-account/'
-    | '/books/settings/'
-    | '/books/admin/users/$id'
-    | '/books/admin/users/new'
-    | '/books/banking/import/sb-csv'
-    | '/books/banking/import/sb-statement'
-    | '/books/banking/recon/$id'
-    | '/books/banking/transactions/$id'
-    | '/books/banking/uploads/$id'
-    | '/books/admin/users/'
-    | '/books/banking/import/'
-    | '/books/banking/recon/'
-    | '/books/banking/search/'
-    | '/books/banking/transactions/'
-    | '/books/banking/recon/session/$id'
+    | "/"
+    | "/books"
+    | "/forgot-password"
+    | "/set-password"
+    | "/books/admin"
+    | "/books/"
+    | "/books/banking/transactions"
+    | "/api/auth/$"
+    | "/api/books/import"
+    | "/books/bank-account/$id"
+    | "/books/accounts/"
+    | "/books/bank-account/"
+    | "/books/my-account/"
+    | "/books/settings/"
+    | "/books/admin/users/$id"
+    | "/books/admin/users/new"
+    | "/books/banking/import/sb-history"
+    | "/books/banking/import/sb-statement"
+    | "/books/banking/recon/$id"
+    | "/books/banking/transactions/$id"
+    | "/books/banking/uploads/$id"
+    | "/books/admin/users/"
+    | "/books/banking/import/"
+    | "/books/banking/recon/"
+    | "/books/banking/search/"
+    | "/books/banking/transactions/"
+    | "/books/banking/recon/session/$id"
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
-    | '/forgot-password'
-    | '/set-password'
-    | '/books/admin'
-    | '/books'
-    | '/api/auth/$'
-    | '/api/books/import'
-    | '/books/bank-account/$id'
-    | '/books/accounts'
-    | '/books/bank-account'
-    | '/books/my-account'
-    | '/books/settings'
-    | '/books/admin/users/$id'
-    | '/books/admin/users/new'
-    | '/books/banking/import/sb-csv'
-    | '/books/banking/import/sb-statement'
-    | '/books/banking/recon/$id'
-    | '/books/banking/transactions/$id'
-    | '/books/banking/uploads/$id'
-    | '/books/admin/users'
-    | '/books/banking/import'
-    | '/books/banking/recon'
-    | '/books/banking/search'
-    | '/books/banking/transactions'
-    | '/books/banking/recon/session/$id'
+    | "/"
+    | "/forgot-password"
+    | "/set-password"
+    | "/books/admin"
+    | "/books"
+    | "/api/auth/$"
+    | "/api/books/import"
+    | "/books/bank-account/$id"
+    | "/books/accounts"
+    | "/books/bank-account"
+    | "/books/my-account"
+    | "/books/settings"
+    | "/books/admin/users/$id"
+    | "/books/admin/users/new"
+    | "/books/banking/import/sb-history"
+    | "/books/banking/import/sb-statement"
+    | "/books/banking/recon/$id"
+    | "/books/banking/transactions/$id"
+    | "/books/banking/uploads/$id"
+    | "/books/admin/users"
+    | "/books/banking/import"
+    | "/books/banking/recon"
+    | "/books/banking/search"
+    | "/books/banking/transactions"
+    | "/books/banking/recon/session/$id"
   id:
-    | '__root__'
-    | '/'
-    | '/books'
-    | '/forgot-password'
-    | '/set-password'
-    | '/books/admin'
-    | '/books/'
-    | '/books/banking/transactions'
-    | '/api/auth/$'
-    | '/api/books/import'
-    | '/books/bank-account/$id'
-    | '/books/accounts/'
-    | '/books/bank-account/'
-    | '/books/my-account/'
-    | '/books/settings/'
-    | '/books/admin/users/$id'
-    | '/books/admin/users/new'
-    | '/books/banking/import/sb-csv'
-    | '/books/banking/import/sb-statement'
-    | '/books/banking/recon/$id'
-    | '/books/banking/transactions/$id'
-    | '/books/banking/uploads/$id'
-    | '/books/admin/users/'
-    | '/books/banking/import/'
-    | '/books/banking/recon/'
-    | '/books/banking/search/'
-    | '/books/banking/transactions/'
-    | '/books/banking/recon/session/$id'
+    | "__root__"
+    | "/"
+    | "/books"
+    | "/forgot-password"
+    | "/set-password"
+    | "/books/admin"
+    | "/books/"
+    | "/books/banking/transactions"
+    | "/api/auth/$"
+    | "/api/books/import"
+    | "/books/bank-account/$id"
+    | "/books/accounts/"
+    | "/books/bank-account/"
+    | "/books/my-account/"
+    | "/books/settings/"
+    | "/books/admin/users/$id"
+    | "/books/admin/users/new"
+    | "/books/banking/import/sb-history"
+    | "/books/banking/import/sb-statement"
+    | "/books/banking/recon/$id"
+    | "/books/banking/transactions/$id"
+    | "/books/banking/uploads/$id"
+    | "/books/admin/users/"
+    | "/books/banking/import/"
+    | "/books/banking/recon/"
+    | "/books/banking/search/"
+    | "/books/banking/transactions/"
+    | "/books/banking/recon/session/$id"
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -361,194 +356,194 @@ export interface RootRouteChildren {
   ApiBooksImportRoute: typeof ApiBooksImportRoute
 }
 
-declare module '@tanstack/react-router' {
+declare module "@tanstack/react-router" {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
+    "/": {
+      id: "/"
+      path: "/"
+      fullPath: "/"
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/books': {
-      id: '/books'
-      path: '/books'
-      fullPath: '/books'
+    "/books": {
+      id: "/books"
+      path: "/books"
+      fullPath: "/books"
       preLoaderRoute: typeof BooksRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/forgot-password': {
-      id: '/forgot-password'
-      path: '/forgot-password'
-      fullPath: '/forgot-password'
+    "/forgot-password": {
+      id: "/forgot-password"
+      path: "/forgot-password"
+      fullPath: "/forgot-password"
       preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/set-password': {
-      id: '/set-password'
-      path: '/set-password'
-      fullPath: '/set-password'
+    "/set-password": {
+      id: "/set-password"
+      path: "/set-password"
+      fullPath: "/set-password"
       preLoaderRoute: typeof SetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/books/': {
-      id: '/books/'
-      path: '/'
-      fullPath: '/books/'
+    "/books/": {
+      id: "/books/"
+      path: "/"
+      fullPath: "/books/"
       preLoaderRoute: typeof BooksIndexRouteImport
       parentRoute: typeof BooksRouteRoute
     }
-    '/books/admin': {
-      id: '/books/admin'
-      path: '/admin'
-      fullPath: '/books/admin'
+    "/books/admin": {
+      id: "/books/admin"
+      path: "/admin"
+      fullPath: "/books/admin"
       preLoaderRoute: typeof BooksAdminRouteRouteImport
       parentRoute: typeof BooksRouteRoute
     }
-    '/api/auth/$': {
-      id: '/api/auth/$'
-      path: '/api/auth/$'
-      fullPath: '/api/auth/$'
+    "/api/auth/$": {
+      id: "/api/auth/$"
+      path: "/api/auth/$"
+      fullPath: "/api/auth/$"
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/books/import': {
-      id: '/api/books/import'
-      path: '/api/books/import'
-      fullPath: '/api/books/import'
+    "/api/books/import": {
+      id: "/api/books/import"
+      path: "/api/books/import"
+      fullPath: "/api/books/import"
       preLoaderRoute: typeof ApiBooksImportRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/books/accounts/': {
-      id: '/books/accounts/'
-      path: '/accounts'
-      fullPath: '/books/accounts/'
+    "/books/accounts/": {
+      id: "/books/accounts/"
+      path: "/accounts"
+      fullPath: "/books/accounts/"
       preLoaderRoute: typeof BooksAccountsIndexRouteImport
       parentRoute: typeof BooksRouteRoute
     }
-    '/books/bank-account/': {
-      id: '/books/bank-account/'
-      path: '/bank-account'
-      fullPath: '/books/bank-account/'
+    "/books/bank-account/": {
+      id: "/books/bank-account/"
+      path: "/bank-account"
+      fullPath: "/books/bank-account/"
       preLoaderRoute: typeof BooksBankAccountIndexRouteImport
       parentRoute: typeof BooksRouteRoute
     }
-    '/books/bank-account/$id': {
-      id: '/books/bank-account/$id'
-      path: '/bank-account/$id'
-      fullPath: '/books/bank-account/$id'
+    "/books/bank-account/$id": {
+      id: "/books/bank-account/$id"
+      path: "/bank-account/$id"
+      fullPath: "/books/bank-account/$id"
       preLoaderRoute: typeof BooksBankAccountIdRouteImport
       parentRoute: typeof BooksRouteRoute
     }
-    '/books/banking/transactions': {
-      id: '/books/banking/transactions'
-      path: '/banking/transactions'
-      fullPath: '/books/banking/transactions'
+    "/books/banking/transactions": {
+      id: "/books/banking/transactions"
+      path: "/banking/transactions"
+      fullPath: "/books/banking/transactions"
       preLoaderRoute: typeof BooksBankingTransactionsRouteRouteImport
       parentRoute: typeof BooksRouteRoute
     }
-    '/books/my-account/': {
-      id: '/books/my-account/'
-      path: '/my-account'
-      fullPath: '/books/my-account/'
+    "/books/my-account/": {
+      id: "/books/my-account/"
+      path: "/my-account"
+      fullPath: "/books/my-account/"
       preLoaderRoute: typeof BooksMyAccountIndexRouteImport
       parentRoute: typeof BooksRouteRoute
     }
-    '/books/settings/': {
-      id: '/books/settings/'
-      path: '/settings'
-      fullPath: '/books/settings/'
+    "/books/settings/": {
+      id: "/books/settings/"
+      path: "/settings"
+      fullPath: "/books/settings/"
       preLoaderRoute: typeof BooksSettingsIndexRouteImport
       parentRoute: typeof BooksRouteRoute
     }
-    '/books/admin/users/': {
-      id: '/books/admin/users/'
-      path: '/users'
-      fullPath: '/books/admin/users/'
+    "/books/admin/users/": {
+      id: "/books/admin/users/"
+      path: "/users"
+      fullPath: "/books/admin/users/"
       preLoaderRoute: typeof BooksAdminUsersIndexRouteImport
       parentRoute: typeof BooksAdminRouteRoute
     }
-    '/books/admin/users/$id': {
-      id: '/books/admin/users/$id'
-      path: '/users/$id'
-      fullPath: '/books/admin/users/$id'
+    "/books/admin/users/$id": {
+      id: "/books/admin/users/$id"
+      path: "/users/$id"
+      fullPath: "/books/admin/users/$id"
       preLoaderRoute: typeof BooksAdminUsersIdRouteImport
       parentRoute: typeof BooksAdminRouteRoute
     }
-    '/books/admin/users/new': {
-      id: '/books/admin/users/new'
-      path: '/users/new'
-      fullPath: '/books/admin/users/new'
+    "/books/admin/users/new": {
+      id: "/books/admin/users/new"
+      path: "/users/new"
+      fullPath: "/books/admin/users/new"
       preLoaderRoute: typeof BooksAdminUsersNewRouteImport
       parentRoute: typeof BooksAdminRouteRoute
     }
-    '/books/banking/import/': {
-      id: '/books/banking/import/'
-      path: '/banking/import'
-      fullPath: '/books/banking/import/'
+    "/books/banking/import/": {
+      id: "/books/banking/import/"
+      path: "/banking/import"
+      fullPath: "/books/banking/import/"
       preLoaderRoute: typeof BooksBankingImportIndexRouteImport
       parentRoute: typeof BooksRouteRoute
     }
-    '/books/banking/import/sb-csv': {
-      id: '/books/banking/import/sb-csv'
-      path: '/banking/import/sb-csv'
-      fullPath: '/books/banking/import/sb-csv'
-      preLoaderRoute: typeof BooksBankingImportSbCsvRouteImport
+    "/books/banking/import/sb-history": {
+      id: "/books/banking/import/sb-history"
+      path: "/banking/import/sb-history"
+      fullPath: "/books/banking/import/sb-history"
+      preLoaderRoute: typeof BooksBankingImportSbHistoryRouteImport
       parentRoute: typeof BooksRouteRoute
     }
-    '/books/banking/import/sb-statement': {
-      id: '/books/banking/import/sb-statement'
-      path: '/banking/import/sb-statement'
-      fullPath: '/books/banking/import/sb-statement'
+    "/books/banking/import/sb-statement": {
+      id: "/books/banking/import/sb-statement"
+      path: "/banking/import/sb-statement"
+      fullPath: "/books/banking/import/sb-statement"
       preLoaderRoute: typeof BooksBankingImportSbStatementRouteImport
       parentRoute: typeof BooksRouteRoute
     }
-    '/books/banking/recon/': {
-      id: '/books/banking/recon/'
-      path: '/banking/recon'
-      fullPath: '/books/banking/recon/'
+    "/books/banking/recon/": {
+      id: "/books/banking/recon/"
+      path: "/banking/recon"
+      fullPath: "/books/banking/recon/"
       preLoaderRoute: typeof BooksBankingReconIndexRouteImport
       parentRoute: typeof BooksRouteRoute
     }
-    '/books/banking/recon/$id': {
-      id: '/books/banking/recon/$id'
-      path: '/banking/recon/$id'
-      fullPath: '/books/banking/recon/$id'
+    "/books/banking/recon/$id": {
+      id: "/books/banking/recon/$id"
+      path: "/banking/recon/$id"
+      fullPath: "/books/banking/recon/$id"
       preLoaderRoute: typeof BooksBankingReconIdRouteImport
       parentRoute: typeof BooksRouteRoute
     }
-    '/books/banking/search/': {
-      id: '/books/banking/search/'
-      path: '/banking/search'
-      fullPath: '/books/banking/search/'
+    "/books/banking/search/": {
+      id: "/books/banking/search/"
+      path: "/banking/search"
+      fullPath: "/books/banking/search/"
       preLoaderRoute: typeof BooksBankingSearchIndexRouteImport
       parentRoute: typeof BooksRouteRoute
     }
-    '/books/banking/transactions/': {
-      id: '/books/banking/transactions/'
-      path: '/'
-      fullPath: '/books/banking/transactions/'
+    "/books/banking/transactions/": {
+      id: "/books/banking/transactions/"
+      path: "/"
+      fullPath: "/books/banking/transactions/"
       preLoaderRoute: typeof BooksBankingTransactionsIndexRouteImport
       parentRoute: typeof BooksBankingTransactionsRouteRoute
     }
-    '/books/banking/transactions/$id': {
-      id: '/books/banking/transactions/$id'
-      path: '/$id'
-      fullPath: '/books/banking/transactions/$id'
+    "/books/banking/transactions/$id": {
+      id: "/books/banking/transactions/$id"
+      path: "/$id"
+      fullPath: "/books/banking/transactions/$id"
       preLoaderRoute: typeof BooksBankingTransactionsIdRouteImport
       parentRoute: typeof BooksBankingTransactionsRouteRoute
     }
-    '/books/banking/uploads/$id': {
-      id: '/books/banking/uploads/$id'
-      path: '/banking/uploads/$id'
-      fullPath: '/books/banking/uploads/$id'
+    "/books/banking/uploads/$id": {
+      id: "/books/banking/uploads/$id"
+      path: "/banking/uploads/$id"
+      fullPath: "/books/banking/uploads/$id"
       preLoaderRoute: typeof BooksBankingUploadsIdRouteImport
       parentRoute: typeof BooksRouteRoute
     }
-    '/books/banking/recon/session/$id': {
-      id: '/books/banking/recon/session/$id'
-      path: '/banking/recon/session/$id'
-      fullPath: '/books/banking/recon/session/$id'
+    "/books/banking/recon/session/$id": {
+      id: "/books/banking/recon/session/$id"
+      path: "/banking/recon/session/$id"
+      fullPath: "/books/banking/recon/session/$id"
       preLoaderRoute: typeof BooksBankingReconSessionIdRouteImport
       parentRoute: typeof BooksRouteRoute
     }
@@ -576,16 +571,13 @@ interface BooksBankingTransactionsRouteRouteChildren {
   BooksBankingTransactionsIndexRoute: typeof BooksBankingTransactionsIndexRoute
 }
 
-const BooksBankingTransactionsRouteRouteChildren: BooksBankingTransactionsRouteRouteChildren =
-  {
-    BooksBankingTransactionsIdRoute: BooksBankingTransactionsIdRoute,
-    BooksBankingTransactionsIndexRoute: BooksBankingTransactionsIndexRoute,
-  }
+const BooksBankingTransactionsRouteRouteChildren: BooksBankingTransactionsRouteRouteChildren = {
+  BooksBankingTransactionsIdRoute: BooksBankingTransactionsIdRoute,
+  BooksBankingTransactionsIndexRoute: BooksBankingTransactionsIndexRoute,
+}
 
 const BooksBankingTransactionsRouteRouteWithChildren =
-  BooksBankingTransactionsRouteRoute._addFileChildren(
-    BooksBankingTransactionsRouteRouteChildren,
-  )
+  BooksBankingTransactionsRouteRoute._addFileChildren(BooksBankingTransactionsRouteRouteChildren)
 
 interface BooksRouteRouteChildren {
   BooksAdminRouteRoute: typeof BooksAdminRouteRouteWithChildren
@@ -596,7 +588,7 @@ interface BooksRouteRouteChildren {
   BooksBankAccountIndexRoute: typeof BooksBankAccountIndexRoute
   BooksMyAccountIndexRoute: typeof BooksMyAccountIndexRoute
   BooksSettingsIndexRoute: typeof BooksSettingsIndexRoute
-  BooksBankingImportSbCsvRoute: typeof BooksBankingImportSbCsvRoute
+  BooksBankingImportSbHistoryRoute: typeof BooksBankingImportSbHistoryRoute
   BooksBankingImportSbStatementRoute: typeof BooksBankingImportSbStatementRoute
   BooksBankingReconIdRoute: typeof BooksBankingReconIdRoute
   BooksBankingUploadsIdRoute: typeof BooksBankingUploadsIdRoute
@@ -609,14 +601,13 @@ interface BooksRouteRouteChildren {
 const BooksRouteRouteChildren: BooksRouteRouteChildren = {
   BooksAdminRouteRoute: BooksAdminRouteRouteWithChildren,
   BooksIndexRoute: BooksIndexRoute,
-  BooksBankingTransactionsRouteRoute:
-    BooksBankingTransactionsRouteRouteWithChildren,
+  BooksBankingTransactionsRouteRoute: BooksBankingTransactionsRouteRouteWithChildren,
   BooksBankAccountIdRoute: BooksBankAccountIdRoute,
   BooksAccountsIndexRoute: BooksAccountsIndexRoute,
   BooksBankAccountIndexRoute: BooksBankAccountIndexRoute,
   BooksMyAccountIndexRoute: BooksMyAccountIndexRoute,
   BooksSettingsIndexRoute: BooksSettingsIndexRoute,
-  BooksBankingImportSbCsvRoute: BooksBankingImportSbCsvRoute,
+  BooksBankingImportSbHistoryRoute: BooksBankingImportSbHistoryRoute,
   BooksBankingImportSbStatementRoute: BooksBankingImportSbStatementRoute,
   BooksBankingReconIdRoute: BooksBankingReconIdRoute,
   BooksBankingUploadsIdRoute: BooksBankingUploadsIdRoute,
@@ -626,9 +617,7 @@ const BooksRouteRouteChildren: BooksRouteRouteChildren = {
   BooksBankingReconSessionIdRoute: BooksBankingReconSessionIdRoute,
 }
 
-const BooksRouteRouteWithChildren = BooksRouteRoute._addFileChildren(
-  BooksRouteRouteChildren,
-)
+const BooksRouteRouteWithChildren = BooksRouteRoute._addFileChildren(BooksRouteRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -642,9 +631,9 @@ export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
 
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
+import type { getRouter } from "./router.tsx"
+import type { createStart } from "@tanstack/react-start"
+declare module "@tanstack/react-start" {
   interface Register {
     ssr: true
     router: Awaited<ReturnType<typeof getRouter>>

@@ -12,10 +12,9 @@
 * [ ] Migrate the database
 * [ ] Git push all changes
 
-== 0.12
+== 0.13
 
-* [ ] Importer
-** [ ] Add a new PDF importer for current Standard Bank items (Check the hash is the same as for a statement)
+
 
 == Reports
 

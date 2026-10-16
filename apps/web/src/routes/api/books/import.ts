@@ -24,6 +24,9 @@ export const Route = createFileRoute("/api/books/import")({
         const file = formData.get("file")
         const rawDescription = formData.get("description")
         const description = typeof rawDescription === "string" ? rawDescription.trim() : ""
+        // Which PDF layout this is: the official monthly statement (default) or
+        // the Transaction History Statement downloaded from the bank's website.
+        const layout = formData.get("layout") === "history" ? "history" : "statement"
 
         if (!(file instanceof File)) {
           return new Response("No file was uploaded.", { status: 400 })
@@ -49,6 +52,7 @@ export const Route = createFileRoute("/api/books/import")({
               const bytes = new Uint8Array(await file.arrayBuffer())
               await readPdfStreamWithProgress(bytes, session.user.id, send, {
                 description: description || undefined,
+                layout,
               })
             } catch (error) {
               send({

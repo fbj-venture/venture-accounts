@@ -6,5 +6,4 @@ export type ImportRow = {
   credits: string
   date: string
   balance: string
-  hash: string
 }

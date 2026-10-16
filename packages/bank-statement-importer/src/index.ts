@@ -105,7 +105,7 @@ export async function readPdfStreamWithProgress(
     throw new Error(`Could not fund the Bank-Account or Account for '${accountNumber}'`)
   }
 
-  const transactions = toTransactions(rows, statementDate)
+  const transactions = toTransactions(rows, statementDate, accountNumber)
 
   onEvent({
     phase: "extracted",

@@ -1,4 +1,3 @@
-import { createHash } from "node:crypto"
 import type { PDFPageProxy } from "pdfjs-dist/legacy/build/pdf.mjs"
 import type { ImportRow } from "./import-row.js"
 
@@ -39,7 +38,7 @@ const STATEMENT_DATE_PATTERN = new RegExp(`^\\d{1,2}\\s+(?:${MONTH_NAMES.join("|
 // the source and get joined back together.
 const ACCOUNT_NUMBER_PATTERN = /Account Number\s+([\d ]+\d)/
 
-type ParsedTransactionLine = Omit<ImportRow, "hash" | "rowIndex">
+type ParsedTransactionLine = Omit<ImportRow, "rowIndex">
 
 function buildLines(items: TextContentItem[]): string[] {
   const lines: string[] = []
@@ -185,27 +184,6 @@ function parseTransactionLine(line: string): ParsedTransactionLine | null {
   return { details, serviceFee, debits, credits, date, balance }
 }
 
-// A cryptographic (SHA-256) fingerprint of the row, including its index -
-// this disambiguates otherwise-identical transactions (same details/amounts
-// occurring more than once on a statement) so each gets its own hash.
-function hashRow(row: ParsedTransactionLine, rowIndex: number): string {
-  const canonical = [
-    rowIndex.toString(),
-    row.details,
-    row.serviceFee,
-    row.debits,
-    row.credits,
-    row.date,
-    row.balance,
-  ].join("|")
-
-  return createHash("sha256").update(canonical).digest("hex")
-}
-
-function toImportRow(transaction: ParsedTransactionLine, rowIndex: number): ImportRow {
-  return { ...transaction, rowIndex, hash: hashRow(transaction, rowIndex) }
-}
-
 // `startIndex` lets callers assign a globally unique row-index across
 // multiple pages (each page is parsed independently, so this function has
 // no visibility into rows found on other pages).
@@ -256,7 +234,7 @@ export function extractTableRows(items: TextContentItem[], startIndex = 0): Impo
       i += 1
     }
 
-    rows.push(toImportRow(transaction, startIndex + rows.length))
+    rows.push({ ...transaction, rowIndex: startIndex + rows.length })
   }
 
   return rows

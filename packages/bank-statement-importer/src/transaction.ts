@@ -1,4 +1,5 @@
 import type { Transaction } from "@app/models"
+import { canonicalHash, occurrenceNumbers, toCents, toIsoDate } from "./canonical-hash.js"
 import { MONTH_NAMES } from "./extractor.js"
 import type { ImportRow } from "./import-row.js"
 
@@ -65,7 +66,8 @@ function resolveTransactionYear(
   return transactionMonth > statement.month ? statement.year - 1 : statement.year
 }
 
-export function toTransaction(row: ImportRow, statementDate: string): Transaction {
+// Without its hash: that needs the other rows too (see toTransactions).
+function toTransaction(row: ImportRow, statementDate: string): Omit<Transaction, "hash"> {
   const statement = parseStatementDate(statementDate)
 
   const [monthText, dayText] = row.date.trim().split(/\s+/)
@@ -91,10 +93,30 @@ export function toTransaction(row: ImportRow, statementDate: string): Transactio
     amount,
     date,
     balance: parseAmount(row.balance, { signed: true }),
-    hash: row.hash,
   }
 }
 
-export function toTransactions(rows: ImportRow[], statementDate: string): Transaction[] {
-  return rows.map((row) => toTransaction(row, statementDate))
+// Each transaction also gets its import hash (see canonical-hash.ts): from the
+// account, date and amount, plus how many rows before it in this file share
+// the same date and amount. `rows` must be in file order and hold every row of
+// each day they cover.
+export function toTransactions(
+  rows: ImportRow[],
+  statementDate: string,
+  accountNumber: string,
+): Transaction[] {
+  const transactions = rows.map((row) => toTransaction(row, statementDate))
+  const key = (transaction: (typeof transactions)[number]) =>
+    `${toIsoDate(transaction.date)}|${toCents(transaction.amount)}`
+  const occurrences = occurrenceNumbers(transactions, key)
+
+  return transactions.map((transaction, index) => ({
+    ...transaction,
+    hash: canonicalHash({
+      accountNumber,
+      isoDate: toIsoDate(transaction.date),
+      cents: toCents(transaction.amount),
+      occurrence: occurrences[index]!,
+    }),
+  }))
 }

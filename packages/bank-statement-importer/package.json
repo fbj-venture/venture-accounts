@@ -12,7 +12,8 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "read-pdf": "tsx src/cli.ts",
-    "dev:import": ""
+    "script": "varlock run --path ../.. -- tsx",
+    "backfill-hashes": "varlock run --path ../.. -- tsx src/backfill-hashes.ts"
   },
   "dependencies": {
     "@app/db": "workspace:*",

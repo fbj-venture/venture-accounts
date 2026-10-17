@@ -1,5 +1,7 @@
 import { LoginForm } from "#/components/login-form"
 import { authClient } from "#/lib/auth-client.ts"
+import { clearSessionCache } from "#/routes/books/-lib/session-query.ts"
+import { useQueryClient } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { useState } from "react"
 
@@ -7,6 +9,7 @@ export const Route = createFileRoute("/")({ component: Home })
 
 function Home() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [error, setError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
 
@@ -19,6 +22,7 @@ function Home() {
     const { error: signInError } = await authClient.signIn.email(values)
 
     if (!signInError) {
+      clearSessionCache(queryClient)
       await navigate({ to: "/books" })
     } else {
       setError(signInError.message ?? "Unable to sign in.")

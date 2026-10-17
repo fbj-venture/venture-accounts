@@ -21,12 +21,15 @@ export const Route = createFileRoute("/books/banking/transactions/$id")({
     if (!bankAccount) {
       throw notFound()
     }
-    const openingBalance = await getOpeningBalance({ data: bankAccount.id })
-    return { bankAccount, openingBalance }
+    return { bankAccount }
   },
+  // Fetched together: neither waits for the other.
   loader: async ({ context }) => {
-    const transactions = await getUnPostedAccountTransactions({ data: context.bankAccount.id })
-    return { transactions }
+    const [transactions, openingBalance] = await Promise.all([
+      getUnPostedAccountTransactions({ data: context.bankAccount.id }),
+      getOpeningBalance({ data: context.bankAccount.id }),
+    ])
+    return { transactions, openingBalance }
   },
   component: RouteComponent,
 })
@@ -36,8 +39,8 @@ const transactionsLayout = getRouteApi("/books/banking/transactions")
 
 function RouteComponent() {
   const router = useRouter()
-  const { bankAccount, openingBalance } = Route.useRouteContext()
-  const { transactions } = Route.useLoaderData()
+  const { bankAccount } = Route.useRouteContext()
+  const { transactions, openingBalance } = Route.useLoaderData()
   const { accountOptions: allAccountOptions } = transactionsLayout.useLoaderData()
   // A transaction can't be a transfer from this bank account to itself.
   const accountOptions = useMemo(

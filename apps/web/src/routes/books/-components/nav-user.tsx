@@ -41,12 +41,15 @@ import {
 import { useTheme, type Theme } from "#/hooks/use-theme.ts"
 import { authClient } from "#/lib/auth-client"
 import type { SessionUser } from "@app/models"
+import { clearSessionCache } from "#/routes/books/-lib/session-query.ts"
+import { useQueryClient } from "@tanstack/react-query"
 import { Link, useNavigate } from "@tanstack/react-router"
 import { useState } from "react"
 
 export function NavUser({ user }: { user: SessionUser }) {
   const { isMobile } = useSidebar()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [theme, setTheme] = useTheme()
   const ThemeIcon = theme === "light" ? Sun : theme === "dark" ? Moon : Monitor
 
@@ -79,6 +82,7 @@ export function NavUser({ user }: { user: SessionUser }) {
 
   const signout = async () => {
     await authClient.signOut()
+    clearSessionCache(queryClient)
     await navigate({ to: "/" })
   }
 

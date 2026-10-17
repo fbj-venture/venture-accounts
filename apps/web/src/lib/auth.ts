@@ -102,6 +102,10 @@ export const auth = betterAuth({
       "/send-verification-email": { window: 15 * 60, max: 5 },
     },
   },
+  // The session is checked against a signed cookie for 5 minutes before going
+  // back to the database, so navigating doesn't query it every time. Keep in
+  // step with SESSION_STALE_TIME (routes/books/-lib/session-query.ts).
+  session: { cookieCache: { enabled: true, maxAge: 5 * 60 } },
   // Must be last (see better-auth/tanstack-start docs).
   plugins: [admin(), tanstackStartCookies()],
 })

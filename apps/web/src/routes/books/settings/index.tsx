@@ -17,7 +17,9 @@ import {
   SelectValue,
 } from "#/components/ui/select.tsx"
 import { useTheme, type Theme } from "#/hooks/use-theme.ts"
+import { refreshSession } from "#/routes/books/-lib/session-query.ts"
 import { useSetBreadcrumbs } from "#/routes/books/-lib/breadcrumbs.ts"
+import { useQueryClient } from "@tanstack/react-query"
 import { createFileRoute, useRouter } from "@tanstack/react-router"
 import { LoaderCircleIcon, MonitorIcon, MoonIcon, SaveIcon, SunIcon } from "lucide-react"
 import { useState, type FormEvent } from "react"
@@ -37,6 +39,7 @@ const THEME_CHOICES: { value: Theme; label: string; Icon: typeof SunIcon }[] = [
 function RouteComponent() {
   useSetBreadcrumbs([{ title: "Dashboard", url: "/books" }, { title: "Settings" }])
   const router = useRouter()
+  const queryClient = useQueryClient()
   const { settings } = Route.useLoaderData()
   const [theme, setTheme] = useTheme()
 
@@ -62,6 +65,7 @@ function RouteComponent() {
       await saveMySettings({ data: { startingYear: Number(startingYear) } })
       // Reloads the settings, and the signed-in layout that hands the starting
       // year to every year drop-down, so the new value applies straight away.
+      await refreshSession(queryClient)
       await router.invalidate()
       setJustSaved(true)
     } catch (caught) {

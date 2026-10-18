@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises"
 import { eq } from "drizzle-orm"
-import { account, accountType, db, withCreate } from "../src/index.js"
+import { account, accountType, db, withCreate } from "../src/direct.js"
 import { getScriptUserId, runScript } from "./harness.js"
 
 // Imports the chart of accounts from accounts.json (next to this script).
@@ -38,8 +38,8 @@ await runScript("import-accounts", async () => {
     ]),
   )
 
-  // Validate everything up front - the HTTP driver has no transactions, so
-  // bailing out before the first insert is what avoids a half-done import.
+  // Validate everything up front - bailing out before the first insert avoids a
+  // half-done import.
   const errors: string[] = []
   const seen = new Set<string>()
   const namesInFile = new Set(entries.map((entry) => entry.name))

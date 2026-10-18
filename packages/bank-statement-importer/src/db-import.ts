@@ -1,6 +1,5 @@
-// Uses the unpooled/direct connection (not the default pooled "@app/db")
-// since this imports many rows in a loop - a real connection/pool suits
-// that better than a fresh HTTP request per query.
+// Uses the pooled pg connection from "@app/db/direct", which suits importing
+// many rows in a loop.
 import {
   account,
   bankAccount,

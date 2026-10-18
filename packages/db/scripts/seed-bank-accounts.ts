@@ -1,4 +1,4 @@
-import { account, bankAccount, db, withCreate } from "../src/index.js"
+import { account, bankAccount, db, withCreate } from "../src/direct.js"
 import { getScriptUserId, runScript } from "./harness.js"
 
 const ASSET_ACCOUNT_TYPE_ID = 1

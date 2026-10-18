@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm"
-import { db, user } from "../src/index.js"
+import { db, pool, user } from "../src/direct.js"
 
 const SCRIPT_USER_EMAIL = "francis@venturechurch.co.za"
 
@@ -27,5 +27,8 @@ export async function runScript(name: string, script: () => Promise<void>): Prom
     console.error(`Failed: ${name}`)
     console.error(error)
     process.exitCode = 1
+  } finally {
+    // An open pool would keep the process alive after the script finishes.
+    await pool.end()
   }
 }

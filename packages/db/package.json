@@ -2,12 +2,12 @@
   "name": "@app/db",
   "version": "0.0.1",
   "private": true,
-  "description": "Neon Postgres database access via Drizzle ORM",
+  "description": "PostgreSQL database access via Drizzle ORM",
   "type": "module",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./src/direct.ts",
+  "types": "./src/direct.ts",
   "exports": {
-    ".": "./src/index.ts",
+    ".": "./src/direct.ts",
     "./direct": "./src/direct.ts"
   },
   "scripts": {
@@ -20,7 +20,6 @@
     "seed:accounts": "varlock run -- tsx scripts/import-accounts.ts"
   },
   "dependencies": {
-    "@neondatabase/serverless": "^1.1.0",
     "drizzle-orm": "^1.0.0-rc.4",
     "pg": "^8.23.0",
     "varlock": "^1.23.0"

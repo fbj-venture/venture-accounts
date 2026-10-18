@@ -1,4 +1,4 @@
-import { accountType, db } from "../src/index.js"
+import { accountType, db } from "../src/direct.js"
 import { runScript } from "./harness.js"
 
 // Mirrors the canonical list documented on accountType in

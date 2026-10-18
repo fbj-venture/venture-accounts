@@ -12,8 +12,20 @@
 * [ ] Migrate the database
 * [ ] Git push all changes
 
+== 0.12.3
+
+* [ ] Create `docker-compose.yaml` for full local development
+
 == 0.13
 
+* [ ] Budget tracking for a Goal (eg Events)
+** [ ] Create a Goal
+** [ ] Add Goal-Items (eg People coming to the Event)
+** [ ] Allocate payments and expenses to the Goal-Items with Date
+** [ ] Write off expenses explicitly
+** [ ] Display current ballance
+** [ ] Report of current state
+** [ ] Close/Lock Event
 * [ ] Reports
 
 == Reports
@@ -54,14 +66,3 @@
 * [ ] Manually add missing transactions
 * [ ] Data
 ** [ ] Backups (manual/automatic)
-
-== Investigation
-
-* [ ] Budget tracking for a Goal (eg Events)
-** [ ] Create a Goal
-** [ ] Add Goal-Items (eg People coming to the Event)
-** [ ] Allocate payments and expenses to the Goal-Items with Date
-** [ ] Write off expenses explicitly
-** [ ] Display current ballance
-** [ ] Report of current state
-** [ ] Close/Lock Event

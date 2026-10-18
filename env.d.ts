@@ -5,16 +5,9 @@
 /* eslint-disable */
 export type CoercedEnvSchema = {
   /**
-   * **DATABASE_URL** 🔐 _sensitive_  
-   * Development  
-   * Neon's *pooled* connection string, for the HTTP driver.  
-   * ![icon](data:image/svg+xml;utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cpath%20fill%3D%22%23808080%22%20d%3D%22M24%2021V9h-2v14h8v-2zm-4-6v-4c0-1.103-.897-2-2-2h-6v14h2v-6h1.48l2.335%206h2.145l-2.333-6H18c1.103%200%202-.897%202-2m-6-4h4v4h-4zM8%2023H4c-1.103%200-2-.897-2-2V9h2v12h4V9h2v12c0%201.103-.897%202-2%202%22%2F%3E%3C%2Fsvg%3E)  
-   */
-  DATABASE_URL: string
-
-  /**
    * **DATABASE_URL_UNPOOLED** 🔐 _sensitive_  
-   * Neon's *unpooled* connection string, for the pg.Pool driver.  
+   * Development  
+   * PostgreSQL connection string for the pg.Pool driver. On Neon, use the *unpooled* one.  
    * ![icon](data:image/svg+xml;utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cpath%20fill%3D%22%23808080%22%20d%3D%22M24%2021V9h-2v14h8v-2zm-4-6v-4c0-1.103-.897-2-2-2h-6v14h2v-6h1.48l2.335%206h2.145l-2.333-6H18c1.103%200%202-.897%202-2m-6-4h4v4h-4zM8%2023H4c-1.103%200-2-.897-2-2V9h2v12h4V9h2v12c0%201.103-.897%202-2%202%22%2F%3E%3C%2Fsvg%3E)  
    */
   DATABASE_URL_UNPOOLED: string
@@ -106,13 +99,13 @@ export type CoercedEnvSchema = {
   S3_SECRET_ACCESS_KEY?: string
 }
 
-type _CoercedEnvSchema_fba96e07 = CoercedEnvSchema
+type _CoercedEnvSchema_fca3a7cc = CoercedEnvSchema
 
 declare module "varlock/env" {
-  export interface TypedEnvSchema extends Readonly<_CoercedEnvSchema_fba96e07> {}
+  export interface TypedEnvSchema extends Readonly<_CoercedEnvSchema_fca3a7cc> {}
   export interface PublicTypedEnvSchema extends Readonly<
     Pick<
-      _CoercedEnvSchema_fba96e07,
+      _CoercedEnvSchema_fca3a7cc,
       | "NEON_BRANCH"
       | "BETTER_AUTH_URL"
       | "BETTER_AUTH_TRUSTED_ORIGINS"
@@ -133,16 +126,16 @@ export type EnvSchemaAsStrings = {
       : string
 }
 
-type _EnvSchemaAsStrings_fba96e07 = EnvSchemaAsStrings
+type _EnvSchemaAsStrings_fca3a7cc = EnvSchemaAsStrings
 declare global {
   // add types for global import.meta.env
-  interface ImportMetaEnv extends _EnvSchemaAsStrings_fba96e07 {}
+  interface ImportMetaEnv extends _EnvSchemaAsStrings_fca3a7cc {}
   interface ImportMeta {
     readonly env: ImportMetaEnv
   }
 
   // add types for global process.env
   namespace NodeJS {
-    interface ProcessEnv extends _EnvSchemaAsStrings_fba96e07 {}
+    interface ProcessEnv extends _EnvSchemaAsStrings_fca3a7cc {}
   }
 }

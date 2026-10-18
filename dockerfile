@@ -2,7 +2,8 @@
 
 # ---- build ----
 FROM node:24-alpine AS build
-RUN corepack enable
+# The lockfile is written by pnpm 12, so pin it rather than take corepack's default.
+RUN npm install -g pnpm@12.5.1
 WORKDIR /app
 
 # Install dependencies first so this layer is cached until a manifest changes.
@@ -23,11 +24,9 @@ RUN pnpm rebuild esbuild lightningcss
 
 # The build validates .env.schema, but the workspace .env isn't copied (see .dockerignore).
 # The required variables below are placeholders that only satisfy validation; they are set
-# for this one command, never reach the runtime stage, and real values are supplied at run time.
-# APP_COMPANY is the exception: it is inlined into the bundle.
-ARG APP_COMPANY=Venture
-RUN APP_COMPANY="$APP_COMPANY" \
-    DATABASE_URL_UNPOOLED=postgresql://placeholder:placeholder@localhost/placeholder \
+# for this one command, never reach the runtime stage, and real values are supplied at run time
+# (including APP_COMPANY, which is read at run time, not baked into the bundle).
+RUN DATABASE_URL_UNPOOLED=postgresql://placeholder:placeholder@localhost/placeholder \
     BETTER_AUTH_SECRET=build-placeholder \
     RESEND_API_KEY=re_placeholder \
     EMAIL_FROM="Placeholder <placeholder@example.com>" \

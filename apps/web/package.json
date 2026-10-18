@@ -12,6 +12,7 @@
     "preview": "vp preview",
     "typecheck": "tsc --noEmit",
     "create-user": "varlock run -- tsx scripts/create-user.ts",
+    "create-admin": "varlock run -- tsx scripts/create-admin.ts",
     "send-test-email": "varlock run -- tsx scripts/send-test-email.ts"
   },
   "dependencies": {

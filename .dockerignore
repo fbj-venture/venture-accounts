@@ -11,3 +11,5 @@ data
 **/.env.local
 dockerfile
 .dockerignore
+docker
+docker-compose.yaml

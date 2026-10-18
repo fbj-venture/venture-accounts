@@ -15,11 +15,13 @@ import { Wallet2Icon } from "lucide-react"
 
 export function LoginForm({
   className,
+  appCompany,
   onLogin,
   error,
   pending,
   ...props
 }: React.ComponentProps<"div"> & {
+  appCompany: string
   onLogin?: (values: { email: string; password: string }) => void
   error?: string | null
   pending?: boolean
@@ -46,7 +48,7 @@ export function LoginForm({
                   <div className="flex size-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
                     <Wallet2Icon className="size-5" />
                   </div>
-                  Venture Accounts
+                  {appCompany} Accounts
                 </h1>
                 <p className="text-balance text-muted-foreground">
                   Enter your login credentials to enter
@@ -93,7 +95,7 @@ export function LoginForm({
                 </Button>
               </Field>
               <FieldDescription className="text-center">
-                Venture Accounts is an invitation only service
+                {appCompany} Accounts is an invitation only service
               </FieldDescription>
             </FieldGroup>
           </form>

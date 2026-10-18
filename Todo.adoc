@@ -12,11 +12,7 @@
 * [ ] Migrate the database
 * [ ] Git push all changes
 
-== 0.12.3
-
-* [ ] Create `docker-compose.yaml` for full local development
-
-== 0.13
+== 0.14
 
 * [ ] Budget tracking for a Goal (eg Events)
 ** [ ] Create a Goal

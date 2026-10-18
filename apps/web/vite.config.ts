@@ -2,7 +2,7 @@ import { varlockVitePlugin } from "@varlock/vite-integration"
 import { devtools } from "@tanstack/devtools-vite"
 import { readFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
-import { defineConfig, loadEnv, lazyPlugins } from "vite-plus"
+import { defineConfig, lazyPlugins } from "vite-plus"
 
 import { tanstackStart } from "@tanstack/react-start/plugin/vite"
 
@@ -16,12 +16,6 @@ import viteReact from "@vitejs/plugin-react"
 // directly means the workspace root doesn't need its own copy step.
 const outputDir = fileURLToPath(new URL("../../.output", import.meta.url))
 
-// APP_COMPANY comes from the workspace root .env (or the platform's real
-// environment variables) and is inlined at build time as __APP_COMPANY__, so
-// the same value is available to browser and server code alike - see
-// src/lib/app-company.ts. Mirrors the default in .env.schema.
-const rootDir = fileURLToPath(new URL("../..", import.meta.url))
-
 // Name, description and version come from the workspace root package.json.
 // The publish date is stamped only by a production build (`vite build`), so
 // it stays fixed for a deployed build; the dev server leaves it null.
@@ -30,7 +24,7 @@ const rootPackage = JSON.parse(
   readFileSync(fileURLToPath(new URL("../../package.json", import.meta.url)), "utf8"),
 ) as { name: string; description: string; version: string }
 
-const config = defineConfig(({ mode, command }) => ({
+const config = defineConfig(({ command }) => ({
   define: {
     __APP_INFO__: JSON.stringify({
       name: rootPackage.name,
@@ -38,7 +32,6 @@ const config = defineConfig(({ mode, command }) => ({
       version: rootPackage.version,
       publishedAt: command === "build" ? new Date().toISOString() : null,
     }),
-    __APP_COMPANY__: JSON.stringify(loadEnv(mode, rootDir, "").APP_COMPANY || "Venture"),
   },
   resolve: { tsconfigPaths: true },
   plugins: lazyPlugins(() => [

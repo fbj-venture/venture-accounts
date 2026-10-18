@@ -8,6 +8,7 @@ import { useState } from "react"
 export const Route = createFileRoute("/")({ component: Home })
 
 function Home() {
+  const { appCompany } = Route.useRouteContext()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [error, setError] = useState<string | null>(null)
@@ -33,7 +34,7 @@ function Home() {
   return (
     <div className="flex min-h-svh flex-col items-center justify-center bg-muted p-6 md:p-10">
       <div className="w-full max-w-sm md:max-w-4xl">
-        <LoginForm onLogin={handleLogin} error={error} pending={pending} />
+        <LoginForm appCompany={appCompany} onLogin={handleLogin} error={error} pending={pending} />
       </div>
     </div>
   )

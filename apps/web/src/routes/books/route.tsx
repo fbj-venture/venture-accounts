@@ -1,5 +1,4 @@
 import { useSidebarOpen } from "#/hooks/use-sidebar-open.ts"
-import { APP_COMPANY } from "#/lib/app-company.ts"
 import { StartingYearContext } from "#/lib/starting-year.ts"
 import { AppSidebar } from "#/routes/books/-components/app-sidebar.tsx"
 import {
@@ -29,7 +28,6 @@ export const Route = createFileRoute("/books")({
     const user: SessionUser = authSession.user
     return {
       user,
-      appCompany: APP_COMPANY,
       startingYear: authSession.startingYear,
       sidebarOpen: authSession.sidebarOpen,
       navSections: authSession.navSections,

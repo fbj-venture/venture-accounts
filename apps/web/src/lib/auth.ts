@@ -5,7 +5,6 @@ import { betterAuth } from "better-auth"
 import { admin } from "better-auth/plugins"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 import { tanstackStartCookies } from "better-auth/tanstack-start"
-import { APP_COMPANY } from "./app-company.ts"
 import { renderResetPasswordEmail, renderVerifyEmail } from "@app/email"
 import { sendEmail } from "@app/email/send"
 
@@ -62,10 +61,10 @@ export const auth = betterAuth({
       }
       await sendEmail({
         to: target.email,
-        subject: `Reset your ${APP_COMPANY} Accounts password`,
+        subject: `Reset your ${ENV.APP_COMPANY} Accounts password`,
         html: await renderResetPasswordEmail({
           name: target.name,
-          company: APP_COMPANY,
+          company: ENV.APP_COMPANY,
           url,
           logoUrl: EMAIL_LOGO_URL,
         }),
@@ -79,10 +78,10 @@ export const auth = betterAuth({
     sendVerificationEmail: async ({ user, url }) => {
       await sendEmail({
         to: user.email,
-        subject: `Verify your email address for ${APP_COMPANY} Accounts`,
+        subject: `Verify your email address for ${ENV.APP_COMPANY} Accounts`,
         html: await renderVerifyEmail({
           name: user.name,
-          company: APP_COMPANY,
+          company: ENV.APP_COMPANY,
           url,
           logoUrl: EMAIL_LOGO_URL,
         }),

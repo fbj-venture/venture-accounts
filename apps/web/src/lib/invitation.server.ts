@@ -1,7 +1,6 @@
 import { ENV } from "varlock/env"
 import { randomBytes } from "node:crypto"
 import { auth, EMAIL_LOGO_URL } from "./auth.ts"
-import { APP_COMPANY } from "./app-company.ts"
 import { renderInvitationEmail } from "@app/email"
 import { sendEmail } from "@app/email/send"
 
@@ -29,10 +28,10 @@ export async function sendInvitationEmail(user: { id: string; name: string; emai
 
   await sendEmail({
     to: user.email,
-    subject: `You've been invited to ${APP_COMPANY} Accounts`,
+    subject: `You've been invited to ${ENV.APP_COMPANY} Accounts`,
     html: await renderInvitationEmail({
       name: user.name,
-      company: APP_COMPANY,
+      company: ENV.APP_COMPANY,
       url: url.toString(),
       validDays: INVITATION_DAYS,
       logoUrl: EMAIL_LOGO_URL,

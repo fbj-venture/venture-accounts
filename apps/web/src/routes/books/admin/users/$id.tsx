@@ -20,7 +20,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "#/components/ui/select.tsx"
-import { APP_COMPANY } from "#/lib/app-company.ts"
 import { formatDateTime } from "#/lib/dates.ts"
 import { cn } from "#/lib/utils.ts"
 import { useSetBreadcrumbs } from "#/routes/books/-lib/breadcrumbs.ts"
@@ -55,7 +54,7 @@ const actionButton =
 
 function RouteComponent() {
   const router = useRouter()
-  const { user: signedInUser } = Route.useRouteContext()
+  const { user: signedInUser, appCompany } = Route.useRouteContext()
   const { user } = Route.useLoaderData()
   useSetBreadcrumbs([{ title: "Users", url: "/books/admin/users" }, { title: user.name }])
 
@@ -316,7 +315,7 @@ function RouteComponent() {
                   {label == "Email" ? (
                     <a
                       className="link"
-                      href={`mailto:${typeof value === "string" ? value : ""}?subject=${APP_COMPANY} Accounts`}
+                      href={`mailto:${typeof value === "string" ? value : ""}?subject=${appCompany} Accounts`}
                     >
                       {value}
                     </a>

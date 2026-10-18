@@ -5,9 +5,14 @@ import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools"
 
 import { THEME_INIT_SCRIPT } from "#/hooks/use-theme.ts"
 import appCss from "../styles.css?url"
+import { appCompanyQuery } from "./-lib/app-company-query.ts"
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  head: () => ({
+  // Every route (the login page, /books, ...) reads the company name from here.
+  beforeLoad: async ({ context }) => ({
+    appCompany: await context.queryClient.ensureQueryData(appCompanyQuery),
+  }),
+  head: ({ match }) => ({
     meta: [
       {
         charSet: "utf-8",
@@ -17,7 +22,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: "Venture Accounts",
+        title: `${match.context.appCompany} Accounts`,
       },
     ],
     links: [

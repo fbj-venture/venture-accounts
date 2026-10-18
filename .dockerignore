@@ -1,0 +1,13 @@
+**/node_modules
+.output
+.git
+.gstack
+.neon
+.vscode
+.vite-hooks
+data
+.env
+.env.local
+**/.env.local
+dockerfile
+.dockerignore

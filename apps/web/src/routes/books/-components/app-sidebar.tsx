@@ -2,6 +2,7 @@
 
 import {
   BoxesIcon,
+  Building2Icon,
   HomeIcon,
   ImportIcon,
   LandmarkIcon,
@@ -9,11 +10,14 @@ import {
   ListPlusIcon,
   ListTodoIcon,
   LogsIcon,
+  ScaleIcon,
   SearchIcon,
   SummaryIcon,
+  TableOfContentsIcon,
   UsersRoundIcon,
   Wallet2Icon,
 } from "lucide-react"
+import { useQuery } from "@tanstack/react-query"
 import * as React from "react"
 
 import {
@@ -26,6 +30,7 @@ import {
 import type { NavSectionsOpen } from "#/hooks/use-nav-sections-open.ts"
 import type { SessionUser } from "@app/models"
 import type { NavItem } from "../-lib/nav-item.ts"
+import { companySettingsQuery } from "../admin/company/-lib/company-queries.ts"
 import { AboutDialog } from "./about-dialog.tsx"
 import { NavAccounts } from "./nav-main.tsx"
 import { NavUsers } from "./nav-projects.tsx"
@@ -61,7 +66,7 @@ const mainNav: NavItem[] = [
     ],
   },
   {
-    title: "Banking",
+    title: "Banks",
     isActive: true,
     icon: LandmarkIcon,
     items: [
@@ -93,7 +98,18 @@ const mainNav: NavItem[] = [
     title: "Reports",
     isActive: false,
     icon: SummaryIcon,
-    items: [],
+    items: [
+      {
+        title: "Trial Balance",
+        url: "/books/reports/trial-ballance",
+        icon: ScaleIcon,
+      },
+      {
+        title: "General Ledger",
+        url: "/books/reports/general-ledger",
+        icon: TableOfContentsIcon,
+      },
+    ],
   },
 ]
 
@@ -102,6 +118,11 @@ const adminNav: NavItem[] = [
     title: "Users",
     url: "/books/admin/users",
     icon: UsersRoundIcon,
+  },
+  {
+    title: "Company Settings",
+    url: "/books/admin/company",
+    icon: Building2Icon,
   },
 ]
 
@@ -118,11 +139,15 @@ export function AppSidebar({
 }) {
   const [aboutOpen, setAboutOpen] = React.useState(false)
   const isAdmin = sessionUser.role === "admin"
+  // Read from the shared cache (filled by the Dashboard loader, refreshed when
+  // the Company Settings are saved).
+  const { data: companySettings } = useQuery(companySettingsQuery)
+  const companyName = companySettings?.name ?? appCompany
   const title = (
     <>
       <Wallet2Icon className="size-7 shrink-0 text-primary" />
       <span className="pl-2 group-data-[collapsible=icon]:hidden">
-        <span className="font-semibold text-muted-foreground">{appCompany}</span>
+        <span className="font-semibold text-muted-foreground">{companyName}</span>
         &nbsp;
         <span className="font-semibold text-primary">Accounts</span>
       </span>

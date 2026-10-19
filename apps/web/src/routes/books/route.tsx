@@ -1,5 +1,5 @@
 import { useSidebarOpen } from "#/hooks/use-sidebar-open.ts"
-import { StartingYearContext } from "#/lib/starting-year.ts"
+import { CompanySettingsContext } from "#/lib/company-settings.ts"
 import { AppSidebar } from "#/routes/books/-components/app-sidebar.tsx"
 import {
   Breadcrumb,
@@ -12,10 +12,12 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import type { SessionUser } from "@app/models"
+import { useSuspenseQuery } from "@tanstack/react-query"
 import { createFileRoute, Link, Outlet, redirect } from "@tanstack/react-router"
 import { Fragment } from "react"
 import { useBreadcrumbs } from "./-lib/breadcrumbs.ts"
 import { sessionQuery } from "./-lib/session-query.ts"
+import { companySettingsQuery } from "./admin/company/-lib/company-queries.ts"
 
 export const Route = createFileRoute("/books")({
   beforeLoad: async ({ context }) => {
@@ -26,9 +28,11 @@ export const Route = createFileRoute("/books")({
     // Explicit annotation so this fails to typecheck if better-auth's
     // inferred user shape ever drifts from @app/models' User.
     const user: SessionUser = authSession.user
+    // Fills the cache for every page under /books: the settings are never
+    // stale, only invalidated when the Company Settings are saved.
+    await context.queryClient.ensureQueryData(companySettingsQuery)
     return {
       user,
-      startingYear: authSession.startingYear,
       sidebarOpen: authSession.sidebarOpen,
       navSections: authSession.navSections,
     }
@@ -37,19 +41,14 @@ export const Route = createFileRoute("/books")({
 })
 
 function BooksLayout() {
-  const {
-    user,
-    appCompany,
-    startingYear,
-    sidebarOpen: savedSidebarOpen,
-    navSections,
-  } = Route.useRouteContext()
+  const { user, appCompany, sidebarOpen: savedSidebarOpen, navSections } = Route.useRouteContext()
+  const { data: companySettings } = useSuspenseQuery(companySettingsQuery)
   const crumbs = useBreadcrumbs()
   // Expanded or collapsed, remembered between pages and sign-ins.
   const [sidebarOpen, setSidebarOpen] = useSidebarOpen(savedSidebarOpen)
 
   return (
-    <StartingYearContext.Provider value={startingYear}>
+    <CompanySettingsContext.Provider value={companySettings}>
       <SidebarProvider open={sidebarOpen} onOpenChange={setSidebarOpen}>
         <AppSidebar sessionUser={user} appCompany={appCompany} navSections={navSections} />
         <SidebarInset>
@@ -84,6 +83,6 @@ function BooksLayout() {
           </div>
         </SidebarInset>
       </SidebarProvider>
-    </StartingYearContext.Provider>
+    </CompanySettingsContext.Provider>
   )
 }

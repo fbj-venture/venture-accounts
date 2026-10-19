@@ -9,8 +9,10 @@ import { appCompanyQuery } from "./-lib/app-company-query.ts"
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   // Every route (the login page, /books, ...) reads the company name from here.
+  // fetchQuery: returns the cached name while it's fresh, but re-reads it once
+  // saving the Company Settings has invalidated it.
   beforeLoad: async ({ context }) => ({
-    appCompany: await context.queryClient.ensureQueryData(appCompanyQuery),
+    appCompany: await context.queryClient.fetchQuery(appCompanyQuery),
   }),
   head: ({ match }) => ({
     meta: [

@@ -24,8 +24,7 @@ RUN pnpm rebuild esbuild lightningcss
 
 # The build validates .env.schema, but the workspace .env isn't copied (see .dockerignore).
 # The required variables below are placeholders that only satisfy validation; they are set
-# for this one command, never reach the runtime stage, and real values are supplied at run time
-# (including APP_COMPANY, which is read at run time, not baked into the bundle).
+# for this one command, never reach the runtime stage, and real values are supplied at run time.
 RUN DATABASE_URL_UNPOOLED=postgresql://placeholder:placeholder@localhost/placeholder \
     BETTER_AUTH_SECRET=build-placeholder \
     RESEND_API_KEY=re_placeholder \

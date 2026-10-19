@@ -12,7 +12,7 @@
 * [ ] Migrate the database
 * [ ] Git push all changes
 
-== 0.14
+== 0.15.0
 
 * [ ] Budget tracking for a Goal (eg Events)
 ** [ ] Create a Goal
@@ -22,26 +22,19 @@
 ** [ ] Display current ballance
 ** [ ] Report of current state
 ** [ ] Close/Lock Event
-* [ ] Reports
 
 == Reports
 
 * [ ] User
 ** [ ] Trial ballance
-*** [x] Investigation
-*** [ ] Show on page
-*** [ ] Export to PDF
 ** [ ] Profit and loss
 *** [ ] Investigation
 *** [ ] Show on page
-*** [ ] Export to PDF
+*** [ ] Export to Excel
 ** [ ] Cash flow
 *** [ ] Investigation
 * [ ] Bookkeeper
-** [ ] Trial ballance
-*** [ ] Investigation
-** [ ] General ledge
-*** [ ] Investigation
+** [ ] General ledger
 ** [ ] Income statement
 *** [ ] Investigation
 ** [ ] Ballance sheet
@@ -57,8 +50,10 @@
 * [ ] Security
 ** [ ] Two-factor authentication (authenticator)
 ** [ ] Run GStack audit (https://github.com/garrytan/gstack)
+* [ ] Manually add transactions
+** [ ] Add a photo of the receipt to the trasnaction, ensuring all the fields for the hashare in place
+* [ ] Add a way to merge a manual trasnaction with a Bank feed trasnaction (e.g. if their dates are different)
 * [ ] Uploads
 ** [ ] Upload + Link invoices/receipts to JournalLines
-* [ ] Manually add missing transactions
 * [ ] Data
 ** [ ] Backups (manual/automatic)

@@ -7,6 +7,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle"
 import { tanstackStartCookies } from "better-auth/tanstack-start"
 import { renderResetPasswordEmail, renderVerifyEmail } from "@app/email"
 import { sendEmail } from "@app/email/send"
+import { getCompanyName } from "./company-name.server.ts"
 
 // Email clients load images from the web, so this must be a public absolute URL
 // (file is apps/web/public/img/venture-church.png). It will show broken in
@@ -59,12 +60,13 @@ export const auth = betterAuth({
       if (recent > RESET_EMAILS_PER_HOUR) {
         return
       }
+      const companyName = await getCompanyName()
       await sendEmail({
         to: target.email,
-        subject: `Reset your ${ENV.APP_COMPANY} Accounts password`,
+        subject: `Reset your ${companyName} Accounts password`,
         html: await renderResetPasswordEmail({
           name: target.name,
-          company: ENV.APP_COMPANY,
+          company: companyName,
           url,
           logoUrl: EMAIL_LOGO_URL,
         }),
@@ -76,12 +78,13 @@ export const auth = betterAuth({
     sendOnSignIn: true,
     autoSignInAfterVerification: true,
     sendVerificationEmail: async ({ user, url }) => {
+      const companyName = await getCompanyName()
       await sendEmail({
         to: user.email,
-        subject: `Verify your email address for ${ENV.APP_COMPANY} Accounts`,
+        subject: `Verify your email address for ${companyName} Accounts`,
         html: await renderVerifyEmail({
           name: user.name,
-          company: ENV.APP_COMPANY,
+          company: companyName,
           url,
           logoUrl: EMAIL_LOGO_URL,
         }),

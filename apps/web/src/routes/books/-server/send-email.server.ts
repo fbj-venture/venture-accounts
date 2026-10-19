@@ -1,7 +1,7 @@
 import { sendEmail } from "@app/email/send"
+import { getCompanyName } from "#/lib/company-name.server.ts"
 import { requireAdmin } from "#/lib/require-admin.server.ts"
 import { createServerFn } from "@tanstack/react-start"
-import { ENV } from "varlock/env"
 
 export const sendTestEmail = createServerFn({ method: "POST" })
   .validator((to: string) => to)
@@ -11,7 +11,7 @@ export const sendTestEmail = createServerFn({ method: "POST" })
     await requireAdmin()
     await sendEmail({
       to,
-      subject: `${ENV.APP_COMPANY} Accounts test server-sent email`,
+      subject: `${await getCompanyName()} Accounts test server-sent email`,
       html: "<p>Sent from a server function.</p>",
     })
   })

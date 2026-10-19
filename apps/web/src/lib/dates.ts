@@ -46,3 +46,11 @@ export const dayKey = (date: Date | string | number) => dayKeyFormat.format(new 
 
 /** The current year in South African time. */
 export const currentYear = () => Number(yearFormat.format(new Date()))
+
+const monthFormat = new Intl.DateTimeFormat("en-CA", {
+  timeZone: APP_TIME_ZONE,
+  month: "numeric",
+})
+
+/** The current month (1-12) in South African time. */
+export const currentMonth = () => Number(monthFormat.format(new Date()))

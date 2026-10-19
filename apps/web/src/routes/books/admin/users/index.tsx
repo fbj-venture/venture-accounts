@@ -12,7 +12,7 @@ export const Route = createFileRoute("/books/admin/users/")({
 
 function RouteComponent() {
   const navigate = useNavigate()
-  useSetBreadcrumbs([{ title: "Users" }])
+  useSetBreadcrumbs([{ title: "Dashboard", url: "/books" }, { title: "Users" }])
   const { users } = Route.useLoaderData()
 
   return (

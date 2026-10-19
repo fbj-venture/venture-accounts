@@ -3,6 +3,7 @@ import { randomBytes } from "node:crypto"
 import { auth, EMAIL_LOGO_URL } from "./auth.ts"
 import { renderInvitationEmail } from "@app/email"
 import { sendEmail } from "@app/email/send"
+import { getCompanyName } from "./company-name.server.ts"
 
 // How long an invitation link works for.
 const INVITATION_DAYS = 7
@@ -26,12 +27,13 @@ export async function sendInvitationEmail(user: { id: string; name: string; emai
   const url = new URL("/set-password", ENV.BETTER_AUTH_URL)
   url.searchParams.set("token", token)
 
+  const companyName = await getCompanyName()
   await sendEmail({
     to: user.email,
-    subject: `You've been invited to ${ENV.APP_COMPANY} Accounts`,
+    subject: `You've been invited to ${companyName} Accounts`,
     html: await renderInvitationEmail({
       name: user.name,
-      company: ENV.APP_COMPANY,
+      company: companyName,
       url: url.toString(),
       validDays: INVITATION_DAYS,
       logoUrl: EMAIL_LOGO_URL,

@@ -13,7 +13,6 @@ x-app-env: &app-env # `Postgres` is reached by service name inside the compose n
   DATABASE_URL_UNPOOLED: postgresql://venture:venture@postgres:5432/venture
   BETTER_AUTH_URL: http://localhost:3000
   BETTER_AUTH_SECRET: local-dev-secret-not-for-production
-  APP_COMPANY: JudgeKnot
   # Resend can't run locally: the key only has to pass validation, so emails
   # (invitations, password resets) are not delivered.
   RESEND_API_KEY: re_local_placeholder

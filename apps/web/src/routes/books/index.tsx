@@ -2,10 +2,19 @@ import { BankAccountCard } from "#/routes/books/-components/bank-account-card"
 import { BankAccountMenu } from "#/routes/books/-components/bank-account-menu"
 import { useSetBreadcrumbs } from "#/routes/books/-lib/breadcrumbs"
 import { getBankAccountBalances } from "#/routes/books/-server/bank-account-balances.server.ts"
+import { companySettingsQuery } from "#/routes/books/admin/company/-lib/company-queries.ts"
 import { createFileRoute } from "@tanstack/react-router"
 
 export const Route = createFileRoute("/books/")({
-  loader: () => getBankAccountBalances(),
+  loader: async ({ context: { queryClient } }) => {
+    // The company settings fill the query cache (the sidebar title reads them);
+    // the page itself only needs the balances.
+    const [balances] = await Promise.all([
+      getBankAccountBalances(),
+      queryClient.ensureQueryData(companySettingsQuery),
+    ])
+    return balances
+  },
   component: RouteComponent,
 })
 

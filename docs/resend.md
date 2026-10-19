@@ -114,7 +114,7 @@ import { sendEmail } from "@app/email/send"
 await sendEmail({
   to: user.email,
   subject: "Reset your password",
-  html: await renderResetPasswordEmail({ name: user.name, company: APP_COMPANY, url }),
+  html: await renderResetPasswordEmail({ name: user.name, company: await getCompanyName(), url }),
 })
 ```
 

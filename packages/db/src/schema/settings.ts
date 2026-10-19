@@ -9,6 +9,4 @@ export const settings = snakeCase.table("app_settings", {
     .notNull()
     .unique()
     .references(() => user.id, { onDelete: "cascade" }),
-  // The first year offered by every year drop-down / date picker.
-  startingYear: integer().notNull().default(2024),
 })

@@ -20,6 +20,9 @@ import { trialBalanceQuery } from "./-lib/trial-balance-queries.ts"
 import { totalRows } from "./-lib/trial-balance-rows.ts"
 import { exportTrialBalanceToExcel } from "./-server/trial-balance-export.server.ts"
 
+// The Account Types the report starts out showing.
+const DEFAULT_TYPES = ["Asset", "Expense", "Income"]
+
 export const Route = createFileRoute("/books/reports/trial-ballance/")({
   // Rendered in the browser only, like the Accounts page.
   ssr: false,
@@ -56,8 +59,9 @@ function RouteComponent() {
       <h2 className="pb-2">Trial Balance</h2>
       <ReportFilterBar
         idPrefix="trial-balance"
+        defaultTypeNames={DEFAULT_TYPES}
         onRun={setApplied}
-        canExport={applied !== null}
+        applied={applied}
         exporting={excelExport.isPending}
         onExportExcel={() => excelExport.mutate()}
       />

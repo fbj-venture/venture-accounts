@@ -36,9 +36,6 @@ import type { ReportFilters } from "./report-rows.ts"
 /** The filters a report was run with. */
 export type AppliedFilters = ReportFilters & { range: DateRange | undefined }
 
-// The Account Types a report starts out showing.
-const DEFAULT_TYPES = ["Expense", "Income"]
-
 // The date range starts out on the current financial year.
 function thisFinancialYear(endMonth: number): DateRange {
   const { from, to } = currentFinancialYear(endMonth)
@@ -50,15 +47,19 @@ function thisFinancialYear(endMonth: number): DateRange {
 // loader must have loaded accountTypesQuery.
 export function ReportFilterBar({
   idPrefix,
+  defaultTypeNames,
+  applied,
   onRun,
-  canExport,
   exporting,
   onExportExcel,
 }: {
   /** Makes the controls' ids unique to the report. */
   idPrefix: string
+  /** The Account Types ticked to start with; omit for every type. */
+  defaultTypeNames?: string[]
+  /** What the report was last run with; null until it has been run. */
+  applied: AppliedFilters | null
   onRun: (filters: AppliedFilters) => void
-  canExport: boolean
   exporting: boolean
   onExportExcel: () => void
 }) {
@@ -75,7 +76,9 @@ export function ReportFilterBar({
     thisFinancialYear(financialYearEndMonth),
   )
   const [typeIds, setTypeIds] = useState<number[]>(() =>
-    accountTypes.filter((type) => DEFAULT_TYPES.includes(type.name)).map((type) => type.id),
+    accountTypes
+      .filter((type) => !defaultTypeNames || defaultTypeNames.includes(type.name))
+      .map((type) => type.id),
   )
   const [showArchived, setShowArchived] = useState(false)
   // The financial year the draft range is exactly, if it is one.
@@ -83,6 +86,14 @@ export function ReportFilterBar({
     (year) =>
       range?.from?.getTime() === year.from.getTime() && range.to?.getTime() === year.to.getTime(),
   )
+  // Run is only useful when the draft differs from what the report shows.
+  const changed =
+    !applied ||
+    applied.range?.from?.getTime() !== range?.from?.getTime() ||
+    applied.range?.to?.getTime() !== range?.to?.getTime() ||
+    applied.showArchived !== showArchived ||
+    applied.typeIds.length !== typeIds.length ||
+    !applied.typeIds.every((id) => typeIds.includes(id))
   const typeChoices = useMemo(
     () => accountTypes.map((type) => ({ value: type.id, label: type.name })),
     [accountTypes],
@@ -135,7 +146,11 @@ export function ReportFilterBar({
           <FieldLabel htmlFor={`${idPrefix}-archived`}>Show archived accounts</FieldLabel>
         </Field>
       </div>
-      <Button type="button" onClick={() => onRun({ range, typeIds, showArchived })}>
+      <Button
+        type="button"
+        disabled={!changed}
+        onClick={() => onRun({ range, typeIds, showArchived })}
+      >
         <PlayIcon />
         Run
       </Button>
@@ -146,7 +161,7 @@ export function ReportFilterBar({
             type="button"
             variant="outline"
             className="ml-auto"
-            disabled={!canExport || exporting}
+            disabled={!applied || exporting}
           >
             <FileDownIcon />
             {exporting ? "Exporting..." : "Export"}

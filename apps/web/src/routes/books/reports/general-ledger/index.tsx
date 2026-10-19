@@ -58,7 +58,7 @@ function RouteComponent() {
       <ReportFilterBar
         idPrefix="general-ledger"
         onRun={setApplied}
-        canExport={applied !== null}
+        applied={applied}
         exporting={excelExport.isPending}
         onExportExcel={() => excelExport.mutate()}
       />

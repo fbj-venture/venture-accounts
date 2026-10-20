@@ -1,12 +1,20 @@
+import { BankLogo } from "#/routes/books/-components/bank-logo.tsx"
 import { useSetBreadcrumbs } from "#/routes/books/-lib/breadcrumbs.ts"
+import { banksQuery } from "#/routes/books/bank-account/-lib/bank-accounts-queries.ts"
+import { useSuspenseQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { PdfImportForm } from "./-lib/pdf-import-form.tsx"
 
 export const Route = createFileRoute("/books/banking/import/sb-history")({
+  loader: async ({ context: { queryClient } }) => {
+    await queryClient.ensureQueryData(banksQuery)
+  },
   component: RouteComponent,
 })
 
 function RouteComponent() {
+  const { data: banks } = useSuspenseQuery(banksQuery)
+  const standardBank = banks.find((bank) => bank.name === "Standard Bank")
   useSetBreadcrumbs([
     { title: "Dashboard", url: "/books" },
     { title: "Kind of Import", url: "/books/banking/import" },
@@ -15,7 +23,11 @@ function RouteComponent() {
 
   return (
     <>
-      <h2>Import Standard Bank Transaction History (PDF)</h2>
+      <h2 className="flex items-center gap-2">
+        {/* 1em = the heading's font size (text-3xl, 1.875rem). */}
+        <BankLogo logo={standardBank?.logo} name="Standard Bank" className="size-[1em]" />
+        Import Standard Bank Transaction History (PDF)
+      </h2>
       <p className="py-2">
         Upload a Transaction History Statement downloaded from the bank&apos;s website, to bring
         transactions in before the monthly statement is issued. Everything in it will also appear on

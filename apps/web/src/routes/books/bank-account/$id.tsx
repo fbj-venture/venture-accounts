@@ -2,6 +2,7 @@ import { Button } from "#/components/ui/button.tsx"
 import { Card, CardContent, CardHeader, CardTitle } from "#/components/ui/card.tsx"
 import { Checkbox } from "#/components/ui/checkbox.tsx"
 import { Field, FieldLabel } from "#/components/ui/field.tsx"
+import { BankLogo } from "#/routes/books/-components/bank-logo.tsx"
 import { Input } from "#/components/ui/input.tsx"
 import { formatDateTime } from "#/lib/dates.ts"
 import { useSetBreadcrumbs } from "#/routes/books/-lib/breadcrumbs.ts"
@@ -9,7 +10,6 @@ import { accountKeys } from "#/routes/books/accounts/-lib/accounts-queries.ts"
 import {
   MAX_ACCOUNT_NAME_LENGTH,
   MAX_ACCOUNT_NUMBER_LENGTH,
-  MAX_BANK_NAME_LENGTH,
 } from "#/routes/books/accounts/-server/accounts.server.ts"
 import { useQueryClient } from "@tanstack/react-query"
 import { createFileRoute, Link, notFound, useRouter } from "@tanstack/react-router"
@@ -46,7 +46,6 @@ function RouteComponent() {
 
   const [accountName, setAccountName] = useState(bankAccount.accountName)
   const [accountDescription, setAccountDescription] = useState(bankAccount.accountDescription ?? "")
-  const [bankName, setBankName] = useState(bankAccount.bankName)
   const [bankDescription, setBankDescription] = useState(bankAccount.bankDescription)
   const [accountNumber, setAccountNumber] = useState(bankAccount.accountNumber)
   // One flag for both: the Account and its bank details are always archived together.
@@ -57,24 +56,17 @@ function RouteComponent() {
 
   const newAccountName = accountName.trim()
   const newAccountDescription = accountDescription.trim()
-  const newBankName = bankName.trim()
   const newBankDescription = bankDescription.trim()
   const newNumber = accountNumber.replace(/\s+/g, "")
   const isChanged =
     newAccountName !== bankAccount.accountName ||
     newAccountDescription !== (bankAccount.accountDescription ?? "") ||
     isArchived !== bankAccount.accountIsArchived ||
-    newBankName !== bankAccount.bankName ||
     newBankDescription !== bankAccount.bankDescription ||
     newNumber !== bankAccount.accountNumber ||
     isArchived !== bankAccount.bankIsArchived
   const canSave =
-    isChanged &&
-    !saving &&
-    newAccountName !== "" &&
-    newBankName !== "" &&
-    newBankDescription !== "" &&
-    newNumber !== ""
+    isChanged && !saving && newAccountName !== "" && newBankDescription !== "" && newNumber !== ""
 
   // Wraps a field's setter so editing it clears the "Saved." note.
   const edited =
@@ -98,7 +90,6 @@ function RouteComponent() {
           accountName: newAccountName,
           accountDescription: newAccountDescription,
           accountIsArchived: isArchived,
-          bankName: newBankName,
           bankDescription: newBankDescription,
           accountNumber: newNumber,
           bankIsArchived: isArchived,
@@ -113,7 +104,6 @@ function RouteComponent() {
       await router.invalidate({ sync: true })
       setAccountName(newAccountName)
       setAccountDescription(newAccountDescription)
-      setBankName(newBankName)
       setBankDescription(newBankDescription)
       setAccountNumber(newNumber)
       setSaved(true)
@@ -183,15 +173,11 @@ function RouteComponent() {
             </CardHeader>
             <CardContent className="grid gap-4">
               <Field>
-                <FieldLabel htmlFor="bank-name">Bank name</FieldLabel>
-                <Input
-                  id="bank-name"
-                  value={bankName}
-                  maxLength={MAX_BANK_NAME_LENGTH}
-                  onChange={(event) => edited(setBankName)(event.target.value)}
-                  autoComplete="off"
-                  required
-                />
+                <FieldLabel>Bank</FieldLabel>
+                <p className="flex items-center gap-2 text-sm">
+                  <BankLogo logo={bankAccount.bankLogo} />
+                  {bankAccount.bankName}
+                </p>
               </Field>
               <Field>
                 <FieldLabel htmlFor="bank-description">Description</FieldLabel>

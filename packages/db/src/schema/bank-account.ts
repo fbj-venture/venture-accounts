@@ -1,6 +1,7 @@
 import { boolean, integer, snakeCase, text } from "drizzle-orm/pg-core"
 import { account } from "./account.js"
 import { auditColumns } from "./audit.js"
+import { bank } from "./bank.js"
 
 /**
  * Bank account details
@@ -14,7 +15,7 @@ export const bankAccount = snakeCase.table("bank_account", {
     .notNull()
     .primaryKey()
     .references(() => account.id),
-  bankName: text("bank_name").notNull(),
+  bankId: integer().references(() => bank.id),
   description: text("description").notNull(),
   accountNumber: text("account_number").notNull().unique(),
   isArchived: boolean().notNull().default(false),

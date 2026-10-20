@@ -9,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "#/components/ui/table.tsx"
+import { BankLogo } from "#/routes/books/-components/bank-logo.tsx"
 import { Link } from "@tanstack/react-router"
 import { flexRender, type SortingState } from "@tanstack/react-table"
 import {
@@ -27,6 +28,12 @@ function getColumns(): LegacyColumnDef<BankAccountRow>[] {
     {
       accessorKey: "bankName",
       header: ({ column }) => <SortableHeader column={column} title="Bank" />,
+      cell: ({ row }) => (
+        <span className="flex items-center gap-2">
+          <BankLogo logo={row.original.bankLogo} />
+          {row.original.bankName}
+        </span>
+      ),
     },
     {
       accessorKey: "accountNumber",

@@ -1,4 +1,4 @@
-import { account, bankAccount, db, withCreate } from "../src/direct.js"
+import { account, bank, bankAccount, db, withCreate } from "../src/direct.js"
 import { getScriptUserId, runScript } from "./harness.js"
 
 const ASSET_ACCOUNT_TYPE_ID = 1
@@ -33,7 +33,12 @@ const BANK_ACCOUNTS = [
 
 await runScript("seed-bank-accounts", async () => {
   const userId = await getScriptUserId()
+  const banks = await db.select({ id: bank.id, name: bank.name }).from(bank)
   for (const entry of BANK_ACCOUNTS) {
+    const bankId = banks.find((row) => row.name === entry.bankName)?.id
+    if (bankId === undefined) {
+      throw new Error(`Bank "${entry.bankName}" not found - run the migrations that seed it.`)
+    }
     // bankAccount.id isn't auto-generated - it reuses its linked account's
     // id (the 1:1 relationship), so the account has to be inserted first.
     const [createdAccount] = await db
@@ -56,7 +61,7 @@ await runScript("seed-bank-accounts", async () => {
     await db.insert(bankAccount).values(
       withCreate(userId, {
         id: createdAccount.id,
-        bankName: entry.bankName,
+        bankId,
         description: entry.description,
         accountNumber: entry.accountNumber,
       }),

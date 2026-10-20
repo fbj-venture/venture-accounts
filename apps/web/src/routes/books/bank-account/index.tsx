@@ -13,7 +13,7 @@ import { createFileRoute, useRouter } from "@tanstack/react-router"
 import { PlusIcon } from "lucide-react"
 import { useMemo, useState } from "react"
 import { AddBankAccountDialog } from "./-lib/add-bank-account-dialog.tsx"
-import { bankAccountKeys, bankAccountsQuery } from "./-lib/bank-accounts-queries.ts"
+import { bankAccountKeys, bankAccountsQuery, banksQuery } from "./-lib/bank-accounts-queries.ts"
 import { BankAccountsTable } from "./-lib/bank-accounts-table.tsx"
 
 export const Route = createFileRoute("/books/bank-account/")({
@@ -21,7 +21,10 @@ export const Route = createFileRoute("/books/bank-account/")({
   // when it is still fresh) and the page reads it with useSuspenseQuery.
   ssr: false,
   loader: async ({ context: { queryClient } }) => {
-    await queryClient.ensureQueryData(bankAccountsQuery)
+    await Promise.all([
+      queryClient.ensureQueryData(bankAccountsQuery),
+      queryClient.ensureQueryData(banksQuery),
+    ])
   },
   pendingComponent: () => (
     <p className="py-2 text-sm text-muted-foreground">Loading bank accounts...</p>
@@ -32,6 +35,7 @@ export const Route = createFileRoute("/books/bank-account/")({
 function RouteComponent() {
   useSetBreadcrumbs([{ title: "Dashboard", url: "/books" }, { title: "Bank accounts" }])
   const { data: bankAccounts } = useSuspenseQuery(bankAccountsQuery)
+  const { data: banks } = useSuspenseQuery(banksQuery)
   const [filter, setFilter] = useState<ArchivedFilter>("unarchived")
   const [search, setSearch] = useState("")
   const [adding, setAdding] = useState(false)
@@ -55,7 +59,7 @@ function RouteComponent() {
       (row) =>
         matchesArchivedFilter(filter, row.isArchived) &&
         (needle === "" ||
-          [row.bankName, row.accountNumber, row.description].some((text) =>
+          [row.bankName ?? "", row.accountNumber, row.description].some((text) =>
             text.toLowerCase().includes(needle),
           )),
     )
@@ -83,7 +87,9 @@ function RouteComponent() {
           Add
         </Button>
       </div>
-      {adding ? <AddBankAccountDialog onClose={() => setAdding(false)} onAdded={refresh} /> : null}
+      {adding ? (
+        <AddBankAccountDialog banks={banks} onClose={() => setAdding(false)} onAdded={refresh} />
+      ) : null}
       <p className="py-2 text-sm text-muted-foreground">
         {shown.length === 1 ? "1 bank account." : `${shown.length} bank accounts.`}
       </p>

@@ -14,6 +14,14 @@
 
 == 0.15.0
 
+* [x] New Banks table: name and logo
+** [x] Link to bank accounts
+** [x] Show the logo on bank account cards and import cards
+* [x] Bank Accounts
+** [x] New & edit forms dropdown with show logo
+** [x] Added bank logo to existing import cards and pages
+* [ ] Imports
+** [ ] FNB statement import
 * [ ] Budget tracking for a Goal (eg Events)
 ** [ ] Create a Goal
 ** [ ] Add Goal-Items (eg People coming to the Event)
@@ -45,6 +53,7 @@
 * [ ] Code audit
 * [ ] My Account
 ** [ ] Link social login to an existing account
+** [ ] 2FA options
 * [ ] Split transaction over multiple Accounts
 ** [ ] Select `split` from the Accounts drop-down to popup a dialog for adding split line
 * [ ] Security

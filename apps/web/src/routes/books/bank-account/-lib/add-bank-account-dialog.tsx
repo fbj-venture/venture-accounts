@@ -8,11 +8,18 @@ import {
   DialogTitle,
 } from "#/components/ui/dialog.tsx"
 import { Field, FieldLabel } from "#/components/ui/field.tsx"
+import { BankLogo } from "#/routes/books/-components/bank-logo.tsx"
 import { Input } from "#/components/ui/input.tsx"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "#/components/ui/select.tsx"
 import {
   MAX_ACCOUNT_NAME_LENGTH,
   MAX_ACCOUNT_NUMBER_LENGTH,
-  MAX_BANK_NAME_LENGTH,
 } from "#/routes/books/accounts/-server/accounts.server.ts"
 import { LoaderCircleIcon, SaveIcon } from "lucide-react"
 import { useState, type FormEvent } from "react"
@@ -20,15 +27,17 @@ import { MAX_DESCRIPTION_LENGTH, createBankAccount } from "../-server/bank-accou
 
 // Adds a new bank account: an Asset Account plus the bank details behind it.
 export function AddBankAccountDialog({
+  banks,
   onClose,
   onAdded,
 }: {
+  banks: { id: number; name: string; logo: string | null }[]
   onClose: () => void
   /** Called after the bank account was added, to reload the list. */
   onAdded: () => void | Promise<unknown>
 }) {
   const [accountName, setAccountName] = useState("")
-  const [bankName, setBankName] = useState("")
+  const [bankId, setBankId] = useState("")
   const [bankDescription, setBankDescription] = useState("")
   const [accountNumber, setAccountNumber] = useState("")
   const [saving, setSaving] = useState(false)
@@ -36,7 +45,7 @@ export function AddBankAccountDialog({
 
   const canSave =
     accountName.trim() !== "" &&
-    bankName.trim() !== "" &&
+    bankId !== "" &&
     bankDescription.trim() !== "" &&
     accountNumber.trim() !== "" &&
     !saving
@@ -50,7 +59,9 @@ export function AddBankAccountDialog({
     setSaving(true)
     setError(null)
     try {
-      await createBankAccount({ data: { accountName, bankName, bankDescription, accountNumber } })
+      await createBankAccount({
+        data: { accountName, bankId: Number(bankId), bankDescription, accountNumber },
+      })
       await onAdded()
       onClose()
     } catch (caught) {
@@ -83,14 +94,22 @@ export function AddBankAccountDialog({
           </Field>
           <hr />
           <Field>
-            <FieldLabel htmlFor="add-bank-account-bank">Bank name</FieldLabel>
-            <Input
-              id="add-bank-account-bank"
-              value={bankName}
-              maxLength={MAX_BANK_NAME_LENGTH}
-              onChange={(event) => setBankName(event.target.value)}
-              autoComplete="off"
-            />
+            <FieldLabel htmlFor="add-bank-account-bank">Bank</FieldLabel>
+            <Select value={bankId} onValueChange={setBankId}>
+              <SelectTrigger id="add-bank-account-bank" className="w-full">
+                <SelectValue placeholder="Choose a bank" />
+              </SelectTrigger>
+              <SelectContent>
+                {banks.map((bank) => (
+                  <SelectItem key={bank.id} value={String(bank.id)}>
+                    <span className="flex items-center gap-2">
+                      <BankLogo logo={bank.logo} />
+                      {bank.name}
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </Field>
           <Field>
             <FieldLabel htmlFor="add-bank-account-number">Bank account number</FieldLabel>

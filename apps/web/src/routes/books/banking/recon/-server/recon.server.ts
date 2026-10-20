@@ -1,5 +1,14 @@
 import { requireUser } from "#/lib/require-user.server.ts"
-import { account, bankAccount, bankUpload, db, recon, withCreate, withUpdate } from "@app/db/direct"
+import {
+  account,
+  bank,
+  bankAccount,
+  bankUpload,
+  db,
+  recon,
+  withCreate,
+  withUpdate,
+} from "@app/db/direct"
 import { createServerFn } from "@tanstack/react-start"
 import { and, desc, eq, isNotNull, ne, notExists } from "drizzle-orm"
 
@@ -233,12 +242,14 @@ export const getReconDetails = createServerFn({ method: "GET" })
         ballancedAt: recon.ballancedAt,
         name: account.name,
         description: account.description,
-        bankName: bankAccount.bankName,
+        bankName: bank.name,
+        bankLogo: bank.logo,
         accountNumber: bankAccount.accountNumber,
       })
       .from(recon)
       .innerJoin(bankAccount, eq(bankAccount.id, recon.bankAccountId))
       .innerJoin(account, eq(account.id, bankAccount.id))
+      .leftJoin(bank, eq(bank.id, bankAccount.bankId))
       .where(eq(recon.id, reconId))
     if (!row) {
       return null
@@ -264,6 +275,7 @@ export const getReconDetails = createServerFn({ method: "GET" })
         name: row.name,
         description: row.description,
         bankName: row.bankName,
+        bankLogo: row.bankLogo,
         accountNumber: row.accountNumber,
       },
       transactions,

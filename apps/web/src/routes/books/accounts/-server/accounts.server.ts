@@ -1,6 +1,6 @@
 import { requireUser } from "#/lib/require-user.server.ts"
 import { OPENING_BALANCE_EQUITY_ACCOUNT } from "#/routes/books/banking/-server/internal/opening-balance.server"
-import { account, accountType, bankAccount, db, withCreate, withUpdate } from "@app/db/direct"
+import { account, accountType, bank, bankAccount, db, withCreate, withUpdate } from "@app/db/direct"
 import { createServerFn } from "@tanstack/react-start"
 import { and, asc, eq, ne, sql } from "drizzle-orm"
 import { alias } from "drizzle-orm/pg-core"
@@ -143,7 +143,6 @@ export const createAccount = createServerFn({ method: "POST" })
     )
   })
 
-export const MAX_BANK_NAME_LENGTH = 100
 export const MAX_ACCOUNT_NUMBER_LENGTH = 30
 
 // Every Account Type, in its canonical order (Asset, Liability, Equity,
@@ -175,7 +174,7 @@ export const getAccounts = createServerFn({ method: "GET" }).handler(async () =>
       parentName: parent.name,
       accountTypeId: accountType.id,
       accountType: accountType.name,
-      bankName: bankAccount.bankName,
+      bankName: bank.name,
       accountNumber: bankAccount.accountNumber,
       bankIsArchived: bankAccount.isArchived,
     })
@@ -183,6 +182,7 @@ export const getAccounts = createServerFn({ method: "GET" }).handler(async () =>
     .innerJoin(accountType, eq(accountType.id, account.account_type))
     .leftJoin(parent, eq(parent.id, account.parentId))
     .leftJoin(bankAccount, eq(bankAccount.id, account.id))
+    .leftJoin(bank, eq(bank.id, bankAccount.bankId))
 
   // By Account Type (in the canonical order its fixed ids give: Asset,
   // Liability, Equity, Income, Expense), then alphabetically by the name

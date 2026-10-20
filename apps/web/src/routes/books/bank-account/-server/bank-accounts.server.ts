@@ -3,9 +3,8 @@ import { OPENING_BALANCE_EQUITY_ACCOUNT } from "#/routes/books/banking/-server/i
 import {
   MAX_ACCOUNT_NAME_LENGTH,
   MAX_ACCOUNT_NUMBER_LENGTH,
-  MAX_BANK_NAME_LENGTH,
 } from "#/routes/books/accounts/-server/accounts.server.ts"
-import { account, accountType, bankAccount, db, withCreate, withUpdate } from "@app/db/direct"
+import { account, accountType, bank, bankAccount, db, withCreate, withUpdate } from "@app/db/direct"
 import { createServerFn } from "@tanstack/react-start"
 import { and, asc, eq, ne, sql } from "drizzle-orm"
 
@@ -23,15 +22,26 @@ export const getBankAccounts = createServerFn({ method: "GET" }).handler(async (
     .select({
       id: bankAccount.id,
       fullName: account.name,
-      bankName: bankAccount.bankName,
+      bankName: bank.name,
+      bankLogo: bank.logo,
       description: bankAccount.description,
       accountNumber: bankAccount.accountNumber,
       isArchived: bankAccount.isArchived,
     })
     .from(bankAccount)
     .innerJoin(account, eq(account.id, bankAccount.id))
+    .leftJoin(bank, eq(bank.id, bankAccount.bankId))
     .orderBy(asc(account.name))
   return rows
+})
+
+// Every bank, for the bank drop-downs.
+export const getBanks = createServerFn({ method: "GET" }).handler(async () => {
+  await requireUser()
+  return db
+    .select({ id: bank.id, name: bank.name, logo: bank.logo })
+    .from(bank)
+    .orderBy(asc(bank.name))
 })
 
 // One bank account with both halves of what describes it: the ledger Account
@@ -50,7 +60,8 @@ export const getBankAccount = createServerFn({ method: "GET" })
         accountName: account.name,
         accountDescription: account.description,
         accountIsArchived: account.isArchived,
-        bankName: bankAccount.bankName,
+        bankName: bank.name,
+        bankLogo: bank.logo,
         bankDescription: bankAccount.description,
         accountNumber: bankAccount.accountNumber,
         bankIsArchived: bankAccount.isArchived,
@@ -60,6 +71,7 @@ export const getBankAccount = createServerFn({ method: "GET" })
       .from(bankAccount)
       .innerJoin(account, eq(account.id, bankAccount.id))
       .innerJoin(accountType, eq(accountType.id, account.account_type))
+      .leftJoin(bank, eq(bank.id, bankAccount.bankId))
       .where(eq(bankAccount.id, id))
     return row ?? null
   })
@@ -77,7 +89,7 @@ export const createBankAccount = createServerFn({ method: "POST" })
   .validator(
     (data: {
       accountName: string
-      bankName: string
+      bankId: number
       bankDescription: string
       accountNumber: string
     }) => data,
@@ -85,7 +97,6 @@ export const createBankAccount = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { id: userId } = await requireUser()
     const accountName = data.accountName.trim()
-    const bankName = data.bankName.trim()
     const bankDescription = data.bankDescription.trim()
     const accountNumber = data.accountNumber.replace(/\s+/g, "")
 
@@ -94,12 +105,6 @@ export const createBankAccount = createServerFn({ method: "POST" })
     }
     if (accountName.length > MAX_ACCOUNT_NAME_LENGTH) {
       throw new Error(`The account name can be at most ${MAX_ACCOUNT_NAME_LENGTH} characters.`)
-    }
-    if (bankName === "") {
-      throw new Error("The bank name can't be empty.")
-    }
-    if (bankName.length > MAX_BANK_NAME_LENGTH) {
-      throw new Error(`The bank name can be at most ${MAX_BANK_NAME_LENGTH} characters.`)
     }
     if (bankDescription === "") {
       throw new Error("The bank account description can't be empty.")
@@ -114,6 +119,13 @@ export const createBankAccount = createServerFn({ method: "POST" })
     }
 
     await db.transaction(async (tx) => {
+      const [chosenBank] = await tx
+        .select({ id: bank.id })
+        .from(bank)
+        .where(eq(bank.id, data.bankId))
+      if (!chosenBank) {
+        throw new Error("Choose a bank.")
+      }
       // Names are unique; "Salaries" and "salaries" would only be confusing.
       const [nameClash] = await tx
         .select({ id: account.id })
@@ -145,7 +157,7 @@ export const createBankAccount = createServerFn({ method: "POST" })
       await tx.insert(bankAccount).values(
         withCreate(userId, {
           id: created!.id,
-          bankName,
+          bankId: data.bankId,
           description: bankDescription,
           accountNumber,
           isArchived: false,
@@ -164,7 +176,6 @@ export const updateBankAccountDetails = createServerFn({ method: "POST" })
       accountName: string
       accountDescription: string
       accountIsArchived: boolean
-      bankName: string
       bankDescription: string
       accountNumber: string
       bankIsArchived: boolean
@@ -174,7 +185,6 @@ export const updateBankAccountDetails = createServerFn({ method: "POST" })
     const { id: userId } = await requireUser()
     const accountName = data.accountName.trim()
     const accountDescription = data.accountDescription.trim()
-    const bankName = data.bankName.trim()
     const bankDescription = data.bankDescription.trim()
     const accountNumber = data.accountNumber.replace(/\s+/g, "")
 
@@ -183,12 +193,6 @@ export const updateBankAccountDetails = createServerFn({ method: "POST" })
     }
     if (accountName.length > MAX_ACCOUNT_NAME_LENGTH) {
       throw new Error(`The account name can be at most ${MAX_ACCOUNT_NAME_LENGTH} characters.`)
-    }
-    if (bankName === "") {
-      throw new Error("The bank name can't be empty.")
-    }
-    if (bankName.length > MAX_BANK_NAME_LENGTH) {
-      throw new Error(`The bank name can be at most ${MAX_BANK_NAME_LENGTH} characters.`)
     }
     if (bankDescription === "") {
       throw new Error("The bank account description can't be empty.")
@@ -252,7 +256,6 @@ export const updateBankAccountDetails = createServerFn({ method: "POST" })
         .update(bankAccount)
         .set(
           withUpdate(userId, {
-            bankName,
             description: bankDescription,
             accountNumber,
             isArchived: data.bankIsArchived,

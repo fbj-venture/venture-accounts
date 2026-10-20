@@ -6,6 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "#/components/ui/card.tsx"
+import { BankLogo } from "./bank-logo.tsx"
 import { formatZar } from "#/lib/currency.ts"
 import { cn } from "#/lib/utils.ts"
 import type { ReactNode } from "react"
@@ -18,7 +19,9 @@ export type BankAccountCardData = {
   id: number
   name: string
   description?: string | null
-  bankName?: string
+  bankName?: string | null
+  /** The bank's logo as inline SVG markup (bank.logo). */
+  bankLogo?: string | null
   accountNumber?: string
   balance?: number
 }
@@ -36,7 +39,10 @@ export function BankAccountCard({
   return (
     <Card className={cn(className)}>
       <CardHeader>
-        <CardTitle>{bankAccount.name}</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <BankLogo logo={bankAccount.bankLogo} name={bankAccount.bankName} />
+          {bankAccount.name}
+        </CardTitle>
         {bankAccount.balance !== undefined ? (
           <CardDescription className="text-lg font-medium text-foreground">
             {formatZar(bankAccount.balance)}

@@ -1,5 +1,5 @@
 import { requireUser } from "#/lib/require-user.server.ts"
-import { account, bankAccount, db, journal, journalLine, withCreate } from "@app/db/direct"
+import { account, bank, bankAccount, db, journal, journalLine, withCreate } from "@app/db/direct"
 import { createServerFn } from "@tanstack/react-start"
 import { and, eq, ne, sql } from "drizzle-orm"
 import { alias } from "drizzle-orm/pg-core"
@@ -15,7 +15,8 @@ const bankAccountColumns = {
   id: account.id,
   name: account.name,
   description: account.description,
-  bankName: bankAccount.bankName,
+  bankName: bank.name,
+  bankLogo: bank.logo,
   accountNumber: bankAccount.accountNumber,
   // Archived on either half: the Account or its bank details.
   isArchived: sql<boolean>`${account.isArchived} or ${bankAccount.isArchived}`,
@@ -30,6 +31,7 @@ export const getBankAccounts = createServerFn({ method: "GET" }).handler(async (
     .select(bankAccountColumns)
     .from(bankAccount)
     .innerJoin(account, eq(account.id, bankAccount.id))
+    .leftJoin(bank, eq(bank.id, bankAccount.bankId))
 })
 
 // See findOpeningBalance: null means no opening balance has been set yet.

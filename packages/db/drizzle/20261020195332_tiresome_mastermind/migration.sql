@@ -1,0 +1,1 @@
+ALTER TABLE "bank_account" DROP COLUMN "bank_name";

@@ -32,6 +32,13 @@ const IMPORTERS = [
       "Upload a Transaction History Statement downloaded from the bank's website, to import transactions before the monthly statement is issued.",
     to: "/books/banking/import/sb-history",
   },
+  {
+    title: "FNB Unverified Statement (PDF)",
+    bankName: "FNB",
+    description:
+      "Upload an FNB statement (unverified) that you have downloaded from the FNB website to import transactions. The statement date and bank account are read from the statement.",
+    to: "/books/banking/import/fnb-unverified",
+  },
 ] as const
 
 function RouteComponent() {

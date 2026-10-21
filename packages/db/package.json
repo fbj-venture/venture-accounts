@@ -14,10 +14,7 @@
     "typecheck": "tsc --noEmit",
     "db:generate": "varlock run -- drizzle-kit generate",
     "db:migrate": "varlock run -- tsx scripts/migrate.ts",
-    "script": "varlock run -- tsx",
-    "seed:account-types": "varlock run -- tsx scripts/seed-account-types.ts",
-    "seed:bank-accounts": "varlock run -- tsx scripts/seed-bank-accounts.ts",
-    "seed:accounts": "varlock run -- tsx scripts/import-accounts.ts"
+    "script": "varlock run -- tsx"
   },
   "dependencies": {
     "drizzle-orm": "^1.0.0-rc.5-ab785fc",

@@ -15,6 +15,7 @@ import {
   type ImportRowProgress,
 } from "./db-import.js"
 import { extractAccountNumber, extractStatementDate, extractTableRows } from "./extractor.js"
+import { extractFnb, isFnbStatement } from "./extractor-fnb.js"
 import { extractHistory, isHistoryStatement, isoToStatementDate } from "./extractor-history.js"
 import type { ImportRow } from "./import-row.js"
 import { statementDateToIso, toTransactions } from "./transaction.js"
@@ -87,13 +88,14 @@ export async function readPdfStream(data: Uint8Array, userId: string): Promise<T
 // What an upload is described as when the caller doesn't say.
 export const DEFAULT_UPLOAD_DESCRIPTION = "Uploading bank statement"
 
-// The two PDFs a bank account can be imported from. "statement" is the
-// official monthly statement; "history" is the Transaction History Statement
-// downloaded from the bank's website at any time, which can include
-// transactions that are not on a monthly statement yet. Both give the same
-// import hash for the same transaction (see canonical-hash.ts), so a
-// transaction imported from one is skipped when it turns up in the other.
-export type PdfLayout = "statement" | "history"
+// The PDFs a bank account can be imported from. "statement" is Standard
+// Bank's official monthly statement; "history" is its Transaction History
+// Statement downloaded from the bank's website at any time, which can include
+// transactions that are not on a monthly statement yet; "fnb" is an FNB
+// statement. All give the same import hash for the same transaction (see
+// canonical-hash.ts), so a transaction imported from one is skipped when it
+// turns up in another.
+export type PdfLayout = "statement" | "history" | "fnb"
 
 // userId is the signed-in user the imported entries are attributed to
 // (createdBy/updatedBy). options.description is saved with the uploaded PDF
@@ -108,7 +110,11 @@ export async function readPdfStreamWithProgress(
 
   const bytes = new Uint8Array(data)
   const extracted =
-    options.layout === "history" ? await extractHistoryPdf(bytes) : await extractStatementPdf(bytes)
+    options.layout === "history"
+      ? await extractHistoryPdf(bytes)
+      : options.layout === "fnb"
+        ? await extractFnbPdf(bytes)
+        : await extractStatementPdf(bytes)
   const { accountNumber, statementDate, transactions } = extracted
 
   // Find the Bank Account
@@ -207,6 +213,11 @@ async function extractStatementPdf(data: Uint8Array): Promise<ExtractedPdf> {
         'This is a "Transaction History Statement". Import it with "Standard Bank Transaction History PDF" instead.',
       )
     }
+    if (pages[0] && isFnbStatement(pages[0])) {
+      throw new Error(
+        'This is an FNB statement. Import it with "Unverified FNB Statement" instead.',
+      )
+    }
   }
   if (!statementDate) {
     throw new Error("Could not find the statement date on the first page.")
@@ -236,6 +247,18 @@ async function extractHistoryPdf(data: Uint8Array): Promise<ExtractedPdf> {
     pendingSkipped: history.pendingCount,
     fileName: (bytes) =>
       `ad-hoc/${history.rangeEnd}-${createHash("sha256").update(bytes).digest("hex").slice(0, 8)}.pdf`,
+  }
+}
+
+// An FNB statement. Named by its statement date, one per statement.
+async function extractFnbPdf(data: Uint8Array): Promise<ExtractedPdf> {
+  const fnb = extractFnb(await readPageItems(data))
+
+  return {
+    accountNumber: fnb.accountNumber,
+    statementDate: isoToStatementDate(fnb.statementDate),
+    transactions: fnb.transactions,
+    fileName: () => `${fnb.statementDate}.pdf`,
   }
 }
 

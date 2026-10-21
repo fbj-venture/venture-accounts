@@ -1,0 +1,104 @@
+# Development backing services only: PostgreSQL and SeaweedFS (S3-compatible file
+# storage), plus a one-shot migrate service that builds the database from the
+# Drizzle migrations. The app itself is NOT run here - start it on your machine
+# with `pnpm dev` and point it at these (DATABASE_URL_UNPOOLED, S3_* in .env).
+#
+#   docker compose -f docker-compose-dbg.yaml up -d --build
+#
+# Data lives in ./docker-data (gitignored), so it survives `down` and is easy to
+# wipe: `docker compose -f docker-compose-dbg.yaml down` then delete the folder.
+#
+# Same published ports as docker-compose.yaml, so stop that stack first (the
+# project name differs, so the containers themselves don't collide). Everything
+# here is local-only: the secrets are throwaway and the ports are bound to
+# 127.0.0.1.
+
+name: venture-accounts-dev
+
+x-app-env: &app-env # `Postgres` is reached by service name inside the compose network.
+  DATABASE_URL_UNPOOLED: postgresql://venture:venture@postgres:5432/venture
+  BETTER_AUTH_URL: http://localhost:3000
+  BETTER_AUTH_SECRET: local-dev-secret-not-for-production
+  # Resend can't run locally: the key only has to pass validation.
+  RESEND_API_KEY: re_local_placeholder
+  EMAIL_FROM: JudgeKnot Accounts <accounts@example.com>
+  S3_ENDPOINT: http://host.docker.internal:8333
+  S3_REGION: us-east-1
+  S3_BUCKET: venture-accounts
+  S3_ACCESS_KEY_ID: venture-local
+  S3_SECRET_ACCESS_KEY: venture-local-secret
+  # Default admin user, created only when the database has no users. `-` (not
+  # `:-`) so that an empty ADMIN_EMAIL= in .env disables it.
+  ADMIN_NAME: ${ADMIN_NAME-Administrator}
+  ADMIN_EMAIL: ${ADMIN_EMAIL-admin@example.com}
+  ADMIN_PASSWORD: ${ADMIN_PASSWORD-my-password}
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: venture
+      POSTGRES_PASSWORD: venture
+      POSTGRES_DB: venture
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - ./docker-data/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U venture -d venture"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  seaweedfs:
+    image: chrislusf/seaweedfs
+    # master + volume + filer + S3 gateway in one process.
+    command: >
+      server -dir=/data -s3 -s3.port=8333
+      -s3.config=/etc/seaweedfs/s3.json
+      -master.volumeSizeLimitMB=128
+    ports:
+      - "127.0.0.1:8333:8333"
+    volumes:
+      - ./docker-data/seaweedfs:/data
+      - ./docker/seaweedfs-s3.json:/etc/seaweedfs/s3.json:ro
+
+  # One-shot: creates the bucket once the S3 gateway is accepting requests.
+  create-bucket:
+    image: amazon/aws-cli
+    depends_on:
+      - seaweedfs
+    environment:
+      AWS_ACCESS_KEY_ID: venture-local
+      AWS_SECRET_ACCESS_KEY: venture-local-secret
+      AWS_DEFAULT_REGION: us-east-1
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        until aws --endpoint-url http://seaweedfs:8333 s3api head-bucket --bucket venture-accounts 2>/dev/null \
+          || aws --endpoint-url http://seaweedfs:8333 s3 mb s3://venture-accounts 2>/dev/null; do
+          echo "waiting for SeaweedFS..."; sleep 2
+        done
+        echo "bucket ready"
+    restart: "no"
+
+  # One-shot: applies the Drizzle migrations (the schema plus the default
+  # account_type and bank rows) and then creates the default administrator, as
+  # in docker-compose.yaml. Runs from the dockerfile's build stage because that
+  # is where the source and tooling are. Re-running is safe: migrations already
+  # applied are skipped, and the administrator is only created when there are no
+  # users.
+  migrate:
+    build:
+      context: .
+      dockerfile: dockerfile
+      target: build
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      <<: *app-env
+    command: >
+      sh -c "pnpm --filter @app/db db:migrate
+      && pnpm --filter web create-admin"
+    restart: "no"

@@ -79,7 +79,7 @@ export const getBankAccount = createServerFn({ method: "GET" })
 export const MAX_DESCRIPTION_LENGTH = 500
 
 // The Account Type of a new bank account: account_type's fixed id for Asset
-// (see packages/db/scripts/seed-account-types.ts).
+// (seeded by the 20261021142559_yummy_the_fallen migration).
 const ASSET_ACCOUNT_TYPE_ID = 1
 
 // Adds a bank account: the ledger Account (an Asset) and the bank details

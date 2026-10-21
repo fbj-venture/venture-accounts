@@ -14,8 +14,10 @@ export default defineConfig({
   },
   run: {
     tasks: {
-      "docker-build": { command: "docker build -t venture-accounts .", cache: false },
-      "docker-up": { command: "docker run --rm -p 3000:3000 --env-file .env venture-accounts" },
+      "docker:build": { command: "docker build -t venture-accounts .", cache: false },
+      "docker:up": { command: "docker run --rm -p 3000:3000 --env-file .env venture-accounts" },
+      "docker-compose:up": { command: "docker compose -f docker-compose-dev.yaml up -d" },
+      "docker-compose:down": { command: "docker compose -f docker-compose-dev.yaml down" },
     },
   },
 })

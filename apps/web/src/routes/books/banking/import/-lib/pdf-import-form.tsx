@@ -17,7 +17,7 @@ export function PdfImportForm({
   defaultDescription,
   submitLabel,
 }: {
-  layout: "statement" | "history"
+  layout: "statement" | "history" | "fnb"
   fileLabel: string
   defaultDescription: string
   submitLabel: string
@@ -39,6 +39,14 @@ export function PdfImportForm({
 
     const formData = new FormData(form)
     formData.set("layout", layout)
+    // A blank description becomes the default one with the file's name after it.
+    const file = formData.get("file")
+    if (String(formData.get("description") ?? "").trim() === "") {
+      formData.set(
+        "description",
+        file instanceof File ? `${defaultDescription} (${file.name})` : defaultDescription,
+      )
+    }
     const response = await fetch("/api/books/import", {
       method: "POST",
       body: formData,
@@ -92,11 +100,12 @@ export function PdfImportForm({
             id="description"
             name="description"
             type="text"
-            defaultValue={defaultDescription}
-            required
+            placeholder={defaultDescription}
+            autoComplete="off"
           />
           <FieldDescription>
-            Shown with the document on the bank account&apos;s uploads page.
+            Shown with the document on the bank account&apos;s uploads page. Left blank, it is
+            &quot;{defaultDescription} (file name)&quot;.
           </FieldDescription>
         </Field>
 

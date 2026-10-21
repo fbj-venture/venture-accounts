@@ -81,9 +81,10 @@ services:
         echo "bucket ready"
     restart: "no"
 
-  # One-shot: applies migrations, seeds the account types and creates the default
-  # administrator. Runs from the dockerfile's build stage because the runtime
-  # image has no source or tooling.
+  # One-shot: applies the migrations and then creates the default administrator.
+  # The default data (account_type and bank rows) is inserted by the migrations
+  # themselves, so db:migrate is all that loads it. Runs from the dockerfile's
+  # build stage because the runtime image has no source or tooling.
   #
   # The administrator is first-run setup only: it is created when the database
   # has no users, never again - so it stays gone once you delete it. Override per
@@ -101,7 +102,6 @@ services:
       <<: *app-env
     command: >
       sh -c "pnpm --filter @app/db db:migrate
-      && pnpm --filter @app/db seed:account-types
       && pnpm --filter web create-admin"
     restart: "no"
 

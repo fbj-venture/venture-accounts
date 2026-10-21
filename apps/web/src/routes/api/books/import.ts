@@ -24,9 +24,12 @@ export const Route = createFileRoute("/api/books/import")({
         const file = formData.get("file")
         const rawDescription = formData.get("description")
         const description = typeof rawDescription === "string" ? rawDescription.trim() : ""
-        // Which PDF layout this is: the official monthly statement (default) or
-        // the Transaction History Statement downloaded from the bank's website.
-        const layout = formData.get("layout") === "history" ? "history" : "statement"
+        // Which PDF layout this is: Standard Bank's official monthly statement
+        // (default), its Transaction History Statement downloaded from the
+        // bank's website, or an FNB statement.
+        const requestedLayout = formData.get("layout")
+        const layout =
+          requestedLayout === "history" || requestedLayout === "fnb" ? requestedLayout : "statement"
 
         if (!(file instanceof File)) {
           return new Response("No file was uploaded.", { status: 400 })

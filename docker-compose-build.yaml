@@ -44,7 +44,7 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U venture -d venture"]
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U venture -d venture"]
       interval: 3s
       timeout: 3s
       retries: 20

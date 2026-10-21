@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.0] - 2026-10-21
+
+### Added
+
+- New Banks table: name and logo
+  - Link to bank accounts
+  - Show the logo on bank account cards and import cards
+
+### Changed
+
+- Bank Accounts
+  - Removed bank name
+  - New & edit forms dropdown with show logo
+  - Added bank logo to existing import cards and pages
+- Imports
+  - FNB statement import card
+  - FNB Unverified statement import page
+- Local database connection to PostgreSQL in Docker
+- Upload, verify, and import chart of accounts
+
+### Removed
+
+- Scripts files
+  - Remove the manual data scripts
+  - Make sure that the required pre-load data is always preloaded by the Docker compose up process.
+
 ## [0.14.1] - 2026-10-19
 
 ### Changed

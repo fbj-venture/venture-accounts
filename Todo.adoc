@@ -21,13 +21,14 @@
 ** [x] Removed bank name
 ** [x] New & edit forms dropdown with show logo
 ** [x] Added bank logo to existing import cards and pages
-* [ ] Imports
+* [x] Imports
 ** [x] FNB statement import card
-** [ ] FNB Unverified statement import page
-** [ ] Remove the import cards
-* [ ] Scripts files
-** [ ] Remove the manual data scripts
-** [ ] Make sure that the required pre-load data is always preloaded by the Docker compose up process.
+** [x] FNB Unverified statement import page
+* [x] Scripts files
+** [x] Remove the manual data scripts
+** [x] Make sure that the required pre-load data is always preloaded by the Docker compose up process.
+* [*] Local database connection to PostgreSQL in Docker
+* [ ] Import chart of accounts
 * [ ] Budget tracking for a Goal (eg Events)
 ** [ ] Create a Goal
 ** [ ] Add Goal-Items (eg People coming to the Event)

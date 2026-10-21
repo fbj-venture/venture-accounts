@@ -1,4 +1,5 @@
 import { Button } from "#/components/ui/button.tsx"
+import { Calendar } from "#/components/ui/calendar.tsx"
 import {
   Dialog,
   DialogContent,
@@ -10,6 +11,7 @@ import {
 import { Field, FieldLabel } from "#/components/ui/field.tsx"
 import { BankLogo } from "#/routes/books/-components/bank-logo.tsx"
 import { Input } from "#/components/ui/input.tsx"
+import { Popover, PopoverContent, PopoverTrigger } from "#/components/ui/popover.tsx"
 import {
   Select,
   SelectContent,
@@ -21,7 +23,8 @@ import {
   MAX_ACCOUNT_NAME_LENGTH,
   MAX_ACCOUNT_NUMBER_LENGTH,
 } from "#/routes/books/accounts/-server/accounts.server.ts"
-import { LoaderCircleIcon, SaveIcon } from "lucide-react"
+import { format } from "date-fns"
+import { CalendarIcon, LoaderCircleIcon, SaveIcon } from "lucide-react"
 import { useState, type FormEvent } from "react"
 import { MAX_DESCRIPTION_LENGTH, createBankAccount } from "../-server/bank-accounts.server.ts"
 
@@ -40,6 +43,9 @@ export function AddBankAccountDialog({
   const [bankId, setBankId] = useState("")
   const [bankDescription, setBankDescription] = useState("")
   const [accountNumber, setAccountNumber] = useState("")
+  const [openingBalance, setOpeningBalance] = useState("")
+  const [openingDate, setOpeningDate] = useState<Date | undefined>(undefined)
+  const [datePickerOpen, setDatePickerOpen] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -48,11 +54,14 @@ export function AddBankAccountDialog({
     bankId !== "" &&
     bankDescription.trim() !== "" &&
     accountNumber.trim() !== "" &&
+    openingBalance.trim() !== "" &&
+    Number.isFinite(Number(openingBalance)) &&
+    openingDate !== undefined &&
     !saving
 
   async function save(event: FormEvent) {
     event.preventDefault()
-    if (!canSave) {
+    if (!canSave || !openingDate) {
       return
     }
 
@@ -60,7 +69,14 @@ export function AddBankAccountDialog({
     setError(null)
     try {
       await createBankAccount({
-        data: { accountName, bankId: Number(bankId), bankDescription, accountNumber },
+        data: {
+          accountName,
+          bankId: Number(bankId),
+          bankDescription,
+          accountNumber,
+          openingBalance: Number(openingBalance),
+          openingBalanceDate: format(openingDate, "yyyy-MM-dd"),
+        },
       })
       await onAdded()
       onClose()
@@ -78,7 +94,9 @@ export function AddBankAccountDialog({
           <DialogHeader>
             <DialogTitle>New Bank Account</DialogTitle>
             <DialogDescription>
-              Creates the ledger account (an Asset) together with its bank details.
+              Creates the ledger account (an Asset) together with its bank details and its opening
+              balance. The opening balance is posted against "Opening Balance Equity" and can't be
+              changed afterwards.
             </DialogDescription>
           </DialogHeader>
           <Field>
@@ -129,6 +147,46 @@ export function AddBankAccountDialog({
               value={bankDescription}
               maxLength={MAX_DESCRIPTION_LENGTH}
               onChange={(event) => setBankDescription(event.target.value)}
+              autoComplete="off"
+            />
+          </Field>
+          <hr />
+          <Field>
+            <FieldLabel htmlFor="add-bank-account-opening-date">Opening balance date</FieldLabel>
+            <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  id="add-bank-account-opening-date"
+                  type="button"
+                  variant="outline"
+                  className="justify-start font-normal"
+                >
+                  <CalendarIcon className="size-4" />
+                  {openingDate ? format(openingDate, "d MMM yyyy") : "Pick a date"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  captionLayout="dropdown"
+                  selected={openingDate}
+                  onSelect={(selected) => {
+                    setOpeningDate(selected)
+                    setDatePickerOpen(false)
+                  }}
+                />
+              </PopoverContent>
+            </Popover>
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="add-bank-account-opening-balance">Opening balance</FieldLabel>
+            <Input
+              id="add-bank-account-opening-balance"
+              type="number"
+              step="0.01"
+              inputMode="decimal"
+              value={openingBalance}
+              onChange={(event) => setOpeningBalance(event.target.value)}
               autoComplete="off"
             />
           </Field>

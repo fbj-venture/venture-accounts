@@ -1,5 +1,8 @@
 import { requireUser } from "#/lib/require-user.server.ts"
-import { OPENING_BALANCE_EQUITY_ACCOUNT } from "#/routes/books/banking/-server/internal/opening-balance.server"
+import {
+  createOpeningBalanceEntry,
+  OPENING_BALANCE_EQUITY_ACCOUNT,
+} from "#/routes/books/banking/-server/internal/opening-balance.server"
 import {
   MAX_ACCOUNT_NAME_LENGTH,
   MAX_ACCOUNT_NUMBER_LENGTH,
@@ -92,6 +95,10 @@ export const createBankAccount = createServerFn({ method: "POST" })
       bankId: number
       bankDescription: string
       accountNumber: string
+      /** The balance on the opening date; negative when overdrawn. */
+      openingBalance: number
+      /** "yyyy-MM-dd" - the day the opening balance is as at. */
+      openingBalanceDate: string
     }) => data,
   )
   .handler(async ({ data }) => {
@@ -99,6 +106,13 @@ export const createBankAccount = createServerFn({ method: "POST" })
     const accountName = data.accountName.trim()
     const bankDescription = data.bankDescription.trim()
     const accountNumber = data.accountNumber.replace(/\s+/g, "")
+
+    if (!Number.isFinite(data.openingBalance)) {
+      throw new Error("Enter the opening balance.")
+    }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(data.openingBalanceDate)) {
+      throw new Error("Choose the opening balance date.")
+    }
 
     if (accountName === "") {
       throw new Error("The account name can't be empty.")
@@ -163,6 +177,13 @@ export const createBankAccount = createServerFn({ method: "POST" })
           isArchived: false,
         }),
       )
+      // The one and only take-on entry: there is no way to set it later.
+      await createOpeningBalanceEntry(tx, userId, {
+        accountId: created!.id,
+        date: data.openingBalanceDate,
+        note: OPENING_BALANCE_EQUITY_ACCOUNT,
+        amount: data.openingBalance,
+      })
     })
   })
 

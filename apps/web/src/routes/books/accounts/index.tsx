@@ -10,9 +10,10 @@ import { SearchInput } from "#/components/search-input.tsx"
 import { Separator } from "#/components/ui/separator.tsx"
 import { useSetBreadcrumbs } from "#/routes/books/-lib/breadcrumbs.ts"
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query"
-import { createFileRoute, useRouter } from "@tanstack/react-router"
-import { PlusIcon } from "lucide-react"
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router"
+import { DownloadIcon, PlusIcon, UploadIcon } from "lucide-react"
 import { useMemo, useState } from "react"
+import { exportAccountsJson } from "./-lib/accounts-import.ts"
 import { AddAccountDialog } from "./-lib/add-account-dialog.tsx"
 import { accountKeys, accountsQuery, accountTypesQuery } from "./-lib/accounts-queries.ts"
 import { AccountsTable } from "./-lib/accounts-table.tsx"
@@ -56,6 +57,18 @@ function RouteComponent() {
   const refresh = async () => {
     await queryClient.invalidateQueries({ queryKey: accountKeys.all })
     await router.invalidate({ sync: true })
+  }
+
+  // Downloads every account (not just the filtered ones) in the format Import reads.
+  function exportAccounts() {
+    const url = URL.createObjectURL(
+      new Blob([exportAccountsJson(accounts)], { type: "application/json" }),
+    )
+    const link = document.createElement("a")
+    link.href = url
+    link.download = "accounts.json"
+    link.click()
+    URL.revokeObjectURL(url)
   }
 
   // Ticked Account Type ids; none ticked shows every type, as with the
@@ -114,11 +127,23 @@ function RouteComponent() {
             onValueChange={setArchivedFilter}
           />
         </div>
-        <Separator orientation="vertical" className="data-[orientation=vertical]:h-9" />
-        <Button type="button" onClick={() => setAdding(true)}>
-          <PlusIcon />
-          Add
-        </Button>
+        <div className="ml-auto flex items-center gap-2">
+          <Button type="button" onClick={() => setAdding(true)}>
+            <PlusIcon />
+            Add
+          </Button>
+          <Separator orientation="vertical" className="mx-2 data-[orientation=vertical]:h-9" />
+          <Button type="button" variant="outline" onClick={exportAccounts}>
+            <DownloadIcon />
+            Export
+          </Button>
+          <Button asChild variant="outline">
+            <Link to="/books/accounts/import">
+              <UploadIcon />
+              Import
+            </Link>
+          </Button>
+        </div>
       </div>
       {adding ? (
         <AddAccountDialog

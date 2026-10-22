@@ -91,6 +91,29 @@ export const auth = betterAuth({
       })
     },
   },
+  // Google is only offered when its credentials are set. Users are invited, so
+  // Google can never create an account (disableSignUp): it can only be linked
+  // to an existing user, from My Account or by signing in with a matching,
+  // Google-verified email.
+  socialProviders:
+    ENV.GOOGLE_CLIENT_ID && ENV.GOOGLE_CLIENT_SECRET
+      ? {
+          google: {
+            clientId: ENV.GOOGLE_CLIENT_ID,
+            clientSecret: ENV.GOOGLE_CLIENT_SECRET,
+            disableSignUp: true,
+          },
+        }
+      : {},
+  // allowDifferentEmails: a signed-in user may link a Google account whose
+  // email differs from their login email.
+  account: {
+    accountLinking: {
+      enabled: true,
+      trustedProviders: ["google"],
+      allowDifferentEmails: true,
+    },
+  },
   // Explicit rather than relying on the isProduction default, so dev/staging
   // are protected too and behavior doesn't silently depend on NODE_ENV.
   rateLimit: {

@@ -1,7 +1,8 @@
+import { ENV } from "varlock/env"
 import { requireUser } from "#/lib/require-user.server.ts"
-import { db, user } from "@app/db/direct"
+import { authAccount, db, user } from "@app/db/direct"
 import { createServerFn } from "@tanstack/react-start"
-import { eq } from "drizzle-orm"
+import { and, eq } from "drizzle-orm"
 
 // Keep ALL database code inside handlers - see transactions.server.ts for why.
 
@@ -38,3 +39,18 @@ export const updateMyProfile = createServerFn({ method: "POST" })
       .set({ name, image: data.image, updatedAt: new Date() })
       .where(eq(user.id, id))
   })
+
+// Whether Google sign-in is set up on this server, and whether the signed-in
+// user has already linked a Google account.
+export const getGoogleLinkState = createServerFn({ method: "GET" }).handler(async () => {
+  const { id } = await requireUser()
+  const [linked] = await db
+    .select({ id: authAccount.id })
+    .from(authAccount)
+    .where(and(eq(authAccount.userId, id), eq(authAccount.providerId, "google")))
+    .limit(1)
+  return {
+    available: Boolean(ENV.GOOGLE_CLIENT_ID && ENV.GOOGLE_CLIENT_SECRET),
+    linked: Boolean(linked),
+  }
+})

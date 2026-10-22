@@ -5,11 +5,13 @@ import { Field, FieldDescription, FieldLabel } from "#/components/ui/field.tsx"
 import { Input } from "#/components/ui/input.tsx"
 import { useSetBreadcrumbs } from "#/routes/books/-lib/breadcrumbs.ts"
 import { createFileRoute, useRouter } from "@tanstack/react-router"
-import { SaveIcon, UserIcon } from "lucide-react"
+import { CheckIcon, LinkIcon, SaveIcon, UserIcon } from "lucide-react"
 import { useRef, useState } from "react"
-import { updateMyProfile } from "./-server/my-account.server.ts"
+import { authClient } from "#/lib/auth-client.ts"
+import { getGoogleLinkState, updateMyProfile } from "./-server/my-account.server.ts"
 
 export const Route = createFileRoute("/books/my-account/")({
+  loader: () => getGoogleLinkState(),
   component: RouteComponent,
 })
 
@@ -50,6 +52,9 @@ async function toAvatarDataUrl(file: File): Promise<string> {
 function RouteComponent() {
   const router = useRouter()
   const { user } = Route.useRouteContext()
+  const google = Route.useLoaderData()
+  const [linking, setLinking] = useState(false)
+  const [linkError, setLinkError] = useState<string | null>(null)
   useSetBreadcrumbs([{ title: "Dashboard", url: "/books" }, { title: "My Account" }])
 
   const fileInput = useRef<HTMLInputElement>(null)
@@ -74,6 +79,21 @@ function RouteComponent() {
       setError(
         caught instanceof Error ? caught.message : "That file couldn't be used as a picture.",
       )
+    }
+  }
+
+  // Sends the browser to Google; it comes back to this page once linked.
+  async function linkGoogle() {
+    setLinking(true)
+    setLinkError(null)
+    const { error: failure } = await authClient.linkSocial({
+      provider: "google",
+      callbackURL: "/books/my-account",
+      errorCallbackURL: "/books/my-account",
+    })
+    if (failure) {
+      setLinkError(failure.message ?? "Couldn't start the Google sign-in.")
+      setLinking(false)
     }
   }
 
@@ -181,6 +201,39 @@ function RouteComponent() {
           </form>
         </CardContent>
       </Card>
+      {google.available ? (
+        <Card className="mt-4 max-w-lg">
+          <CardHeader>
+            <CardTitle>Sign-in methods</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-3">
+            {google.linked ? (
+              <p className="flex items-center gap-2 text-sm">
+                <CheckIcon className="size-4" />
+                Google is linked. You can sign in with it.
+              </p>
+            ) : (
+              <>
+                <p className="text-sm text-muted-foreground">
+                  Link a Google account to sign in without a password. Its email address doesn't
+                  have to match this account's.
+                </p>
+                <div>
+                  <Button type="button" variant="outline" disabled={linking} onClick={linkGoogle}>
+                    <LinkIcon />
+                    {linking ? "Redirecting..." : "Link Google account"}
+                  </Button>
+                </div>
+              </>
+            )}
+            {linkError ? (
+              <p className="text-sm text-destructive" role="alert">
+                {linkError}
+              </p>
+            ) : null}
+          </CardContent>
+        </Card>
+      ) : null}
     </>
   )
 }

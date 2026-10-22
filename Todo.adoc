@@ -14,9 +14,8 @@
 
 == 0.16.0
 
-* [ ] My Account
-** [ ] Link social login to an existing account
-** [ ] 2FA options
+* [x] My Account
+** [x] Link social login to an existing account
 * [ ] Security
 ** [ ] Two-factor authentication (authenticator)
 

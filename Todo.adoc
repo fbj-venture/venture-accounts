@@ -14,14 +14,25 @@
 
 == 0.16.0
 
-* [ ] Budget tracking for a Goal (eg Events)
-** [ ] Create a Goal
-** [ ] Add Goal-Items (eg People coming to the Event)
-** [ ] Allocate payments and expenses to the Goal-Items with Date
-** [ ] Write off expenses explicitly
-** [ ] Display current ballance
-** [ ] Report of current state
-** [ ] Close/Lock Event
+* [ ] My Account
+** [ ] Link social login to an existing account
+** [ ] 2FA options
+
+== Todo
+
+* [ ] Split transaction over multiple Accounts
+** [ ] Select `split` from the Accounts drop-down to popup a dialog for adding split line
+* [ ] Security
+** [ ] Two-factor authentication (authenticator)
+** [ ] Run GStack audit (https://github.com/garrytan/gstack)
+* [ ] Manually add transactions
+** [ ] Add a photo of the receipt to the transaction, ensuring all the fields for the hash are in place
+* [ ] Add a way to merge a manual transaction with a Bank feed transaction (e.g. if their dates are different)
+* [ ] Uploads
+** [ ] Upload + Link invoices/receipts to JournalLines
+* [ ] Code audit
+* [ ] Data
+** [ ] Backups (manual/automatic/offline)
 
 == Reports
 
@@ -40,21 +51,13 @@
 ** [ ] Ballance sheet
 *** [ ] Investigation
 
-== Todo
+== Ideas
 
-* [ ] Code audit
-* [ ] My Account
-** [ ] Link social login to an existing account
-** [ ] 2FA options
-* [ ] Split transaction over multiple Accounts
-** [ ] Select `split` from the Accounts drop-down to popup a dialog for adding split line
-* [ ] Security
-** [ ] Two-factor authentication (authenticator)
-** [ ] Run GStack audit (https://github.com/garrytan/gstack)
-* [ ] Manually add transactions
-** [ ] Add a photo of the receipt to the trasnaction, ensuring all the fields for the hashare in place
-* [ ] Add a way to merge a manual trasnaction with a Bank feed trasnaction (e.g. if their dates are different)
-* [ ] Uploads
-** [ ] Upload + Link invoices/receipts to JournalLines
-* [ ] Data
-** [ ] Backups (manual/automatic)
+* [ ] "Budget" tracking for a Goal (eg Events)
+** [ ] Create a Goal
+** [ ] Add Goal-Items (eg People coming to the Event)
+** [ ] Allocate payments and expenses to the Goal-Items with Date
+** [ ] Write off expenses explicitly
+** [ ] Display current ballance
+** [ ] Report of current state
+** [ ] Close/Lock Event

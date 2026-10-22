@@ -6,3 +6,6 @@ node_modules
 .env.local
 .gstack/
 docker-data/
+
+# Neon CLI context (local branch selection)
+.neon

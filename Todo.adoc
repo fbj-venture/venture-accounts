@@ -17,13 +17,14 @@
 * [ ] My Account
 ** [ ] Link social login to an existing account
 ** [ ] 2FA options
+* [ ] Security
+** [ ] Two-factor authentication (authenticator)
 
 == Todo
 
 * [ ] Split transaction over multiple Accounts
 ** [ ] Select `split` from the Accounts drop-down to popup a dialog for adding split line
 * [ ] Security
-** [ ] Two-factor authentication (authenticator)
 ** [ ] Run GStack audit (https://github.com/garrytan/gstack)
 * [ ] Manually add transactions
 ** [ ] Add a photo of the receipt to the transaction, ensuring all the fields for the hash are in place

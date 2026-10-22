@@ -12,10 +12,8 @@
 * [ ] Migrate the database
 * [ ] Git push all changes
 
-== 0.16.0
+== 0.17.0
 
-* [x] My Account
-** [x] Link social login to an existing account
 * [ ] Security
 ** [ ] Two-factor authentication (authenticator)
 

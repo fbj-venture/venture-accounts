@@ -14,13 +14,10 @@
 
 == 0.17.0
 
-* [ ] Security
-** [x] Enforce a 14 character password with upper case, lower case, numbers and a spacial character
-** [ ] Implement passkeys instead of social logins
+* [ ] Rotate credentials
 
 == Todo
 
-* [ ] Investigate using biometrics for access
 * [ ] Split transaction over multiple Accounts
 ** [ ] Select `split` from the Accounts drop-down to popup a dialog for adding split line
 * [ ] Security

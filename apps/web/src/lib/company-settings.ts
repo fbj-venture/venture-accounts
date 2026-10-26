@@ -9,7 +9,12 @@ export type CompanySettings = {
   financialYearEndMonth: number
   /** The first year offered by every year drop-down and date picker. */
   startingYear: number
+  /** Keys of the importers whose cards are hidden on the Kind of Import page. */
+  hiddenImporters: string[]
 }
+
+// What the Company form edits; hiddenImporters has a card and save of its own.
+export type CompanyDetails = Omit<CompanySettings, "hiddenImporters">
 
 // What the settings are until an admin saves them. Also what the app falls
 // back to outside the signed-in area, where none have been loaded.
@@ -17,13 +22,14 @@ export const DEFAULT_COMPANY_SETTINGS: CompanySettings = {
   name: "Venture",
   financialYearEndMonth: 2,
   startingYear: 2024,
+  hiddenImporters: [],
 }
 
 // The earliest year the year lists can start at.
 export const MIN_STARTING_YEAR = 2000
 
 /** Why the settings aren't acceptable, or null if they are. Shared by the form and the server. */
-export function companyProblem(values: CompanySettings): string | null {
+export function companyProblem(values: CompanyDetails): string | null {
   if (!values.name.trim()) {
     return "The company name is required."
   }

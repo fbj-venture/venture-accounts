@@ -53,12 +53,21 @@ export const relations = defineRelations(schema, (r) => ({
     lines: r.many.journalLine(),
   },
 
+  journalAttachment: {
+    journalLine: r.one.journalLine({
+      from: r.journalAttachment.journalLineId,
+      to: r.journalLine.id,
+      optional: false,
+    }),
+  },
+
   journalLine: {
     journal: r.one.journal({
       from: r.journalLine.journalEntryId,
       to: r.journal.id,
       optional: false,
     }),
+    attachments: r.many.journalAttachment(),
     account: r.one.account({
       from: r.journalLine.accountId,
       to: r.account.id,

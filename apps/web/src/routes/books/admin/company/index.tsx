@@ -23,6 +23,7 @@ import { useState, type FormEvent } from "react"
 import { companyProblem } from "#/lib/company-settings.ts"
 import { useSetBreadcrumbs } from "../../-lib/breadcrumbs"
 import { companyKeys, companySettingsQuery } from "./-lib/company-queries.ts"
+import { ImportVisibilityCard } from "./-lib/import-visibility-card.tsx"
 import { saveCompanySettings } from "./-server/company.server.ts"
 
 export const Route = createFileRoute("/books/admin/company/")({
@@ -205,6 +206,7 @@ function RouteComponent() {
             </CardFooter>
           </form>
         </Card>
+        <ImportVisibilityCard hiddenImporters={settings.hiddenImporters} />
       </div>
     </>
   )

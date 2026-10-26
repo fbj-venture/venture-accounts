@@ -1,5 +1,7 @@
 import { SearchInput } from "#/components/search-input.tsx"
 import { Card, CardDescription, CardHeader, CardTitle } from "#/components/ui/card.tsx"
+import { useCompanySettings } from "#/lib/company-settings.ts"
+import { IMPORTERS } from "#/lib/importers.ts"
 import { BankLogo } from "#/routes/books/-components/bank-logo.tsx"
 import { useSetBreadcrumbs } from "#/routes/books/-lib/breadcrumbs.ts"
 import { banksQuery } from "#/routes/books/bank-account/-lib/bank-accounts-queries.ts"
@@ -14,44 +16,22 @@ export const Route = createFileRoute("/books/banking/import/")({
   component: RouteComponent,
 })
 
-// The ways of importing bank transactions. Add an entry here (and its page
-// next to this file) for each new importer. bankName is the bank table entry
-// whose logo marks the importer.
-const IMPORTERS = [
-  {
-    title: "Standard Bank Statement (PDF)",
-    bankName: "Standard Bank",
-    description:
-      "Upload a Standard Bank statement in PDF format. The bank account and statement date are read from the statement.",
-    to: "/books/banking/import/sb-statement",
-  },
-  {
-    title: "Standard Bank Transaction History (PDF)",
-    bankName: "Standard Bank",
-    description:
-      "Upload a Transaction History Statement downloaded from the bank's website, to import transactions before the monthly statement is issued.",
-    to: "/books/banking/import/sb-history",
-  },
-  {
-    title: "FNB Unverified Statement (PDF)",
-    bankName: "FNB",
-    description:
-      "Upload an FNB statement (unverified) that you have downloaded from the FNB website to import transactions. The statement date and bank account are read from the statement.",
-    to: "/books/banking/import/fnb-unverified",
-  },
-] as const
-
 function RouteComponent() {
   useSetBreadcrumbs([{ title: "Dashboard", url: "/books" }, { title: "Kind of Import" }])
 
   const { data: banks } = useSuspenseQuery(banksQuery)
+  // Cards an admin has hidden on Company Settings.
+  const { hiddenImporters } = useCompanySettings()
 
   // Matched anywhere in a title, ignoring case.
   const [filter, setFilter] = useState("")
   const shown = useMemo(() => {
     const needle = filter.trim().toLowerCase()
-    return IMPORTERS.filter((importer) => importer.title.toLowerCase().includes(needle))
-  }, [filter])
+    return IMPORTERS.filter(
+      (importer) =>
+        !hiddenImporters.includes(importer.key) && importer.title.toLowerCase().includes(needle),
+    )
+  }, [filter, hiddenImporters])
 
   return (
     <>

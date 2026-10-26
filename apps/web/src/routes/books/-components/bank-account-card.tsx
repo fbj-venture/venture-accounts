@@ -14,7 +14,9 @@ import type { ReactNode } from "react"
 // The union of fields any page might have for a bank account - each page
 // passes whatever subset it fetched. Passing `balance` takes priority over
 // `bankName`/`accountNumber` for the card's description line, since a page
-// showing balances (see books/index.tsx) has no use for showing both.
+// showing balances (see books/index.tsx) has no use for showing both. With a
+// balance, the account's description sits between the title and the balance;
+// without one, it goes in the card body.
 export type BankAccountCardData = {
   id: number
   name: string
@@ -44,16 +46,21 @@ export function BankAccountCard({
           {bankAccount.name}
         </CardTitle>
         {bankAccount.balance !== undefined ? (
-          <CardDescription className="text-lg font-medium text-foreground">
-            {formatZar(bankAccount.balance)}
-          </CardDescription>
+          <>
+            {bankAccount.description ? (
+              <CardDescription>{bankAccount.description}</CardDescription>
+            ) : null}
+            <CardDescription className="text-lg font-medium text-foreground">
+              {formatZar(bankAccount.balance)}
+            </CardDescription>
+          </>
         ) : bankAccount.bankName ? (
           <CardDescription>
             {bankAccount.bankName} &middot; {bankAccount.accountNumber}
           </CardDescription>
         ) : null}
       </CardHeader>
-      {bankAccount.description ? (
+      {bankAccount.description && bankAccount.balance === undefined ? (
         <CardContent className="text-sm text-muted-foreground">
           {bankAccount.description}
         </CardContent>

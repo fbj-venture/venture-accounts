@@ -1,3 +1,4 @@
+import { AddExpenseCard } from "#/routes/books/-components/add-expense-card"
 import { BankAccountCard } from "#/routes/books/-components/bank-account-card"
 import { BankAccountMenu } from "#/routes/books/-components/bank-account-menu"
 import { useSetBreadcrumbs } from "#/routes/books/-lib/breadcrumbs"
@@ -25,12 +26,17 @@ function RouteComponent() {
   return (
     <>
       <h2 className="pb-7">Accounts Dashboard</h2>
-      <div className="flex w-full items-center gap-5">
+      {/* The first group: shortcuts for adding things. */}
+      <div className="flex w-full flex-col gap-5 pb-8 sm:flex-row sm:flex-wrap">
+        <AddExpenseCard bankAccounts={bankAccounts} className="grow sm:max-w-md sm:basis-72" />
+      </div>
+      {/* Stacked on mobile; from sm up the cards flow in rows and wrap. */}
+      <div className="flex w-full flex-col gap-5 sm:flex-row sm:flex-wrap">
         {bankAccounts.map((bankAccount) => (
           <BankAccountCard
             key={bankAccount.id}
             bankAccount={bankAccount}
-            className="grow"
+            className="grow transition-colors hover:border-primary **:data-[slot=card-title]:transition-colors hover:**:data-[slot=card-title]:text-primary sm:basis-72"
             footer={<BankAccountMenu bankAccountId={bankAccount.id} />}
           />
         ))}

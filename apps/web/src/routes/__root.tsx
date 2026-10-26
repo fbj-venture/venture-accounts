@@ -26,6 +26,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         title: `${match.context.appCompany} Accounts`,
       },
+      // Added to a phone's home screen, the app opens full-screen under its
+      // own icon (see routes/manifest[.]webmanifest.ts). iOS reads these tags
+      // rather than the manifest.
+      { name: "theme-color", content: "#f0522a" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-title", content: match.context.appCompany },
     ],
     links: [
       {
@@ -37,6 +44,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         type: "image/png",
         href: "/img/favicon.png",
       },
+      { rel: "apple-touch-icon", href: "/icons/apple-touch-icon.png" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
     ],
   }),
   shellComponent: RootDocument,

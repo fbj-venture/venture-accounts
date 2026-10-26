@@ -13,6 +13,7 @@ export const getBankAccountBalances = createServerFn({ method: "GET" }).handler(
     .select({
       id: account.id,
       name: account.name,
+      description: bankAccount.description,
       bankLogo: bank.logo,
       balance: sql<string>`coalesce(sum(${journalLine.amount}), 0)`.mapWith(Number),
     })
@@ -21,6 +22,6 @@ export const getBankAccountBalances = createServerFn({ method: "GET" }).handler(
     .leftJoin(bank, eq(bank.id, bankAccount.bankId))
     .leftJoin(journalLine, eq(journalLine.accountId, account.id))
     .where(and(eq(account.isArchived, false), eq(bankAccount.isArchived, false)))
-    .groupBy(account.id, account.name, bank.logo)
+    .groupBy(account.id, account.name, bankAccount.description, bank.logo)
     .orderBy(account.name)
 })

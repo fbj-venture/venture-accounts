@@ -6,12 +6,13 @@ import {
   bankUpload,
   db,
   journal,
+  journalAttachment,
   journalLine,
   withCreate,
   withUpdate,
 } from "@app/db/direct"
 import type { Transaction } from "@app/models"
-import { and, eq } from "drizzle-orm"
+import { and, asc, eq, exists, isNull, sql } from "drizzle-orm"
 
 // "Account" is overloaded (see docs/Ledger Ubiquitous Language.md): this
 // looks up the ledger Account - what a Journal Line actually references -
@@ -59,6 +60,58 @@ export async function recordBankUpload(
     .values(withCreate(userId, { bankId, description, fileUrl: fileKey, fileHash }))
 }
 
+// The bank line of an expense added by hand: on this bank account, same date
+// and amount as the statement row, no import hash yet, not reconciled, and
+// carrying a receipt (journal_attachment) - which is what tells it from the
+// opening balance and other hash-less lines. The oldest such line is
+// claimed, so two identical rows on a statement match two hand-entered
+// expenses one each. Returns whether one was claimed.
+//
+// The statement's text becomes the entry's note, as for any imported row.
+// The description the person typed stays on the lines (journal_line.description),
+// which is what the Post screen shows and fills its note box from.
+async function claimManualExpense(
+  transaction: Transaction,
+  accountId: number,
+  userId: string,
+): Promise<boolean> {
+  const [manualLine] = await db
+    .select({ id: journalLine.id, journalId: journal.id })
+    .from(journalLine)
+    .innerJoin(journal, eq(journal.id, journalLine.journalEntryId))
+    .where(
+      and(
+        eq(journalLine.accountId, accountId),
+        isNull(journalLine.hash),
+        eq(journalLine.amount, transaction.amount),
+        eq(journalLine.isReconciled, false),
+        eq(journal.date, transaction.date),
+        exists(
+          db
+            .select({ one: sql`1` })
+            .from(journalAttachment)
+            .where(eq(journalAttachment.journalLineId, journalLine.id)),
+        ),
+      ),
+    )
+    .orderBy(asc(journalLine.id))
+    .limit(1)
+  if (!manualLine) {
+    return false
+  }
+  await db.transaction(async (tx) => {
+    await tx
+      .update(journalLine)
+      .set(withUpdate(userId, { hash: transaction.hash }))
+      .where(eq(journalLine.id, manualLine.id))
+    await tx
+      .update(journal)
+      .set(withUpdate(userId, { note: transaction.details }))
+      .where(eq(journal.id, manualLine.journalId))
+  })
+  return true
+}
+
 export type ImportRowProgress =
   | { status: "imported"; index: number; total: number; transaction: Transaction }
   | { status: "skipped"; index: number; total: number; transaction: Transaction }
@@ -87,6 +140,14 @@ export async function importTransactions(
       .limit(1)
 
     if (existingLine) {
+      onProgress?.({ status: "skipped", index, total, transaction })
+      continue
+    }
+
+    // An expense added by hand (with its receipt photo) before the statement
+    // arrived: take the statement's row as that line rather than adding a
+    // second one. It gets the row's import hash, so a re-import skips it.
+    if (await claimManualExpense(transaction, ledgerAccount.id, userId)) {
       onProgress?.({ status: "skipped", index, total, transaction })
       continue
     }

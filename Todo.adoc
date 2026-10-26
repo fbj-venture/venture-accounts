@@ -14,7 +14,12 @@
 
 == 0.18.0
 
-* [x] Rotated credentials
+* [x] Dashboard UI update
+* [x] Company Settings
+** [x] Set import cards visibility
+* [ ] Capture a manual transaction
+** [ ] Complete transaction details
+** [ ] Add a photo of the receipt to the transaction, ensuring all the fields for the hash are in place
 
 == Todo
 
@@ -23,7 +28,6 @@
 * [ ] Security
 ** [ ] Run GStack audit (https://github.com/garrytan/gstack)
 * [ ] Manually add transactions
-** [ ] Add a photo of the receipt to the transaction, ensuring all the fields for the hash are in place
 * [ ] Add a way to merge a manual transaction with a Bank feed transaction (e.g. if their dates are different)
 * [ ] Uploads
 ** [ ] Upload + Link invoices/receipts to JournalLines

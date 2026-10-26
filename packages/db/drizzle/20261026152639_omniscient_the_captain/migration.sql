@@ -1,0 +1,1 @@
+ALTER TABLE "company_settings" ADD COLUMN "hidden_importers" text[] DEFAULT '{}'::text[] NOT NULL;

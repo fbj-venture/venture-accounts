@@ -14,12 +14,7 @@
 
 == 0.18.0
 
-* [x] Dashboard UI update
-* [x] Company Settings
-** [x] Set import cards visibility
-* [ ] Capture a manual transaction
-** [ ] Complete transaction details
-** [ ] Add a photo of the receipt to the transaction, ensuring all the fields for the hash are in place
+
 
 == Todo
 

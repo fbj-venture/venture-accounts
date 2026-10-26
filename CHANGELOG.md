@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.18.0] - 2026-10-27
+
+### Added
+
+- Dashboard UI update
+- Capture a manual transaction
+  - Complete transaction details
+  - Add a photo of the receipt to the transaction, ensuring all the fields for the hash are in place
+
+  ### Changed
+
+- Company Settings
+  - Set import cards visibility
+
 ## [0.17.1] - 2026-10-26
 
 ### Added

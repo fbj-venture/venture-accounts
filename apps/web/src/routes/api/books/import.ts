@@ -1,6 +1,6 @@
 import { readPdfStreamWithProgress, type ImportEvent } from "@app/bank-statement-importer"
 import { createFileRoute } from "@tanstack/react-router"
-import { auth } from "#/lib/auth.ts"
+import { getVerifiedSession } from "#/lib/auth-session.server.ts"
 
 // One event per phase, streamed to the client as Server-Sent Events so the
 // upload UI can show progress as it happens (upload received, extracting,
@@ -15,7 +15,7 @@ export const Route = createFileRoute("/api/books/import")({
   server: {
     handlers: {
       POST: async ({ request }: { request: Request }) => {
-        const session = await auth.api.getSession({ headers: request.headers })
+        const session = await getVerifiedSession(request.headers)
         if (!session) {
           return new Response("Unauthorized", { status: 401 })
         }

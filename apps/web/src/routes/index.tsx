@@ -41,7 +41,7 @@ function Home() {
 
     if (!signInError) {
       clearSessionCache(queryClient)
-      await navigate({ to: "/books" })
+      await navigate({ to: "/second-factor" })
     } else {
       setError(signInError.message ?? "Unable to sign in.")
       setPending(false)
@@ -54,7 +54,7 @@ function Home() {
     // Redirects to Google and back, so on success this page is left.
     const { error: signInError } = await authClient.signIn.social({
       provider: "google",
-      callbackURL: "/books",
+      callbackURL: "/second-factor",
       errorCallbackURL: "/",
     })
     if (signInError) {

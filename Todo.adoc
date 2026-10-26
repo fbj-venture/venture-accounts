@@ -15,9 +15,8 @@
 == 0.17.0
 
 * [ ] Security
-** [ ] Two-factor authentication (authenticator)
-** [ ] Enforce a 14 character password with upper case, lower case, numbers and a spacial character
-** [ ] IMplement passkeys instead of social logins
+** [x] Enforce a 14 character password with upper case, lower case, numbers and a spacial character
+** [ ] Implement passkeys instead of social logins
 
 == Todo
 

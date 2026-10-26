@@ -33,6 +33,13 @@ const config = defineConfig(({ command }) => ({
       publishedAt: command === "build" ? new Date().toISOString() : null,
     }),
   },
+  // Dev only: listen on every network interface (not just localhost) so other
+  // devices on the LAN can open the app. allowedHosts: true also accepts any
+  // Host header (a name like my-pc.local, not only an IP); Vite otherwise
+  // rejects them to stop DNS-rebinding attacks, which matters little on a
+  // trusted LAN. Remember BETTER_AUTH_URL (and BETTER_AUTH_TRUSTED_ORIGINS)
+  // must match the address the other device uses.
+  server: { host: true, allowedHosts: true },
   resolve: { tsconfigPaths: true },
   plugins: lazyPlugins(() => [
     varlockVitePlugin(),

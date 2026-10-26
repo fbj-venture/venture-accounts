@@ -1,14 +1,23 @@
 import { ENV } from "varlock/env"
-import { authAccount, db, session, user, verification } from "@app/db/direct"
+import {
+  authAccount,
+  db,
+  passkey as passkeyTable,
+  session,
+  user,
+  verification,
+} from "@app/db/direct"
 import { and, count, eq, gt, like } from "drizzle-orm"
 import { betterAuth } from "better-auth"
 import { APIError, createAuthMiddleware } from "better-auth/api"
 import { admin } from "better-auth/plugins"
+import { passkey } from "@better-auth/passkey"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 import { tanstackStartCookies } from "better-auth/tanstack-start"
 import { renderResetPasswordEmail, renderVerifyEmail } from "@app/email"
 import { sendEmail } from "@app/email/send"
 import { getCompanyName } from "./company-name.server.ts"
+import { requireEnrolledSameUser, secondFactor } from "./second-factor.server.ts"
 import { MIN_PASSWORD_LENGTH, passwordProblem } from "./password-policy.ts"
 
 // Email clients load images from the web, so this must be a public absolute URL
@@ -41,7 +50,7 @@ export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
     schemaName: "auth",
-    schema: { user, session, account: authAccount, verification },
+    schema: { user, session, account: authAccount, verification, passkey: passkeyTable },
   }),
   // Sign-in is refused until the user's email is verified, and nobody - admins
   // included - can mark an email verified by hand (see hooks below). It only
@@ -152,6 +161,7 @@ export const auth = betterAuth({
     customRules: {
       "/request-password-reset": { window: 15 * 60, max: 5 },
       "/send-verification-email": { window: 15 * 60, max: 5 },
+      "/passkey/verify-authentication": { window: 15 * 60, max: 20 },
     },
   },
   // The session is checked against a signed cookie for 5 minutes before going
@@ -185,5 +195,44 @@ export const auth = betterAuth({
     }),
   },
   // Must be last (see better-auth/tanstack-start docs).
-  plugins: [admin(), tanstackStartCookies()],
+  // secondFactor gates every session until a passkey is proved (see
+  // second-factor.server.ts).
+  plugins: [
+    admin(),
+    passkey({
+      rpID: new URL(ENV.BETTER_AUTH_URL).hostname,
+      rpName: "Venture Accounts",
+      origin: [
+        ENV.BETTER_AUTH_URL,
+        ...(ENV.BETTER_AUTH_TRUSTED_ORIGINS ?? "")
+          .split(",")
+          .map((origin) => origin.trim())
+          .filter(Boolean),
+      ],
+      authenticatorSelection: { residentKey: "preferred", userVerification: "required" },
+      // The plugin does not insist on user verification (PIN / biometric), so
+      // it is checked here, along with whose passkey it is.
+      registration: {
+        afterVerification: async ({ verification }) => {
+          if (!verification.registrationInfo?.userVerified) {
+            throw new APIError("BAD_REQUEST", {
+              message: "The passkey must be unlocked with a PIN or biometric.",
+            })
+          }
+        },
+      },
+      authentication: {
+        afterVerification: async ({ ctx, verification, clientData }) => {
+          if (!verification.authenticationInfo.userVerified) {
+            throw new APIError("UNAUTHORIZED", {
+              message: "The passkey must be unlocked with a PIN or biometric.",
+            })
+          }
+          await requireEnrolledSameUser(ctx, clientData.id)
+        },
+      },
+    }),
+    secondFactor(),
+    tanstackStartCookies(),
+  ],
 })

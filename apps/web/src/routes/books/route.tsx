@@ -25,6 +25,9 @@ export const Route = createFileRoute("/books")({
     if (!authSession) {
       throw redirect({ to: "/" })
     }
+    if ("pending" in authSession) {
+      throw redirect({ to: "/second-factor" })
+    }
     // Explicit annotation so this fails to typecheck if better-auth's
     // inferred user shape ever drifts from @app/models' User.
     const user: SessionUser = authSession.user

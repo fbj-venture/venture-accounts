@@ -150,6 +150,10 @@ export const auth = betterAuth({
       allowDifferentEmails: true,
     },
   },
+  // Railway's proxy sends x-forwarded-for as a multi-hop chain, which Better
+  // Auth refuses to trust, so rate limiting found no client IP and put every
+  // visitor in one shared bucket. Railway's edge sets x-real-ip to the client.
+  advanced: { ipAddress: { ipAddressHeaders: ["x-real-ip"] } },
   // Explicit rather than relying on the isProduction default, so dev/staging
   // are protected too and behavior doesn't silently depend on NODE_ENV.
   rateLimit: {

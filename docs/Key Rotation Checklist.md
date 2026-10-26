@@ -15,7 +15,7 @@ Reusable runbook for rotating every secret venture-accounts depends on. Source o
 ## Before you start
 
 - [ ] Password manager open, with a scratch note for the new values
-- [ ] Access to: Railway, Neon, Resend (and the GitHub repo if CI uses any of these)
+- [ ] Access to: Railway, Neon, Resend, Google Cloud Console (and the GitHub repo if CI uses any of these)
 - [ ] Know the app's own admin login so you can verify after deploying
 - [ ] Check git history for leaked secrets if the rotation was prompted by an incident: `git log -p -S"re_" -- .` and look for committed `.env` files
 - [ ] Decide the window and tell anyone who uses the app (brief logouts are expected)
@@ -57,37 +57,47 @@ Highest impact: a leaked connection string exposes all financial data.
 - [ ] Deploy, then import a PDF statement and download it again to prove both upload and presigned download work
 - [ ] Confirm the old credentials no longer work
 
-## 5. Railway itself
+## 5. Google sign-in — `GOOGLE_CLIENT_SECRET`
+
+Optional: skip if Google sign-in isn't enabled. `GOOGLE_CLIENT_ID` is not a secret.
+
+- [ ] Google Cloud Console → **APIs & Services** → **Credentials** → the OAuth 2.0 client → **Add secret** (the client can hold two secrets at once, so this is a no-downtime swap)
+- [ ] Update `GOOGLE_CLIENT_SECRET` in Railway, then local `.env`
+- [ ] Deploy, then sign in with Google and confirm it works
+- [ ] Disable, then delete, the old secret in Google Cloud Console
+
+## 6. Railway itself
 
 - [ ] Rotate any **Railway API / project tokens** used by CI or scripts (Account → Tokens), update wherever stored, delete the old ones
 - [ ] Review team members and remove anyone who shouldn't have access
 - [ ] Review the Variables tab for secrets you don't recognise or no longer use, and delete them
 - [ ] Redeploy the service so every variable change is picked up
 
-## 6. Application accounts
+## 7. Application accounts
 
 - [ ] `ADMIN_PASSWORD`: only used on first run when there are no users. If it was ever set in production, make sure it is removed from Railway and change the real admin's password in the app
 - [ ] Change the passwords of any app users who share the previous admin credentials, or who were exposed by the incident
 - [ ] `PDF_PASSWORD`: this is the bank's statement password, not ours. Rotate only if the bank lets you change it, and keep it in sync with the PDF downloads
 
-## 7. Source control and CI
+## 8. Source control and CI
 
 - [ ] GitHub: rotate personal access tokens and deploy keys that touch this repo; review Actions secrets and Dependabot/Codespaces secrets
 - [ ] Confirm `.env`, `.env.local` and `packages/db/.env` are gitignored and were never committed
 - [ ] If a secret was ever committed, rotating it is mandatory (history rewrite alone is not enough)
 
-## 8. Verify everything
+## 9. Verify everything
 
 - [ ] App loads and you can log in
+- [ ] Google sign-in works (if enabled)
 - [ ] Data loads from the database (open an account and its transactions)
 - [ ] Email sends (password reset or invitation)
 - [ ] PDF import works and the stored file downloads
 - [ ] Railway deploy logs show no auth, S3 or Resend errors
 - [ ] Local dev: `pnpm dev` and `pnpm --filter @app/db db:migrate` work with the updated `.env` files
 
-## 9. Clean up
+## 10. Clean up
 
-- [ ] All **old** credentials revoked or deleted (Neon role/password, Resend key, bucket keys, tokens)
+- [ ] All **old** credentials revoked or deleted (Neon role/password, Resend key, bucket keys, Google client secret, tokens)
 - [ ] Scratch note in the password manager tidied; only current values kept
 - [ ] Rotation log below updated
 - [ ] "Last full rotation" date at the top updated
@@ -105,6 +115,7 @@ The local docker-compose values (`venture`/`venture`, `local-dev-secret-not-for-
 | Emails silently not sent                                    | `RESEND_API_KEY` wrong or has restricted scope, or the domain isn't verified                |
 | Upload or download fails with `SignatureDoesNotMatch` / 403 | Stale S3 key or secret in Railway                                                           |
 | Local migrations fail but production is fine                | `packages/db/.env` not updated                                                              |
+| Google sign-in fails with `invalid_client`                  | New `GOOGLE_CLIENT_SECRET` not in Railway, or the old secret was deleted before the swap    |
 
 Roll back by restoring the previous value only if the old credential hasn't been revoked yet, which is why revocation comes last.
 

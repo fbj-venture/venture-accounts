@@ -12,9 +12,9 @@
 * [ ] Migrate the database
 * [ ] Git push all changes
 
-== 0.17.0
+== 0.18.0
 
-* [ ] Rotate credentials
+* [x] Rotated credentials
 
 == Todo
 

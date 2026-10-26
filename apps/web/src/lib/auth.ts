@@ -9,11 +9,21 @@ import { tanstackStartCookies } from "better-auth/tanstack-start"
 import { renderResetPasswordEmail, renderVerifyEmail } from "@app/email"
 import { sendEmail } from "@app/email/send"
 import { getCompanyName } from "./company-name.server.ts"
+import { MIN_PASSWORD_LENGTH, passwordProblem } from "./password-policy.ts"
 
 // Email clients load images from the web, so this must be a public absolute URL
 // (file is apps/web/public/img/venture-church.png). It will show broken in
 // emails sent from localhost.
 export const EMAIL_LOGO_URL = new URL("/img/venture-church.png", ENV.BETTER_AUTH_URL).toString()
+
+// Endpoints whose body carries a new password (checked against the password
+// policy in the hooks below). sign-up/email is disabled but listed anyway.
+const PASSWORD_PATHS = [
+  "/reset-password",
+  "/change-password",
+  "/set-password",
+  "/admin/set-user-password",
+]
 
 // Most reset emails one address gets in an hour.
 const RESET_EMAILS_PER_HOUR = 3
@@ -40,6 +50,7 @@ export const auth = betterAuth({
   // (onPasswordReset).
   emailAndPassword: {
     enabled: true,
+    minPasswordLength: MIN_PASSWORD_LENGTH,
     // Users are invited by an admin; this closes POST /api/auth/sign-up/email.
     // Admin-created users go through the admin plugin's createUser, which this
     // doesn't affect.
@@ -151,10 +162,21 @@ export const auth = betterAuth({
   // updating a user; refuse it so verification can't be skipped.
   hooks: {
     before: createAuthMiddleware(async (ctx) => {
+      const body = (ctx.body ?? {}) as { data?: Record<string, unknown>; newPassword?: unknown }
+      // Every endpoint that stores a password, so the rules can't be skipped
+      // by calling the API directly.
+      if (PASSWORD_PATHS.includes(ctx.path)) {
+        const problem = passwordProblem(
+          typeof body.newPassword === "string" ? body.newPassword : "",
+        )
+        if (problem) {
+          throw new APIError("BAD_REQUEST", { message: problem, code: "PASSWORD_POLICY" })
+        }
+        return
+      }
       if (ctx.path !== "/admin/create-user" && ctx.path !== "/admin/update-user") {
         return
       }
-      const body = (ctx.body ?? {}) as { data?: Record<string, unknown> }
       if (body.data && "emailVerified" in body.data) {
         throw new APIError("BAD_REQUEST", {
           message: "An email address can only be verified by its owner.",

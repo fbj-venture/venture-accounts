@@ -3,7 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "#/components/ui/card.t
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "#/components/ui/field.tsx"
 import { Input } from "#/components/ui/input.tsx"
 import { authClient } from "#/lib/auth-client.ts"
+import { MIN_PASSWORD_LENGTH, passwordChecks, passwordProblem } from "#/lib/password-policy.ts"
 import { Link, createFileRoute } from "@tanstack/react-router"
+import { CheckIcon, CircleIcon } from "lucide-react"
 import { useState } from "react"
 
 // Where the link in an invitation email lands (see sendInvitationEmail in
@@ -24,9 +26,11 @@ function RouteComponent() {
   const [error, setError] = useState<string | null>(null)
   const [done, setDone] = useState(false)
 
-  const tooShort = password !== "" && password.length < 8
+  const checks = passwordChecks(password)
+  const started = password !== ""
   const mismatch = confirmPassword !== "" && password !== confirmPassword
-  const canSubmit = !busy && password.length >= 8 && password === confirmPassword
+  const canSubmit =
+    !busy && password !== "" && !passwordProblem(password) && password === confirmPassword
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -78,12 +82,37 @@ function RouteComponent() {
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}
                     autoComplete="new-password"
-                    aria-invalid={tooShort}
+                    aria-describedby="set-password-rules"
+                    aria-invalid={started && checks.some((check) => !check.met)}
                     required
                   />
-                  <FieldDescription className={tooShort ? "text-destructive" : undefined}>
-                    At least 8 characters.
-                  </FieldDescription>
+                  <div id="set-password-rules" className="grid gap-1 text-sm text-muted-foreground">
+                    <span>
+                      {password.length} of {MIN_PASSWORD_LENGTH} characters minimum
+                    </span>
+                    <ul className="grid gap-0.5" aria-live="polite">
+                      {checks.map((check) => (
+                        <li
+                          key={check.label}
+                          className={
+                            check.met
+                              ? "flex items-center gap-1.5 text-green-700 dark:text-green-500"
+                              : started
+                                ? "flex items-center gap-1.5 text-destructive"
+                                : "flex items-center gap-1.5"
+                          }
+                        >
+                          {check.met ? (
+                            <CheckIcon className="size-3.5 shrink-0" aria-hidden />
+                          ) : (
+                            <CircleIcon className="size-3.5 shrink-0" aria-hidden />
+                          )}
+                          {check.label}
+                          <span className="sr-only">{check.met ? " - met" : " - not met"}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </Field>
                 <Field>
                   <FieldLabel htmlFor="set-confirm-password">Confirm password</FieldLabel>

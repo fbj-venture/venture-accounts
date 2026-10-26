@@ -2,6 +2,7 @@ import { ENV } from "varlock/env"
 import { authAccount, db, session, user, verification } from "@app/db/direct"
 import { and, count, eq, gt, like } from "drizzle-orm"
 import { betterAuth } from "better-auth"
+import { APIError, createAuthMiddleware } from "better-auth/api"
 import { admin } from "better-auth/plugins"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 import { tanstackStartCookies } from "better-auth/tanstack-start"
@@ -32,16 +33,28 @@ export const auth = betterAuth({
     schemaName: "auth",
     schema: { user, session, account: authAccount, verification },
   }),
-  // Sign-in is refused until the user's email is verified. Users an admin
-  // creates without ticking "require email verification" are saved as
-  // already verified (see createUser in admin/users/-components/users-fn.ts),
-  // so they can sign in straight away with the password they were given.
+  // Sign-in is refused until the user's email is verified, and nobody - admins
+  // included - can mark an email verified by hand (see hooks below). It only
+  // happens by the user proving they control the mailbox: following the
+  // verification link, or using an invitation / password-reset link
+  // (onPasswordReset).
   emailAndPassword: {
     enabled: true,
+    // Users are invited by an admin; this closes POST /api/auth/sign-up/email.
+    // Admin-created users go through the admin plugin's createUser, which this
+    // doesn't affect.
+    disableSignUp: true,
     requireEmailVerification: true,
     // Forgot-password links last an hour (invitation links are made
     // separately and last longer - see invitation.server.ts).
     resetPasswordTokenExpiresIn: 60 * 60,
+    // The reset/invitation token was only ever emailed to this address, so
+    // using it verifies the address.
+    onPasswordReset: async ({ user: target }) => {
+      if (!target.emailVerified) {
+        await db.update(user).set({ emailVerified: true }).where(eq(user.id, target.id))
+      }
+    },
     sendResetPassword: async ({ user: target, url }) => {
       // Per-address cap, on top of the per-IP limit on the endpoint below:
       // however many IPs a flood comes from, one mailbox gets at most
@@ -92,9 +105,11 @@ export const auth = betterAuth({
     },
   },
   // Google is only offered when its credentials are set. Users are invited, so
-  // Google can never create an account (disableSignUp): it can only be linked
-  // to an existing user, from My Account or by signing in with a matching,
-  // Google-verified email.
+  // Google can never create an account (disableSignUp), and it can only be
+  // linked from My Account by a user who is already signed in (so has set a
+  // password). Invited users are created already email-verified, so without
+  // disableImplicitLinking below, a Google sign-in with the same email would
+  // link itself and skip choosing a password.
   socialProviders:
     ENV.GOOGLE_CLIENT_ID && ENV.GOOGLE_CLIENT_SECRET
       ? {
@@ -111,6 +126,7 @@ export const auth = betterAuth({
     accountLinking: {
       enabled: true,
       trustedProviders: ["google"],
+      disableImplicitLinking: true,
       allowDifferentEmails: true,
     },
   },
@@ -131,6 +147,21 @@ export const auth = betterAuth({
   // back to the database, so navigating doesn't query it every time. Keep in
   // step with SESSION_STALE_TIME (routes/books/-lib/session-query.ts).
   session: { cookieCache: { enabled: true, maxAge: 5 * 60 } },
+  // The admin plugin lets an admin pass emailVerified when creating or
+  // updating a user; refuse it so verification can't be skipped.
+  hooks: {
+    before: createAuthMiddleware(async (ctx) => {
+      if (ctx.path !== "/admin/create-user" && ctx.path !== "/admin/update-user") {
+        return
+      }
+      const body = (ctx.body ?? {}) as { data?: Record<string, unknown> }
+      if (body.data && "emailVerified" in body.data) {
+        throw new APIError("BAD_REQUEST", {
+          message: "An email address can only be verified by its owner.",
+        })
+      }
+    }),
+  },
   // Must be last (see better-auth/tanstack-start docs).
   plugins: [admin(), tanstackStartCookies()],
 })

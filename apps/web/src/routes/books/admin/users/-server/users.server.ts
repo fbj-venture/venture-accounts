@@ -143,8 +143,8 @@ type NewUserInput = {
 
 // Creates a user and emails them an invitation to choose their own password
 // (see sendInvitationEmail). They're created without a password - so they
-// can't sign in until they accept - and already marked as verified, since
-// the only way to get a password is the link sent to their address. A failed
+// can't sign in until they accept. Their email is marked verified when they
+// use that link (onPasswordReset in lib/auth.ts), never by the admin. A failed
 // invitation email doesn't undo the creation - it comes back in
 // invitationEmailError instead, and can be re-sent (sendUserInvitation).
 export const createUser = createServerFn({ method: "POST" })
@@ -165,7 +165,7 @@ export const createUser = createServerFn({ method: "POST" })
     }
 
     const { user: created } = await auth.api.createUser({
-      body: { email, name, role, data: { emailVerified: true } },
+      body: { email, name, role },
       headers: getRequest().headers,
     })
 

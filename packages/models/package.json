@@ -1,6 +1,6 @@
 {
   "name": "@app/models",
-  "version": "0.0.1",
+  "version": "0.19.0",
   "private": true,
   "description": "Shared TypeScript domain models and types for venture-accounts",
   "type": "module",

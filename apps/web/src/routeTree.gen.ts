@@ -18,8 +18,10 @@ import { Route as BooksIndexRouteImport } from "./routes/books/index"
 import { Route as BooksAdminRouteRouteImport } from "./routes/books/admin/route"
 import { Route as SecondFactorIndexRouteImport } from "./routes/second-factor/index"
 import { Route as ApiAuthSplatRouteImport } from "./routes/api/auth/$"
+import { Route as ApiAvatarUserIdRouteImport } from "./routes/api/avatar.$userId"
 import { Route as ApiBooksExpenseRouteImport } from "./routes/api/books/expense"
 import { Route as ApiBooksImportRouteImport } from "./routes/api/books/import"
+import { Route as ApiBooksStatementsPackRouteImport } from "./routes/api/books/statements-pack"
 import { Route as BooksAccountsIndexRouteImport } from "./routes/books/accounts/index"
 import { Route as BooksAccountsImportRouteImport } from "./routes/books/accounts/import"
 import { Route as BooksBankAccountIndexRouteImport } from "./routes/books/bank-account/index"
@@ -91,6 +93,11 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: "/api/auth/$",
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAvatarUserIdRoute = ApiAvatarUserIdRouteImport.update({
+  id: "/api/avatar/$userId",
+  path: "/api/avatar/$userId",
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiBooksExpenseRoute = ApiBooksExpenseRouteImport.update({
   id: "/api/books/expense",
   path: "/api/books/expense",
@@ -99,6 +106,11 @@ const ApiBooksExpenseRoute = ApiBooksExpenseRouteImport.update({
 const ApiBooksImportRoute = ApiBooksImportRouteImport.update({
   id: "/api/books/import",
   path: "/api/books/import",
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiBooksStatementsPackRoute = ApiBooksStatementsPackRouteImport.update({
+  id: "/api/books/statements-pack",
+  path: "/api/books/statements-pack",
   getParentRoute: () => rootRouteImport,
 } as any)
 const BooksAccountsIndexRoute = BooksAccountsIndexRouteImport.update({
@@ -238,8 +250,10 @@ export interface FileRoutesByFullPath {
   "/second-factor/": typeof SecondFactorIndexRoute
   "/books/banking/transactions": typeof BooksBankingTransactionsRouteRouteWithChildren
   "/api/auth/$": typeof ApiAuthSplatRoute
+  "/api/avatar/$userId": typeof ApiAvatarUserIdRoute
   "/api/books/expense": typeof ApiBooksExpenseRoute
   "/api/books/import": typeof ApiBooksImportRoute
+  "/api/books/statements-pack": typeof ApiBooksStatementsPackRoute
   "/books/accounts/import": typeof BooksAccountsImportRoute
   "/books/bank-account/$id": typeof BooksBankAccountIdRoute
   "/books/expense/new": typeof BooksExpenseNewRoute
@@ -274,8 +288,10 @@ export interface FileRoutesByTo {
   "/books": typeof BooksIndexRoute
   "/second-factor": typeof SecondFactorIndexRoute
   "/api/auth/$": typeof ApiAuthSplatRoute
+  "/api/avatar/$userId": typeof ApiAvatarUserIdRoute
   "/api/books/expense": typeof ApiBooksExpenseRoute
   "/api/books/import": typeof ApiBooksImportRoute
+  "/api/books/statements-pack": typeof ApiBooksStatementsPackRoute
   "/books/accounts/import": typeof BooksAccountsImportRoute
   "/books/bank-account/$id": typeof BooksBankAccountIdRoute
   "/books/expense/new": typeof BooksExpenseNewRoute
@@ -313,8 +329,10 @@ export interface FileRoutesById {
   "/second-factor/": typeof SecondFactorIndexRoute
   "/books/banking/transactions": typeof BooksBankingTransactionsRouteRouteWithChildren
   "/api/auth/$": typeof ApiAuthSplatRoute
+  "/api/avatar/$userId": typeof ApiAvatarUserIdRoute
   "/api/books/expense": typeof ApiBooksExpenseRoute
   "/api/books/import": typeof ApiBooksImportRoute
+  "/api/books/statements-pack": typeof ApiBooksStatementsPackRoute
   "/books/accounts/import": typeof BooksAccountsImportRoute
   "/books/bank-account/$id": typeof BooksBankAccountIdRoute
   "/books/expense/new": typeof BooksExpenseNewRoute
@@ -353,8 +371,10 @@ export interface FileRouteTypes {
     | "/second-factor/"
     | "/books/banking/transactions"
     | "/api/auth/$"
+    | "/api/avatar/$userId"
     | "/api/books/expense"
     | "/api/books/import"
+    | "/api/books/statements-pack"
     | "/books/accounts/import"
     | "/books/bank-account/$id"
     | "/books/expense/new"
@@ -389,8 +409,10 @@ export interface FileRouteTypes {
     | "/books"
     | "/second-factor"
     | "/api/auth/$"
+    | "/api/avatar/$userId"
     | "/api/books/expense"
     | "/api/books/import"
+    | "/api/books/statements-pack"
     | "/books/accounts/import"
     | "/books/bank-account/$id"
     | "/books/expense/new"
@@ -427,8 +449,10 @@ export interface FileRouteTypes {
     | "/second-factor/"
     | "/books/banking/transactions"
     | "/api/auth/$"
+    | "/api/avatar/$userId"
     | "/api/books/expense"
     | "/api/books/import"
+    | "/api/books/statements-pack"
     | "/books/accounts/import"
     | "/books/bank-account/$id"
     | "/books/expense/new"
@@ -463,8 +487,10 @@ export interface RootRouteChildren {
   SetPasswordRoute: typeof SetPasswordRoute
   SecondFactorIndexRoute: typeof SecondFactorIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiAvatarUserIdRoute: typeof ApiAvatarUserIdRoute
   ApiBooksExpenseRoute: typeof ApiBooksExpenseRoute
   ApiBooksImportRoute: typeof ApiBooksImportRoute
+  ApiBooksStatementsPackRoute: typeof ApiBooksStatementsPackRoute
 }
 
 declare module "@tanstack/react-router" {
@@ -532,6 +558,13 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    "/api/avatar/$userId": {
+      id: "/api/avatar/$userId"
+      path: "/api/avatar/$userId"
+      fullPath: "/api/avatar/$userId"
+      preLoaderRoute: typeof ApiAvatarUserIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     "/api/books/expense": {
       id: "/api/books/expense"
       path: "/api/books/expense"
@@ -544,6 +577,13 @@ declare module "@tanstack/react-router" {
       path: "/api/books/import"
       fullPath: "/api/books/import"
       preLoaderRoute: typeof ApiBooksImportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    "/api/books/statements-pack": {
+      id: "/api/books/statements-pack"
+      path: "/api/books/statements-pack"
+      fullPath: "/api/books/statements-pack"
+      preLoaderRoute: typeof ApiBooksStatementsPackRouteImport
       parentRoute: typeof rootRouteImport
     }
     "/books/accounts/": {
@@ -813,8 +853,10 @@ const rootRouteChildren: RootRouteChildren = {
   SetPasswordRoute: SetPasswordRoute,
   SecondFactorIndexRoute: SecondFactorIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiAvatarUserIdRoute: ApiAvatarUserIdRoute,
   ApiBooksExpenseRoute: ApiBooksExpenseRoute,
   ApiBooksImportRoute: ApiBooksImportRoute,
+  ApiBooksStatementsPackRoute: ApiBooksStatementsPackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

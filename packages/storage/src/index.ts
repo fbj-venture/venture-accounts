@@ -90,3 +90,13 @@ export async function deleteFile(key: string): Promise<void> {
   const { client, config } = getStorage()
   await client.send(new DeleteObjectCommand({ Bucket: config.bucket, Key: key }))
 }
+
+/** The file's bytes. For building something from several files (e.g. a zip); to hand a file to the browser use getFileUrl. */
+export async function getFileBytes(key: string): Promise<Uint8Array> {
+  const { client, config } = getStorage()
+  const response = await client.send(new GetObjectCommand({ Bucket: config.bucket, Key: key }))
+  if (!response.Body) {
+    throw new Error(`The file ${key} is empty or missing.`)
+  }
+  return response.Body.transformToByteArray()
+}

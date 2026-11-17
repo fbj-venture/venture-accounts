@@ -12,8 +12,7 @@
 * [ ] Migrate the database
 * [ ] Git push all changes
 
-== 0.18.0
-
+== 0.20.0
 
 
 == Todo

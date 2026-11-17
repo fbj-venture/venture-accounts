@@ -68,6 +68,19 @@ export const verification = authSchema.table("verification", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 })
 
+// The picture behind a user's avatar. It lives here, not in user.image: better-auth
+// copies the whole user into the session_data cookie, and a few KB of image
+// there overflows the response headers. user.image holds only the short URL
+// that serves this row (/api/avatar/<userId>?v=<updatedAt>). `data` is the
+// small JPEG as a data URL, exactly as the avatar picker makes it.
+export const userAvatar = authSchema.table("user_avatar", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => user.id, { onDelete: "cascade" }),
+  data: text("data").notNull(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+})
+
 // Added by @better-auth/passkey (field names fixed by the plugin).
 export const passkey = authSchema.table("passkey", {
   id: text("id").primaryKey(),

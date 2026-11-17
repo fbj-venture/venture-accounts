@@ -1,20 +1,24 @@
 import { ENV } from "varlock/env"
 import { requireUser } from "#/lib/require-user.server.ts"
-import { authAccount, db, user } from "@app/db/direct"
+import { authAccount, db, user, userAvatar } from "@app/db/direct"
 import { createServerFn } from "@tanstack/react-start"
 import { and, eq } from "drizzle-orm"
 
 // Keep ALL database code inside handlers - see transactions.server.ts for why.
 
-// The avatar is a small square JPEG made in the browser and stored in
-// user.image as a data URL, so it needs no file storage and works anywhere
-// the session's `image` is used as an <img src>.
+// The avatar is a small square JPEG made in the browser. The picture itself
+// goes in user_avatar and is served by /api/avatar/$userId; user.image holds
+// only that short URL, because better-auth copies the whole user into the
+// session cookie and a picture there overflows the response headers.
 const AVATAR_PREFIX = "data:image/jpeg;base64,"
 const MAX_AVATAR_LENGTH = 100_000
 
 type MyProfileInput = {
   name: string
-  /** A data URL from the avatar picker, or null to remove the avatar. */
+  /**
+   * A data URL from the avatar picker (a new picture), null (remove the
+   * avatar), or the current avatar URL back again (leave it alone).
+   */
   image: string | null
 }
 
@@ -28,16 +32,35 @@ export const updateMyProfile = createServerFn({ method: "POST" })
     if (!name) {
       throw new Error("Name is required.")
     }
+    const newPicture = data.image?.startsWith("data:") ? data.image : null
     if (
-      data.image !== null &&
-      (!data.image.startsWith(AVATAR_PREFIX) || data.image.length > MAX_AVATAR_LENGTH)
+      newPicture !== null &&
+      (!newPicture.startsWith(AVATAR_PREFIX) || newPicture.length > MAX_AVATAR_LENGTH)
     ) {
       throw new Error("The avatar must be a small JPEG image.")
     }
-    await db
-      .update(user)
-      .set({ name, image: data.image, updatedAt: new Date() })
-      .where(eq(user.id, id))
+    const now = new Date()
+    await db.transaction(async (tx) => {
+      const profile: { name: string; updatedAt: Date; image?: string | null } = {
+        name,
+        updatedAt: now,
+      }
+      if (newPicture !== null) {
+        await tx
+          .insert(userAvatar)
+          .values({ userId: id, data: newPicture, updatedAt: now })
+          .onConflictDoUpdate({
+            target: userAvatar.userId,
+            set: { data: newPicture, updatedAt: now },
+          })
+        // ?v changes with each picture so browsers don't keep showing the old one.
+        profile.image = `/api/avatar/${id}?v=${now.getTime()}`
+      } else if (data.image === null) {
+        await tx.delete(userAvatar).where(eq(userAvatar.userId, id))
+        profile.image = null
+      }
+      await tx.update(user).set(profile).where(eq(user.id, id))
+    })
   })
 
 // Whether Google sign-in is set up on this server, and whether the signed-in

@@ -34,6 +34,8 @@ This document is the single source of truth for what each core term means, and w
 
 **Balancing has two distinct meanings and both matter.** (1) Internal balancing: every journal entry's lines sum to zero — a database-enforced invariant, checked at write time. (2) Reconciliation: the ledger's Bank account balance matches the actual bank statement — an external check, done periodically, not enforced by the schema. It is tracked per journal line (`journal_line.is_reconciled`), not per entry, because one entry can hold lines for two bank accounts (a matched transfer) and each bank's statement is reconciled separately. Keep these named differently in the UI ("balanced" vs. "reconciled") so users don't conflate a data-integrity guarantee with a real-world check.
 
+**A "Statements Pack" is one bank account's uploaded statements for one financial year, downloaded as a zip.** An upload (`bank_uploads`) has no period of its own: a statement belongs to the calendar month of the statement date of the reconciliation (`bank_recon`) it is linked to. The pack is only made when every month of the financial year has such a statement; otherwise the missing months are listed. Months before the account's first linked statement are not expected (it may have opened part way through the year), and neither are months after the last one if the account is archived.
+
 ## Open decisions / deferred concepts
 
 These have a settled theory meaning but no database or UI representation yet. Listed so a future addition uses the same name across all three layers rather than inventing a new one on the spot.

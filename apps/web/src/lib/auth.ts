@@ -37,6 +37,21 @@ const PASSWORD_PATHS = [
 // Most reset emails one address gets in an hour.
 const RESET_EMAILS_PER_HOUR = 3
 
+// The whole user, image included, is copied into the session_data cookie. A
+// data: URL avatar (several KB) swells that cookie past what the response
+// headers can carry (Node caps them at 16 KB), and sign-in fails with "Header
+// overflow". So only a short URL is kept; the app's own avatars live in
+// user_avatar and are served from /api/avatar (routes/api/avatar.$userId.ts).
+const MAX_IMAGE_LENGTH = 500
+
+function withSafeImage<T extends { image?: string | null }>(user: T): T {
+  const { image } = user
+  if (typeof image === "string" && (image.startsWith("data:") || image.length > MAX_IMAGE_LENGTH)) {
+    return { ...user, image: null }
+  }
+  return user
+}
+
 export const auth = betterAuth({
   baseURL: ENV.BETTER_AUTH_URL,
   trustedOrigins: [
@@ -174,6 +189,12 @@ export const auth = betterAuth({
   session: { cookieCache: { enabled: true, maxAge: 5 * 60 } },
   // The admin plugin lets an admin pass emailVerified when creating or
   // updating a user; refuse it so verification can't be skipped.
+  databaseHooks: {
+    user: {
+      create: { before: async (user) => ({ data: withSafeImage(user) }) },
+      update: { before: async (user) => ({ data: withSafeImage(user) }) },
+    },
+  },
   hooks: {
     before: createAuthMiddleware(async (ctx) => {
       const body = (ctx.body ?? {}) as { data?: Record<string, unknown>; newPassword?: unknown }

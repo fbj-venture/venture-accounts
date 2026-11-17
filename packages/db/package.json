@@ -1,6 +1,6 @@
 {
   "name": "@app/db",
-  "version": "0.0.1",
+  "version": "0.19.0",
   "private": true,
   "description": "PostgreSQL database access via Drizzle ORM",
   "type": "module",

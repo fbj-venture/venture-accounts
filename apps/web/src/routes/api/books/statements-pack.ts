@@ -4,7 +4,8 @@ import { createFileRoute } from "@tanstack/react-router"
 
 // The Statements Pack for a bank account and financial year, as a zip:
 // GET /api/books/statements-pack?bankAccountId=1&year=2026. When statements
-// are missing it answers 409 with JSON { problem, missing } instead.
+// are missing it answers 409 with JSON { problem, missing } instead, unless
+// allowMissing=1 asks for what there is anyway.
 export const Route = createFileRoute("/api/books/statements-pack")({
   server: {
     handlers: {
@@ -18,6 +19,7 @@ export const Route = createFileRoute("/api/books/statements-pack")({
           const result = await buildStatementsPack(
             Number(params.get("bankAccountId")),
             Number(params.get("year")),
+            params.get("allowMissing") === "1",
           )
           if (!result.ok) {
             return Response.json(

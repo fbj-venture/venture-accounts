@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.19.1] - 2026-11-17
+
+### Changed
+
+- Changed the logic for statement downloads to allow for accounts that don't have monthly statements (still shows as a warning).
+
 ## [0.19.0] - 2026-11-17
 
 ### Fixed
@@ -24,7 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Complete transaction details
   - Add a photo of the receipt to the transaction, ensuring all the fields for the hash are in place
 
-  ### Changed
+### Changed
 
 - Company Settings
   - Set import cards visibility

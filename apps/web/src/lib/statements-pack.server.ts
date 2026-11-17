@@ -46,10 +46,12 @@ export type StatementsPackResult =
 // upload. Every month of the year needs one - except before the account's
 // first statement (it may have been opened part way through the year) and,
 // for an archived account, after its last. Months without one are returned in
-// `missing` and nothing is zipped.
+// `missing` and nothing is zipped - unless allowMissing is set, which zips what
+// there is, names the file "(incomplete)" and adds a note listing the gaps.
 export async function buildStatementsPack(
   bankAccountId: number,
   endYear: number,
+  allowMissing = false,
 ): Promise<StatementsPackResult> {
   if (!Number.isInteger(bankAccountId) || !Number.isInteger(endYear)) {
     return { ok: false, status: 400, problem: "Choose a bank account and a financial year." }
@@ -110,7 +112,7 @@ export async function buildStatementsPack(
 
   const have = new Set(statements.map((s) => index(monthOf(s.statementDate))))
   const missing = expected.filter((month) => !have.has(index(month))).map(label)
-  if (missing.length > 0) {
+  if (missing.length > 0 && !allowMissing) {
     return { ok: false, status: 409, problem: "Statements are missing.", missing }
   }
 
@@ -120,6 +122,14 @@ export async function buildStatementsPack(
   for (const statement of statements) {
     if (inYear.has(index(monthOf(statement.statementDate))) && !chosen.has(statement.uploadId)) {
       chosen.set(statement.uploadId, statement)
+    }
+  }
+
+  if (chosen.size === 0) {
+    return {
+      ok: false,
+      status: 409,
+      problem: "There are no statements uploaded for that financial year.",
     }
   }
 
@@ -142,9 +152,20 @@ export async function buildStatementsPack(
     return { name, data, modified: new Date(`${statement.statementDate}T12:00:00`) }
   })
 
-  const fileName = `${account_.name} statements FY${endYear}.zip`.replace(
-    UNSAFE_FILE_NAME_CHARS,
-    "-",
-  )
+  if (missing.length > 0) {
+    zipEntries.push({
+      name: "MISSING STATEMENTS.txt",
+      data: new TextEncoder().encode(
+        `This pack is incomplete. No statement was uploaded for:\r\n\r\n${missing.join("\r\n")}\r\n`,
+      ),
+      modified: new Date(),
+    })
+  }
+
+  const fileName =
+    `${account_.name} statements FY${endYear}${missing.length > 0 ? " (incomplete)" : ""}.zip`.replace(
+      UNSAFE_FILE_NAME_CHARS,
+      "-",
+    )
   return { ok: true, fileName, zip: createZip(zipEntries) }
 }

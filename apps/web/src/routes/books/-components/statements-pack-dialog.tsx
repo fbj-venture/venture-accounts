@@ -48,12 +48,14 @@ export function StatementsPackDialog({
   const [busy, setBusy] = useState(false)
   const [problem, setProblem] = useState<Missing | null>(null)
 
-  async function download() {
+  // allowMissing: the user has seen which months are missing and wants the
+  // statements there are.
+  async function download(allowMissing = false) {
     setBusy(true)
     setProblem(null)
     try {
       const response = await fetch(
-        `/api/books/statements-pack?bankAccountId=${bankAccountId}&year=${year}`,
+        `/api/books/statements-pack?bankAccountId=${bankAccountId}&year=${year}${allowMissing ? "&allowMissing=1" : ""}`,
       )
       if (!response.ok) {
         const body = (await response.json().catch(() => null)) as Partial<Missing> | null
@@ -131,10 +133,17 @@ export function StatementsPackDialog({
           <Button type="button" variant="outline" disabled={busy} onClick={onClose}>
             Cancel
           </Button>
-          <Button type="button" disabled={busy || year === ""} onClick={download}>
-            {busy ? <LoaderCircleIcon className="animate-spin" /> : <DownloadIcon />}
-            Download
-          </Button>
+          {problem && problem.missing.length > 0 ? (
+            <Button type="button" disabled={busy} onClick={() => download(true)}>
+              {busy ? <LoaderCircleIcon className="animate-spin" /> : <DownloadIcon />}
+              Download anyway
+            </Button>
+          ) : (
+            <Button type="button" disabled={busy || year === ""} onClick={() => download()}>
+              {busy ? <LoaderCircleIcon className="animate-spin" /> : <DownloadIcon />}
+              Download
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

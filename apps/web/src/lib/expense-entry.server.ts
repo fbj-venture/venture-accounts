@@ -1,4 +1,4 @@
-import { expenseProblems } from "#/lib/expense-entry.ts"
+import { RECEIPT_PDF_TYPE, expenseProblems, receiptProblem } from "#/lib/expense-entry.ts"
 import {
   account,
   accountType,
@@ -29,6 +29,7 @@ const EXTENSIONS: Record<string, string> = {
   "image/webp": "webp",
   "image/heic": "heic",
   "image/heif": "heif",
+  [RECEIPT_PDF_TYPE]: "pdf",
 }
 
 // Adds an expense paid from a bank account as one balanced, unposted Journal
@@ -134,4 +135,49 @@ export async function addExpense(expense: NewExpense, userId: string): Promise<n
     await deleteFile(fileKey).catch(() => {})
     throw error
   }
+}
+
+// Keeps a receipt (a photo or a PDF) with an existing transaction, on its bank
+// line - the same place the photo of an expense added by hand is kept. A
+// transaction can have several. Only a bank account's line takes one, and the
+// file is stored first so a failure there saves nothing (and is deleted again
+// if saving the record fails). Returns how many receipts the line now has.
+export async function addReceipt(
+  journalLineId: number,
+  file: File,
+  userId: string,
+): Promise<number> {
+  const problem = receiptProblem(file)
+  if (problem) {
+    throw new Error(problem)
+  }
+  if (!isStorageConfigured()) {
+    throw new Error("File storage isn't configured, so the file can't be saved.")
+  }
+
+  const [line] = await db
+    .select({ id: journalLine.id })
+    .from(journalLine)
+    .innerJoin(bankAccount, eq(bankAccount.id, journalLine.accountId))
+    .where(eq(journalLine.id, journalLineId))
+  if (!line) {
+    throw new Error("Transaction not found.")
+  }
+
+  const fileKey = `expenses/${crypto.randomUUID()}.${EXTENSIONS[file.type] ?? "img"}`
+  await uploadFile(fileKey, new Uint8Array(await file.arrayBuffer()), file.type)
+  try {
+    await db.insert(journalAttachment).values(
+      withCreate(userId, {
+        journalLineId,
+        fileKey,
+        fileName: file.name.slice(0, 200) || "receipt",
+        contentType: file.type,
+      }),
+    )
+  } catch (error) {
+    await deleteFile(fileKey).catch(() => {})
+    throw error
+  }
+  return db.$count(journalAttachment, eq(journalAttachment.journalLineId, journalLineId))
 }

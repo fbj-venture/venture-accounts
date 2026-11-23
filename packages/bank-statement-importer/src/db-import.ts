@@ -55,9 +55,15 @@ export async function recordBankUpload(
       .where(eq(bankUpload.id, existing.id))
     return
   }
-  await db
-    .insert(bankUpload)
-    .values(withCreate(userId, { bankId, description, fileUrl: fileKey, fileHash }))
+  await db.insert(bankUpload).values(
+    withCreate(userId, {
+      bankId,
+      description,
+      fileUrl: fileKey,
+      fileHash,
+      category: "statement",
+    }),
+  )
 }
 
 // The bank line of an expense added by hand: on this bank account, same date

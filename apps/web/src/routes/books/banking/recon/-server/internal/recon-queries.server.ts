@@ -7,6 +7,7 @@ import {
   bankAccount,
   db,
   journal,
+  journalAttachment,
   journalLine,
   recon,
   withUpdate,
@@ -142,12 +143,33 @@ export async function listReconLines(tx: Tx, row: ReconRow) {
     )
     .orderBy(asc(lineDate), asc(journalLine.id))
 
+  // The receipts (photos or PDFs) kept with the lines, oldest first.
+  const attachments = lines.length
+    ? await tx
+        .select({
+          id: journalAttachment.id,
+          journalLineId: journalAttachment.journalLineId,
+          fileName: journalAttachment.fileName,
+        })
+        .from(journalAttachment)
+        .where(
+          inArray(
+            journalAttachment.journalLineId,
+            lines.map((line) => line.journalLineId),
+          ),
+        )
+        .orderBy(asc(journalAttachment.id))
+    : []
+
   return lines.map(({ journalLineId, date, note, description, amount, included }) => ({
     journalLineId,
     date: toDate(date),
     description: description ?? note,
     amount,
     included,
+    attachments: attachments
+      .filter((attachment) => attachment.journalLineId === journalLineId)
+      .map(({ id, fileName }) => ({ id, fileName })),
   }))
 }
 

@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.20.0] - 2026-11-23
+
+### Fixed
+
+- Fixed a potential leak of credentials into the client application.
+
+### Added
+
+- Sortable recon history table, default is from most recent.
+- Add a category label to uploads.
+- Add an expense upload button on the Post transactions table.
+- Added a view upload button on the recon history table.
+
 ## [0.19.1] - 2026-11-17
 
 ### Changed

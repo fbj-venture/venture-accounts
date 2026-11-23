@@ -1,7 +1,15 @@
 import { requireUser } from "#/lib/require-user.server.ts"
-import { account, bankAccount, db, journal, journalLine, withUpdate } from "@app/db/direct"
+import {
+  account,
+  bankAccount,
+  db,
+  journal,
+  journalAttachment,
+  journalLine,
+  withUpdate,
+} from "@app/db/direct"
 import { createServerFn } from "@tanstack/react-start"
-import { and, asc, desc, eq, ne } from "drizzle-orm"
+import { and, asc, desc, eq, ne, sql } from "drizzle-orm"
 import { alias } from "drizzle-orm/pg-core"
 import {
   findTransferCandidates,
@@ -37,6 +45,8 @@ export const getUnPostedAccountTransactions = createServerFn({ method: "GET" })
         description: journalLine.description,
         amount: journalLine.amount,
         otherAccountId: otherLine.accountId,
+        // Receipts (photos or PDFs) kept with the line.
+        attachmentCount: sql<number>`(select count(*)::int from ${journalAttachment} where ${journalAttachment.journalLineId} = ${journalLine.id})`,
       })
       .from(journalLine)
       .innerJoin(journal, eq(journal.id, journalLine.journalEntryId))

@@ -2,6 +2,12 @@ import { formatDate } from "#/lib/dates.ts"
 import { Button } from "#/components/ui/button.tsx"
 import { Checkbox } from "#/components/ui/checkbox.tsx"
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "#/components/ui/dropdown-menu.tsx"
+import {
   Table,
   TableBody,
   TableCell,
@@ -11,9 +17,59 @@ import {
 } from "#/components/ui/table.tsx"
 import { formatZar } from "#/lib/currency.ts"
 import { useNavigate } from "@tanstack/react-router"
-import { SaveIcon, XIcon } from "lucide-react"
+import { ChevronDownIcon, EyeIcon, SaveIcon, XIcon } from "lucide-react"
 import { useMemo, useState } from "react"
-import { markReconBalanced, saveReconLines, type ReconDetails } from "../-server/recon.server.ts"
+import {
+  getReceiptUrl,
+  markReconBalanced,
+  saveReconLines,
+  type ReconDetails,
+} from "../-server/recon.server.ts"
+
+type Receipt = ReconDetails["transactions"][number]["attachments"][number]
+
+// The View button of a transaction that has receipts: one opens straight away,
+// several offer a choice by file name.
+function ReceiptView({
+  receipts,
+  onOpen,
+}: {
+  receipts: Receipt[]
+  onOpen: (receipt: Receipt) => void
+}) {
+  const [first] = receipts
+  if (!first) {
+    return null
+  }
+  const view = (
+    <Button
+      type="button"
+      size="sm"
+      variant="outline"
+      aria-label={receipts.length === 1 ? `View receipt ${first.fileName}` : "View receipt"}
+      onClick={() => receipts.length === 1 && onOpen(first)}
+    >
+      <EyeIcon className="size-4" />
+      View
+      {receipts.length > 1 ? <ChevronDownIcon className="size-4" /> : null}
+    </Button>
+  )
+  if (receipts.length === 1) {
+    return view
+  }
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>{view}</DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        {receipts.map((receipt) => (
+          <DropdownMenuItem key={receipt.id} onSelect={() => onOpen(receipt)}>
+            {receipt.fileName}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
 
 const sameSet = (a: ReadonlySet<number>, b: ReadonlySet<number>) =>
   a.size === b.size && [...a].every((id) => b.has(id))
@@ -97,6 +153,29 @@ export function ReconTransactionsTable({
     }
   }
 
+  // Only when some line has a receipt, so the column doesn't sit empty.
+  const hasReceipts = transactions.some((transaction) => transaction.attachments.length > 0)
+  const columnCount = hasReceipts ? 6 : 5
+
+  function openReceipt(receipt: Receipt) {
+    return run(async () => {
+      // Opened straight away so it isn't blocked as a pop-up, then pointed at
+      // the link once it's fetched.
+      const tab = window.open("", "_blank")
+      try {
+        const { url } = await getReceiptUrl({ data: receipt.id })
+        if (tab) {
+          tab.location.href = url
+        } else {
+          window.location.href = url
+        }
+      } catch (caught) {
+        tab?.close()
+        throw caught
+      }
+    })
+  }
+
   const selection = () => ({ reconId, includedLineIds: [...included] })
 
   return (
@@ -111,6 +190,7 @@ export function ReconTransactionsTable({
             <TableHead>Description</TableHead>
             <TableHead className="text-right">Amount</TableHead>
             <TableHead className="text-right">Running total</TableHead>
+            {hasReceipts ? <TableHead className="w-px">Receipt</TableHead> : null}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -120,6 +200,7 @@ export function ReconTransactionsTable({
             <TableCell>Opening balance</TableCell>
             <TableCell />
             <TableCell className="text-right tabular-nums">{formatZar(openingBalance)}</TableCell>
+            {hasReceipts ? <TableCell /> : null}
           </TableRow>
           {transactions.length ? (
             transactions.map((transaction) => {
@@ -147,12 +228,17 @@ export function ReconTransactionsTable({
                   <TableCell className="text-right tabular-nums">
                     {runningTotal !== undefined ? formatZar(runningTotal) : ""}
                   </TableCell>
+                  {hasReceipts ? (
+                    <TableCell>
+                      <ReceiptView receipts={transaction.attachments} onOpen={openReceipt} />
+                    </TableCell>
+                  ) : null}
                 </TableRow>
               )
             })
           ) : (
             <TableRow>
-              <TableCell colSpan={5} className="text-center text-muted-foreground">
+              <TableCell colSpan={columnCount} className="text-center text-muted-foreground">
                 Nothing left to reconcile up to this date.
               </TableCell>
             </TableRow>

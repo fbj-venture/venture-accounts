@@ -10,12 +10,15 @@
 ** [ ] Update the `CHANGELOG.md` file
 * [ ] Add new Environment variables
 * [ ] Migrate the database
-* [ ] Git push all changes
+* [ ] Commit changes to Git
+** [ ] Git push all changes
 
-== 0.20.0
+== 0.21.0
 
+* [ ] 
 
 == Todo
+
 
 * [ ] Split transaction over multiple Accounts
 ** [ ] Select `split` from the Accounts drop-down to popup a dialog for adding split line

@@ -1,3 +1,4 @@
+import { SortableHeader } from "#/components/sortable-header.tsx"
 import { ButtonGroup } from "#/components/ui/button-group.tsx"
 import { Button } from "#/components/ui/button.tsx"
 import {
@@ -17,6 +18,12 @@ import {
 import { formatZar } from "#/lib/currency.ts"
 import { formatDate } from "#/lib/dates.ts"
 import { format, parseISO } from "date-fns"
+import { flexRender, type SortingState } from "@tanstack/react-table"
+import {
+  getSortedRowModel,
+  useLegacyTable,
+  type LegacyColumnDef,
+} from "@tanstack/react-table/legacy"
 import { ArrowLeft, ChevronDown } from "lucide-react"
 import { useEffect, useState } from "react"
 import { getBankUploadUrl } from "../../uploads/-server/uploads.server.ts"
@@ -36,6 +43,47 @@ type Loadable<T> =
   | { status: "loading" }
   | { status: "error"; message: string }
   | { status: "ready"; data: T }
+
+const NO_ITEMS: ReconHistoryItem[] = []
+
+const RIGHT = "text-right tabular-nums"
+
+// Module level so the columns keep a stable identity across renders. The
+// statement column is rendered by hand (it has actions), so it only needs a
+// header here.
+const historyColumns: LegacyColumnDef<ReconHistoryItem>[] = [
+  {
+    accessorKey: "statementDate",
+    header: ({ column }) => <SortableHeader column={column} title="Statement date" />,
+    cell: ({ row }) => formatDay(row.original.statementDate),
+  },
+  {
+    accessorKey: "openingBalance",
+    header: ({ column }) => <SortableHeader column={column} title="Opening balance" />,
+    cell: ({ row }) => formatZar(row.original.openingBalance),
+    meta: { className: RIGHT },
+  },
+  {
+    accessorKey: "closingBalance",
+    header: ({ column }) => <SortableHeader column={column} title="Closing balance" />,
+    cell: ({ row }) => formatZar(row.original.closingBalance),
+    meta: { className: RIGHT },
+  },
+  {
+    accessorKey: "balancedAt",
+    header: ({ column }) => <SortableHeader column={column} title="Balanced on" />,
+    cell: ({ row }) => formatDate(row.original.balancedAt),
+  },
+  {
+    id: "statement",
+    header: "Statement",
+    enableSorting: false,
+    meta: { className: "w-px" },
+  },
+]
+
+const columnClass = (column: { columnDef: { meta?: unknown } }) =>
+  (column.columnDef.meta as { className?: string } | undefined)?.className
 
 const errorMessage = (caught: unknown) =>
   caught instanceof Error ? caught.message : "Something went wrong."
@@ -63,6 +111,17 @@ function HistoryList({
   // The reconciliation the upload picker is open for.
   const [linkingId, setLinkingId] = useState<number | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
+  // Newest statement first until the user picks another column.
+  const [sorting, setSorting] = useState<SortingState>([{ id: "statementDate", desc: true }])
+
+  const table = useLegacyTable({
+    data: state.status === "ready" ? state.data : NO_ITEMS,
+    columns: historyColumns,
+    getRowId: (row) => String(row.id),
+    getSortedRowModel: getSortedRowModel(),
+    state: { sorting },
+    onSortingChange: setSorting,
+  })
 
   function patchItem(reconId: number, upload: { id: number; description: string } | null) {
     setState((previous) =>
@@ -156,95 +215,102 @@ function HistoryList({
       ) : null}
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>Statement date</TableHead>
-            <TableHead className="text-right">Opening balance</TableHead>
-            <TableHead className="text-right">Closing balance</TableHead>
-            <TableHead>Balanced on</TableHead>
-            <TableHead className="w-px">Statement</TableHead>
-          </TableRow>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <TableRow key={headerGroup.id}>
+              {headerGroup.headers.map((header) => (
+                <TableHead key={header.id} className={columnClass(header.column)}>
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(header.column.columnDef.header, header.getContext())}
+                </TableHead>
+              ))}
+            </TableRow>
+          ))}
         </TableHeader>
         <TableBody>
-          {state.data.map((item) => (
-            <TableRow
-              key={item.id}
-              className="cursor-pointer"
-              tabIndex={0}
-              onClick={() => onSelect(item.id)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter" || event.key === " ") {
-                  event.preventDefault()
-                  onSelect(item.id)
-                }
-              }}
-            >
-              <TableCell>{formatDay(item.statementDate)}</TableCell>
-              <TableCell className="text-right tabular-nums">
-                {formatZar(item.openingBalance)}
-              </TableCell>
-              <TableCell className="text-right tabular-nums">
-                {formatZar(item.closingBalance)}
-              </TableCell>
-              <TableCell>{formatDate(item.balancedAt)}</TableCell>
-              <TableCell
-                onClick={(event) => event.stopPropagation()}
-                onKeyDown={(event) => event.stopPropagation()}
+          {table.getRowModel().rows.map((row) => {
+            const item = row.original
+            return (
+              <TableRow
+                key={row.id}
+                className="cursor-pointer"
+                tabIndex={0}
+                onClick={() => onSelect(item.id)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault()
+                    onSelect(item.id)
+                  }
+                }}
               >
-                <ButtonGroup>
-                  {item.uploadId !== null ? (
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={() => view(item.uploadId!)}
-                    >
-                      View
-                    </Button>
-                  ) : (
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setLinkingId(item.id)}
-                    >
-                      Link
-                    </Button>
-                  )}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
+                {row
+                  .getVisibleCells()
+                  .filter((cell) => cell.column.id !== "statement")
+                  .map((cell) => (
+                    <TableCell key={cell.id} className={columnClass(cell.column)}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
+                  ))}
+                <TableCell
+                  onClick={(event) => event.stopPropagation()}
+                  onKeyDown={(event) => event.stopPropagation()}
+                >
+                  <ButtonGroup>
+                    {item.uploadId !== null ? (
                       <Button
                         type="button"
                         size="sm"
                         variant="outline"
-                        aria-label="Statement actions"
+                        onClick={() => view(item.uploadId!)}
                       >
-                        <ChevronDown className="size-4" />
+                        View
                       </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      {item.uploadId !== null ? (
-                        <>
-                          <DropdownMenuItem onSelect={() => view(item.uploadId!)}>
-                            View
-                          </DropdownMenuItem>
+                    ) : (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setLinkingId(item.id)}
+                      >
+                        Link
+                      </Button>
+                    )}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          aria-label="Statement actions"
+                        >
+                          <ChevronDown className="size-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {item.uploadId !== null ? (
+                          <>
+                            <DropdownMenuItem onSelect={() => view(item.uploadId!)}>
+                              View
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => setLinkingId(item.id)}>
+                              Change
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => unlink(item.id)}>
+                              Unlink
+                            </DropdownMenuItem>
+                          </>
+                        ) : (
                           <DropdownMenuItem onSelect={() => setLinkingId(item.id)}>
-                            Change
+                            Link
                           </DropdownMenuItem>
-                          <DropdownMenuItem onSelect={() => unlink(item.id)}>
-                            Unlink
-                          </DropdownMenuItem>
-                        </>
-                      ) : (
-                        <DropdownMenuItem onSelect={() => setLinkingId(item.id)}>
-                          Link
-                        </DropdownMenuItem>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </ButtonGroup>
-              </TableCell>
-            </TableRow>
-          ))}
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </ButtonGroup>
+                </TableCell>
+              </TableRow>
+            )
+          })}
         </TableBody>
       </Table>
       <UploadPickerDialog

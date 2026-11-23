@@ -5,10 +5,12 @@ import {
   bankAccount,
   bankUpload,
   db,
+  journalAttachment,
   recon,
   withCreate,
   withUpdate,
 } from "@app/db/direct"
+import { getFileUrl } from "@app/storage"
 import { createServerFn } from "@tanstack/react-start"
 import { and, desc, eq, isNotNull, ne, notExists } from "drizzle-orm"
 
@@ -343,4 +345,21 @@ export const markReconBalanced = createServerFn({ method: "POST" })
         .set(withUpdate(userId, { ballancedAt: new Date() }))
         .where(eq(recon.id, row.id))
     })
+  })
+
+// A temporary download link for a receipt kept with a transaction. The bucket
+// is private, so links are only made on request, for signed-in users, and
+// expire after a few minutes.
+export const getReceiptUrl = createServerFn({ method: "POST" })
+  .validator((attachmentId: number) => attachmentId)
+  .handler(async ({ data: attachmentId }) => {
+    await requireUser()
+    const [attachment] = await db
+      .select({ fileKey: journalAttachment.fileKey })
+      .from(journalAttachment)
+      .where(eq(journalAttachment.id, attachmentId))
+    if (!attachment) {
+      throw new Error("Receipt not found.")
+    }
+    return { url: await getFileUrl(attachment.fileKey) }
   })

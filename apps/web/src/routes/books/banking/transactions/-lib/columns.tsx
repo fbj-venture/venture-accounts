@@ -10,6 +10,7 @@ import { LoaderCircleIcon, SaveCheckIcon } from "lucide-react"
 import { useContext } from "react"
 import type { AccountTransaction } from "../-server/transactions.server.ts"
 import { NotesContext } from "./notes-context.ts"
+import { ReceiptCell } from "./receipt-cell.tsx"
 
 // Module-level, so its identity never changes between renders (see
 // notes-context.ts for why the notes come in through context).
@@ -120,6 +121,11 @@ export function getColumns({
           </div>
         )
       },
+    },
+    {
+      id: "receipt",
+      header: () => <div className="text-right">Receipt</div>,
+      cell: ReceiptCell,
     },
     {
       id: "actions",

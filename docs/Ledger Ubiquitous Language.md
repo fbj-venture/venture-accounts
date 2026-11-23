@@ -36,6 +36,8 @@ This document is the single source of truth for what each core term means, and w
 
 **A "Statements Pack" is one bank account's uploaded statements for one financial year, downloaded as a zip.** An upload (`bank_uploads`) has no period of its own: a statement belongs to the calendar month of the statement date of the reconciliation (`bank_recon`) it is linked to. The pack is only made when every month of the financial year has such a statement; otherwise the missing months are listed. Months before the account's first linked statement are not expected (it may have opened part way through the year), and neither are months after the last one if the account is archived.
 
+**An upload has a category: Statement or Expense.** `bank_uploads.category` (`statement` / `expense`) says what the file is - a bank statement, or a supporting document for an expense. Only Statement uploads are linked to reconciliations and appear in a Statements Pack. Everything uploaded through the statement importer is a Statement.
+
 ## Open decisions / deferred concepts
 
 These have a settled theory meaning but no database or UI representation yet. Listed so a future addition uses the same name across all three layers rather than inventing a new one on the spot.

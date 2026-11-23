@@ -86,3 +86,22 @@ export function expenseProblems(values: ExpenseValues): Partial<Record<ExpenseFi
 
   return problems
 }
+
+export const RECEIPT_PDF_TYPE = "application/pdf"
+
+/**
+ * What is wrong with a receipt added to an existing transaction (a photo, as
+ * when adding an expense, or a PDF), or undefined when it is fine.
+ */
+export function receiptProblem(file: { type: string; size: number }): string | undefined {
+  if (file.type !== RECEIPT_PDF_TYPE && !EXPENSE_IMAGE_TYPES.includes(file.type)) {
+    return "The receipt must be a JPEG, PNG, WebP or HEIC image, or a PDF."
+  }
+  if (file.size === 0) {
+    return "The file is empty."
+  }
+  if (file.size > MAX_EXPENSE_IMAGE_BYTES) {
+    return `The file can be at most ${MAX_EXPENSE_IMAGE_BYTES / 1024 / 1024} MB.`
+  }
+  return undefined
+}

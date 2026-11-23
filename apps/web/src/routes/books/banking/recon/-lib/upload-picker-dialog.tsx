@@ -20,23 +20,12 @@ import { ArrowDownIcon, ArrowUpDownIcon, ArrowUpIcon } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
 import { listUnlinkedUploads, type UploadSummary } from "../-server/recon.server.ts"
 
-// "statements/<account number>/2025-01-31.pdf" -> "Jan 2025"; a path that
-// doesn't end in a statement date is shown as it is.
-const statementMonth = (path: string) => {
-  const day = /(\d{4}-\d{2}-\d{2})\.pdf$/.exec(path)?.[1]
-  return day ? format(parseISO(day), "MMM yyyy") : path
-}
-
-// "2025-01-31" from a statement path, so months sort chronologically; a path
-// without a statement date sorts by the path itself.
-const statementDay = (path: string) => /(d{4}-d{2}-d{2}).pdf$/.exec(path)?.[1] ?? path
-
 type SortKey = "description" | "statement" | "uploaded"
 type Sorting = { key: SortKey; direction: "asc" | "desc" } | null
 
 const sortValues: Record<SortKey, (upload: PickerUpload) => string | number> = {
   description: (upload) => upload.description.toLowerCase(),
-  statement: (upload) => statementDay(upload.path),
+  statement: (upload) => upload.statementDate,
   uploaded: (upload) => new Date(upload.uploadedAt).getTime(),
 }
 
@@ -160,7 +149,7 @@ export function UploadPickerDialog({
                   </TableHead>
                   <TableHead>
                     <SortableHeader
-                      title="Statement Month"
+                      title="Statement date"
                       sortKey="statement"
                       sorting={sorting}
                       onSort={toggleSort}
@@ -183,9 +172,7 @@ export function UploadPickerDialog({
                 {rows.map((upload) => (
                   <TableRow key={upload.id}>
                     <TableCell>{upload.description}</TableCell>
-                    <TableCell className="break-all text-muted-foreground">
-                      {statementMonth(upload.path)}
-                    </TableCell>
+                    <TableCell>{format(parseISO(upload.statementDate), "d MMM yyyy")}</TableCell>
                     <TableCell>{formatDate(upload.uploadedAt)}</TableCell>
                     <TableCell>
                       <Button

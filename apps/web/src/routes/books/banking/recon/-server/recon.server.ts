@@ -12,7 +12,7 @@ import {
 } from "@app/db/direct"
 import { getFileUrl } from "@app/storage"
 import { createServerFn } from "@tanstack/react-start"
-import { and, desc, eq, isNotNull, ne, notExists } from "drizzle-orm"
+import { and, asc, count, desc, eq, gt, isNotNull, ne, notExists, notLike } from "drizzle-orm"
 
 import {
   applyReconSelection,
@@ -40,12 +40,44 @@ export const getReconForm = createServerFn({ method: "GET" })
           id: bankUpload.id,
           description: bankUpload.description,
           uploadedAt: bankUpload.createdAt,
+          statementDate: bankUpload.statementDate,
         })
         .from(bankUpload)
         .where(eq(bankUpload.id, openRecon.bankUploadId))
       upload = row ?? null
     }
+
+    // For a new reconciliation, the next statement to reconcile: the earliest
+    // unlinked statement ending after the previous one. It gives the form its
+    // date (and statement) to start from. A Transaction History PDF ("ad-hoc")
+    // can end on any day, so it is never the suggestion.
+    let suggestedUpload: UploadSummary | null = null
+    if (!openRecon) {
+      const [row] = await db
+        .select({
+          id: bankUpload.id,
+          description: bankUpload.description,
+          uploadedAt: bankUpload.createdAt,
+          statementDate: bankUpload.statementDate,
+        })
+        .from(bankUpload)
+        .where(
+          and(
+            eq(bankUpload.bankId, bankAccountId),
+            eq(bankUpload.category, "statement"),
+            notLike(bankUpload.fileUrl, "%/ad-hoc/%"),
+            previousStatementDate ? gt(bankUpload.statementDate, previousStatementDate) : undefined,
+            notExists(
+              db.select({ one: recon.id }).from(recon).where(eq(recon.bankUploadId, bankUpload.id)),
+            ),
+          ),
+        )
+        .orderBy(asc(bankUpload.statementDate), asc(bankUpload.id))
+        .limit(1)
+      suggestedUpload = row ?? null
+    }
     return {
+      suggestedUpload,
       reconId: openRecon?.id ?? null,
       openingBalance,
       openingBalanceLocked,
@@ -57,7 +89,13 @@ export const getReconForm = createServerFn({ method: "GET" })
     }
   })
 
-export type UploadSummary = { id: number; description: string; uploadedAt: Date }
+export type UploadSummary = {
+  id: number
+  description: string
+  uploadedAt: Date
+  /** The day the statement ends, "yyyy-MM-dd". */
+  statementDate: string
+}
 
 // The bank account's uploads that no reconciliation is linked to yet,
 // newest first.
@@ -71,6 +109,7 @@ export const listUnlinkedUploads = createServerFn({ method: "GET" })
         description: bankUpload.description,
         path: bankUpload.fileUrl,
         uploadedAt: bankUpload.createdAt,
+        statementDate: bankUpload.statementDate,
       })
       .from(bankUpload)
       .where(
@@ -173,9 +212,17 @@ export const saveRecon = createServerFn({ method: "POST" })
     }
 
     // Never trust the client for a locked opening balance.
-    const { openRecon, openingBalance, openingBalanceLocked } = await resolveReconSetup(
-      data.bankAccountId,
-    )
+    const { openRecon, openingBalance, openingBalanceLocked, previousStatementDate } =
+      await resolveReconSetup(data.bankAccountId)
+    // Statements run one after another, each opening where the last closed, so
+    // this one must end after the previous one. (Without this, the same
+    // statement could be reconciled twice - the second time with no lines.)
+    // "yyyy-MM-dd" strings compare correctly as text.
+    if (previousStatementDate !== null && data.statementDate <= previousStatementDate) {
+      throw new Error(
+        `The statement date must be after the previous statement's date (${previousStatementDate}).`,
+      )
+    }
     const opening = openingBalanceLocked ? openingBalance : data.openingBalance
     if (opening === null || !Number.isFinite(opening)) {
       throw new Error("Opening balance is required.")
@@ -242,6 +289,7 @@ export const getReconDetails = createServerFn({ method: "GET" })
         closingBalance: recon.closingBallance,
         statementDate: recon.statementDate,
         ballancedAt: recon.ballancedAt,
+        bankUploadId: recon.bankUploadId,
         name: account.name,
         description: account.description,
         bankName: bank.name,
@@ -264,9 +312,25 @@ export const getReconDetails = createServerFn({ method: "GET" })
       isBalanced: row.ballancedAt !== null,
     })
 
+    // Uploaded statements of this account no reconciliation is linked to yet -
+    // the screen warns about balancing without one while some are waiting.
+    const [{ unlinked }] = await db
+      .select({ unlinked: count() })
+      .from(bankUpload)
+      .where(
+        and(
+          eq(bankUpload.bankId, row.bankAccountId),
+          notExists(
+            db.select({ one: recon.id }).from(recon).where(eq(recon.bankUploadId, bankUpload.id)),
+          ),
+        ),
+      )
+
     return {
       recon: {
         id: row.id,
+        hasUpload: row.bankUploadId !== null,
+        unlinkedUploadCount: unlinked,
         openingBalance: row.openingBalance,
         closingBalance: row.closingBalance,
         statementDate: row.statementDate,

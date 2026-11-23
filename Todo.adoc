@@ -19,7 +19,6 @@
 
 == Todo
 
-
 * [ ] Split transaction over multiple Accounts
 ** [ ] Select `split` from the Accounts drop-down to popup a dialog for adding split line
 * [ ] Security

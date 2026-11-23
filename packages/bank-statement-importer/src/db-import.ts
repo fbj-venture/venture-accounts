@@ -42,6 +42,8 @@ export async function recordBankUpload(
   fileHash: string,
   description: string,
   userId: string,
+  /** The day the statement ends, "yyyy-MM-dd". */
+  statementDate: string,
 ): Promise<void> {
   const [existing] = await db
     .select({ id: bankUpload.id })
@@ -51,7 +53,7 @@ export async function recordBankUpload(
   if (existing) {
     await db
       .update(bankUpload)
-      .set(withUpdate(userId, { description, fileHash }))
+      .set(withUpdate(userId, { description, fileHash, statementDate }))
       .where(eq(bankUpload.id, existing.id))
     return
   }
@@ -62,6 +64,7 @@ export async function recordBankUpload(
       fileUrl: fileKey,
       fileHash,
       category: "statement",
+      statementDate,
     }),
   )
 }

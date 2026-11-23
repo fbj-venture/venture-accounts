@@ -30,18 +30,27 @@ export function ReconForm({
   const openingBalanceDisabled = initial.openingBalanceLocked
   const [opening, setOpening] = useState(initial.openingBalance?.toFixed(2) ?? "")
   const [closing, setClosing] = useState(initial.closingBalance?.toFixed(2) ?? "")
-  // A reconciliation already started keeps its own date; a new one starts
-  // from the previous statement's end date, to be moved on to this one's.
-  const initialStatementDate = initial.statementDate ?? initial.previousStatementDate
+  // A reconciliation already started keeps its own date; a new one starts from
+  // the next uploaded statement waiting to be reconciled (see getReconForm), or
+  // from no date at all when there is none.
+  const initialStatementDate = initial.statementDate ?? initial.suggestedUpload?.statementDate
   const [statementDate, setStatementDate] = useState<Date | undefined>(
     initialStatementDate ? parseISO(initialStatementDate) : undefined,
   )
   const [datePickerOpen, setDatePickerOpen] = useState(false)
-  const [upload, setUpload] = useState<UploadSummary | null>(initial.upload)
+  const [upload, setUpload] = useState<UploadSummary | null>(
+    initial.upload ?? initial.suggestedUpload,
+  )
   const [pickerOpen, setPickerOpen] = useState(false)
   const [viewing, setViewing] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // The linked statement ends on a different day than the one entered above.
+  const dateMismatch =
+    upload !== null &&
+    statementDate !== undefined &&
+    upload.statementDate !== format(statementDate, "yyyy-MM-dd")
 
   const canSubmit = opening.trim() !== "" && closing.trim() !== "" && statementDate !== undefined
 
@@ -73,6 +82,12 @@ export function ReconForm({
       return
     }
 
+    const statementDay = format(statementDate, "yyyy-MM-dd")
+    if (initial.previousStatementDate && statementDay <= initial.previousStatementDate) {
+      setError("The statement date must be after the previous statement's date.")
+      return
+    }
+
     setSaving(true)
     setError(null)
     try {
@@ -80,7 +95,7 @@ export function ReconForm({
         bankAccountId,
         openingBalance: initial.openingBalanceLocked ? null : Number(opening),
         closingBalance: Number(closing),
-        statementDate: format(statementDate, "yyyy-MM-dd"),
+        statementDate: statementDay,
         bankUploadId: upload?.id ?? null,
       }
       const changed =
@@ -140,6 +155,11 @@ export function ReconForm({
               />
             </PopoverContent>
           </Popover>
+          {initial.suggestedUpload && initial.statementDate === null ? (
+            <FieldDescription>
+              Suggested from the next uploaded statement: {initial.suggestedUpload.description}.
+            </FieldDescription>
+          ) : null}
         </Field>
         <Field>
           <FieldLabel htmlFor="recon-opening-balance">Opening balance</FieldLabel>
@@ -210,6 +230,12 @@ export function ReconForm({
               {upload ? "Change" : "Link to an uploaded statement"}
             </Button>
           </div>
+          {dateMismatch && upload ? (
+            <FieldDescription className="text-amber-600 dark:text-amber-400">
+              This statement ends on {format(parseISO(upload.statementDate), "d MMM yyyy")}, not the
+              date above.
+            </FieldDescription>
+          ) : null}
           <UploadPickerDialog
             bankAccountId={bankAccountId}
             open={pickerOpen}

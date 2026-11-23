@@ -1,6 +1,6 @@
 {
   "name": "@app/email",
-  "version": "0.20.0",
+  "version": "0.20.1",
   "private": true,
   "description": "React Email templates rendered to HTML email bodies",
   "type": "module",

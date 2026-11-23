@@ -38,6 +38,8 @@ This document is the single source of truth for what each core term means, and w
 
 **An upload has a category: Statement or Expense.** `bank_uploads.category` (`statement` / `expense`) says what the file is - a bank statement, or a supporting document for an expense. Only Statement uploads are linked to reconciliations and appear in a Statements Pack. Everything uploaded through the statement importer is a Statement.
 
+**An upload has a statement date: the day its statement ends.** `bank_uploads.statement_date` is read from the PDF by the importer (for a Transaction History PDF, the last day it covers). The New Recon form starts from the earliest unlinked statement dated after the previous reconciliation, and a reconciliation's statement date must be after the previous one's.
+
 ## Open decisions / deferred concepts
 
 These have a settled theory meaning but no database or UI representation yet. Listed so a future addition uses the same name across all three layers rather than inventing a new one on the spot.

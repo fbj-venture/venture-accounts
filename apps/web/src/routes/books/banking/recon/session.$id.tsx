@@ -55,6 +55,8 @@ function RouteComponent() {
         openingBalance={recon.openingBalance}
         closingBalance={recon.closingBalance}
         isBalanced={recon.isBalanced}
+        hasUpload={recon.hasUpload}
+        unlinkedUploadCount={recon.unlinkedUploadCount}
         transactions={transactions}
       />
     </>

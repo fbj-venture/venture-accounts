@@ -1,3 +1,13 @@
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "#/components/ui/alert-dialog.tsx"
 import { formatDate } from "#/lib/dates.ts"
 import { Button } from "#/components/ui/button.tsx"
 import { Checkbox } from "#/components/ui/checkbox.tsx"
@@ -88,12 +98,18 @@ export function ReconTransactionsTable({
   openingBalance,
   closingBalance,
   isBalanced,
+  hasUpload = true,
+  unlinkedUploadCount = 0,
   transactions,
 }: {
   reconId: number
   openingBalance: number
   closingBalance: number
   isBalanced: boolean
+  /** Whether an uploaded statement is linked to this reconciliation. */
+  hasUpload?: boolean
+  /** How many of the account's uploaded statements are not linked to any reconciliation. */
+  unlinkedUploadCount?: number
   transactions: ReconDetails["transactions"]
 }) {
   const navigate = useNavigate()
@@ -108,6 +124,8 @@ export function ReconTransactionsTable({
     saved.size > 0 || isBalanced ? saved : new Set(transactions.map((t) => t.journalLineId)),
   )
   const [busy, setBusy] = useState(false)
+  // The "no statement linked" warning, asked before balancing.
+  const [confirmingNoUpload, setConfirmingNoUpload] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   // Work in cents so float noise can't build up down a long list.
@@ -175,6 +193,12 @@ export function ReconTransactionsTable({
       }
     })
   }
+
+  const markBalanced = () =>
+    run(async () => {
+      await markReconBalanced({ data: selection() })
+      await navigate({ to: "/books/banking/recon" })
+    })
 
   const selection = () => ({ reconId, includedLineIds: [...included] })
 
@@ -292,18 +316,40 @@ export function ReconTransactionsTable({
             <Button
               type="button"
               disabled={!canBalance}
-              onClick={() =>
-                run(async () => {
-                  await markReconBalanced({ data: selection() })
-                  await navigate({ to: "/books/banking/recon" })
-                })
-              }
+              onClick={() => (hasUpload ? markBalanced() : setConfirmingNoUpload(true))}
             >
               Mark as Balanced
             </Button>
+            {hasUpload ? null : (
+              <p className="max-w-sm text-right text-sm text-amber-600 dark:text-amber-400">
+                No uploaded statement is linked to this reconciliation.
+                {unlinkedUploadCount > 0
+                  ? ` ${unlinkedUploadCount} uploaded statement${unlinkedUploadCount === 1 ? " is" : "s are"} waiting to be linked.`
+                  : ""}
+              </p>
+            )}
           </div>
         </div>
       )}
+      <AlertDialog open={confirmingNoUpload} onOpenChange={setConfirmingNoUpload}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Balance without a statement?</AlertDialogTitle>
+            <AlertDialogDescription>
+              No uploaded statement is linked to this reconciliation.
+              {unlinkedUploadCount > 0
+                ? ` ${unlinkedUploadCount} uploaded statement${unlinkedUploadCount === 1 ? " is" : "s are"} waiting to be linked - go back and link the right one (use Cancel, then reopen New Recon) so it isn't left unlinked or tied to a second reconciliation.`
+                : " You can still link one later from the History tab."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Go back</AlertDialogCancel>
+            <AlertDialogAction onClick={() => void markBalanced()}>
+              Balance anyway
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }

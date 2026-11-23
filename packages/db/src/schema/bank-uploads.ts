@@ -1,4 +1,4 @@
-import { char, integer, pgEnum, snakeCase, text, uniqueIndex } from "drizzle-orm/pg-core"
+import { char, date, integer, pgEnum, snakeCase, text, uniqueIndex } from "drizzle-orm/pg-core"
 import { auditColumns } from "./audit"
 import { bankAccount } from "./bank-account"
 
@@ -17,6 +17,9 @@ export const bankUpload = snakeCase.table(
     // SHA-256 of the file's bytes, as 64 lowercase hex characters.
     fileHash: char({ length: 64 }).notNull(),
     category: bankUploadCategory().notNull(),
+    // The day the statement ends ("yyyy-MM-dd") - what the importer read from the
+    // PDF; for a Transaction History PDF, the last day it covers.
+    statementDate: date().notNull(),
     ...auditColumns,
   },
   (t) => [

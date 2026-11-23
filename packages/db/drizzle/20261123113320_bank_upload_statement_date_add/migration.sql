@@ -1,0 +1,1 @@
+ALTER TABLE "bank_uploads" ADD COLUMN "statement_date" date;

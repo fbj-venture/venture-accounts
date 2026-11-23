@@ -1,0 +1,1 @@
+ALTER TABLE "bank_uploads" ALTER COLUMN "statement_date" SET NOT NULL;

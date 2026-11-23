@@ -135,6 +135,7 @@ export async function readPdfStreamWithProgress(
     bankId: accountDetails.account.id,
     accountNumber,
     fileName: extracted.fileName(data),
+    statementDate: statementDateToIso(statementDate),
     userId,
     description: options.description?.trim() || DEFAULT_UPLOAD_DESCRIPTION,
   })
@@ -170,6 +171,8 @@ async function storeStatementPdf(
     bankId: number
     accountNumber: string
     fileName: string
+    /** The day the statement ends, "yyyy-MM-dd". */
+    statementDate: string
     userId: string
     description: string
   },
@@ -186,6 +189,7 @@ async function storeStatementPdf(
     createHash("sha256").update(data).digest("hex"),
     statement.description,
     statement.userId,
+    statement.statementDate,
   )
 }
 

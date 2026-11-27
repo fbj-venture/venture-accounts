@@ -9,7 +9,7 @@ import {
   toExcelFile,
 } from "../../-server/internal/excel-report.server.ts"
 import { buildLedger, describeLine } from "../-lib/general-ledger-rows.ts"
-import { loadGeneralLedger } from "./internal/general-ledger-data.server.ts"
+import { loadGeneralLedger, loadOpeningBalances } from "./internal/general-ledger-data.server.ts"
 
 // A balance reads as a debit when positive and a credit when negative.
 const BALANCE_FORMAT = '#,##0.00" Dr";#,##0.00" Cr"'
@@ -23,8 +23,12 @@ export const exportGeneralLedgerToExcel = createServerFn({ method: "POST" })
   .validator((data: ReportRequest) => data)
   .handler(async ({ data }) => {
     await requireUser()
-    const [companyName, lines] = await Promise.all([getCompanyName(), loadGeneralLedger(data)])
-    const ledger = buildLedger(lines, data)
+    const [companyName, lines, openings] = await Promise.all([
+      getCompanyName(),
+      loadGeneralLedger(data),
+      loadOpeningBalances(data),
+    ])
+    const ledger = buildLedger(lines, openings, data)
 
     const { workbook, sheet } = startReportSheet({
       companyName,
@@ -53,12 +57,14 @@ export const exportGeneralLedgerToExcel = createServerFn({ method: "POST" })
         }
       }
 
-      let firstLine = 0
-      let previous = 0
+      // The balance brought forward, which the running balance builds on.
+      const openingRow = sheet.addRow([null, "Opening balance", null, null, section.opening])
+      openingRow.font = { italic: true }
+      let firstLine = openingRow.number
+      let previous = openingRow.number
       for (const entry of section.entries) {
         const row = sheet.addRow([entry.date, describeLine(entry), null, null, null])
         const n = row.number
-        firstLine ||= n
         row.getCell(1).numFmt = "yyyy-mm-dd"
         row.getCell(1).alignment = { horizontal: "left" }
         row.getCell(3).value = entry.debit || null
@@ -72,11 +78,11 @@ export const exportGeneralLedgerToExcel = createServerFn({ method: "POST" })
 
       const t = previous + 1
       const total = sheet.addRow([
-        `Total ${section.fullName}`,
+        `Total ${section.fullName} (closing balance)`,
         null,
         { formula: `SUM(C${firstLine}:C${t - 1})`, result: section.debits },
         { formula: `SUM(D${firstLine}:D${t - 1})`, result: section.credits },
-        { formula: `C${t}-D${t}`, result: section.balance },
+        { formula: `E${openingRow.number}+C${t}-D${t}`, result: section.balance },
       ])
       total.font = { bold: true }
       total.border = { top: { style: "thin" }, bottom: { style: "double" } }

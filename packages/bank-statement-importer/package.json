@@ -1,6 +1,6 @@
 {
   "name": "@app/bank-statement-importer",
-  "version": "0.20.1",
+  "version": "0.21.0",
   "private": true,
   "description": "Reads password-protected bank statement PDFs into structured records",
   "type": "module",

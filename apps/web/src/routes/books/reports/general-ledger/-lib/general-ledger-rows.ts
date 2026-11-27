@@ -20,6 +20,15 @@ export type LedgerLine = {
   amount: number
 }
 
+/** What an Account stood at just before the period started. */
+export type LedgerOpening = Pick<
+  LedgerLine,
+  "accountId" | "fullName" | "accountTypeId" | "accountType" | "isArchived"
+> & {
+  /** Signed: positive is a debit balance. */
+  opening: number
+}
+
 export type LedgerEntry = LedgerLine & {
   debit: number
   credit: number
@@ -32,20 +41,31 @@ export type LedgerAccount = {
   fullName: string
   accountType: string
   isArchived: boolean
+  /** The balance brought forward into the period (zero when none). */
+  opening: number
   entries: LedgerEntry[]
+  /** Totals of the period's own lines, not including the opening balance. */
   debits: number
   credits: number
-  /** Debits less credits: positive is a debit balance, negative a credit balance. */
+  /** The closing balance: opening plus debits less credits. Positive is a debit balance, negative a credit balance. */
   balance: number
 }
 
-// One section per Account, in the order the lines arrive (Account Type, then
-// name) with each Account's lines in date order. The running balance starts
-// from nothing at the start of the period, as the Trial Balance's does. Summed
-// in cents so the figures don't pick up floating point dust.
-export function buildLedger(lines: LedgerLine[], filters: ReportFilters): LedgerAccount[] {
+// One section per Account, in Account Type order then by name, with each
+// Account's lines in date order. The running balance starts from the Account's
+// opening balance (what it stood at before the period), and an Account with a
+// balance brought forward is shown even if it has no lines in the period.
+// Summed in cents so the figures don't pick up floating point dust.
+export function buildLedger(
+  lines: LedgerLine[],
+  openings: LedgerOpening[],
+  filters: ReportFilters,
+): LedgerAccount[] {
   const accounts = new Map<number, LedgerAccount>()
-  for (const line of filterRows(lines, filters)) {
+  const order = new Map<number, { typeId: number; name: string }>()
+  const sectionFor = (
+    line: Pick<LedgerOpening, "accountId" | "fullName" | "accountType" | "isArchived">,
+  ) => {
     let section = accounts.get(line.accountId)
     if (!section) {
       section = {
@@ -53,6 +73,7 @@ export function buildLedger(lines: LedgerLine[], filters: ReportFilters): Ledger
         fullName: line.fullName,
         accountType: line.accountType,
         isArchived: line.isArchived,
+        opening: 0,
         entries: [],
         debits: 0,
         credits: 0,
@@ -60,6 +81,18 @@ export function buildLedger(lines: LedgerLine[], filters: ReportFilters): Ledger
       }
       accounts.set(line.accountId, section)
     }
+    return section
+  }
+  for (const opening of filterRows(openings, filters)) {
+    if (Math.round(opening.opening * 100) === 0) continue
+    const section = sectionFor(opening)
+    section.opening = opening.opening
+    section.balance = opening.opening
+    order.set(opening.accountId, { typeId: opening.accountTypeId, name: opening.fullName })
+  }
+  for (const line of filterRows(lines, filters)) {
+    const section = sectionFor(line)
+    order.set(line.accountId, { typeId: line.accountTypeId, name: line.fullName })
     const cents = Math.round(line.amount * 100)
     section.debits = (Math.round(section.debits * 100) + Math.max(cents, 0)) / 100
     section.credits = (Math.round(section.credits * 100) + Math.max(-cents, 0)) / 100
@@ -71,7 +104,15 @@ export function buildLedger(lines: LedgerLine[], filters: ReportFilters): Ledger
       balance: section.balance,
     })
   }
-  return [...accounts.values()]
+  // Account Type order (the canonical one the loaders use), then by name.
+  return [...accounts.values()].sort((a, b) => {
+    const left = order.get(a.accountId)!
+    const right = order.get(b.accountId)!
+    return (
+      left.typeId - right.typeId ||
+      left.name.localeCompare(right.name, undefined, { sensitivity: "base" })
+    )
+  })
 }
 
 /** What a line is for: the Transaction's note, then the line's own text if it adds anything. */

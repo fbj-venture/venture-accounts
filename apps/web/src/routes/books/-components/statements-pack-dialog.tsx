@@ -34,9 +34,11 @@ function fileNameOf(response: Response, fallback: string) {
 // which are missing. The server does the checking (lib/statements-pack.server.ts).
 export function StatementsPackDialog({
   bankAccountId,
+  bankAccountName,
   onClose,
 }: {
   bankAccountId: number
+  bankAccountName: string
   onClose: () => void
 }) {
   const { financialYearEndMonth, startingYear } = useCompanySettings()
@@ -86,6 +88,7 @@ export function StatementsPackDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Statements Pack</DialogTitle>
+          <p className="text-base font-medium">{bankAccountName}</p>
           <DialogDescription>
             Select the year you want to download all the statements for from the list below and then
             click the download button.

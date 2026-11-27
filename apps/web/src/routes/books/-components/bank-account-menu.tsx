@@ -20,13 +20,23 @@ import { StatementsPackDialog } from "./statements-pack-dialog.tsx"
 
 // The "Actions" menu in a bank account card's footer. Uploads comes first; add
 // further per-account pages below it.
-export function BankAccountMenu({ bankAccountId }: { bankAccountId: number }) {
+export function BankAccountMenu({
+  bankAccountId,
+  bankAccountName,
+}: {
+  bankAccountId: number
+  bankAccountName: string
+}) {
   const id = String(bankAccountId)
   const [packOpen, setPackOpen] = useState(false)
   return (
     <>
       {packOpen ? (
-        <StatementsPackDialog bankAccountId={bankAccountId} onClose={() => setPackOpen(false)} />
+        <StatementsPackDialog
+          bankAccountId={bankAccountId}
+          bankAccountName={bankAccountName}
+          onClose={() => setPackOpen(false)}
+        />
       ) : null}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>

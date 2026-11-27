@@ -118,7 +118,9 @@ function SortableCard({ bankAccount }: { bankAccount: BankAccountBalance }) {
       <BankAccountCard
         bankAccount={bankAccount}
         className="h-full transition-colors hover:border-primary **:data-[slot=card-title]:transition-colors hover:**:data-[slot=card-title]:text-primary"
-        footer={<BankAccountMenu bankAccountId={bankAccount.id} />}
+        footer={
+          <BankAccountMenu bankAccountId={bankAccount.id} bankAccountName={bankAccount.name} />
+        }
       />
     </div>
   )

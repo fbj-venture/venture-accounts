@@ -5,16 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.21.0]
 
 ### Added
 
+- Drag-and-drop reordering of Bank Accounts on Dashboard
 - Uploads now store their statement date (read from the PDF when it is imported; existing uploads are filled in from their file names).
 - The upload picker shows each upload's statement date, and sorts by it.
 - The New Recon form now starts from the next uploaded statement waiting to be reconciled: its date, and the statement itself, are filled in. It warns when the linked statement ends on a different day than the date entered.
 
 ### Changed
 
+- Updated the reports to contain opening and closing balances.
 - The New Recon form no longer pre-fills the previous statement's date, which allowed the same statement to be reconciled twice.
 - Mark as Balanced warns when no uploaded statement is linked to the reconciliation.
 

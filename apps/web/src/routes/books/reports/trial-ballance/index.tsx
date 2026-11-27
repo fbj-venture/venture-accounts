@@ -71,7 +71,10 @@ function RouteComponent() {
         </p>
       ) : null}
       <p className="py-2 text-sm text-muted-foreground">
-        Posted transactions only.
+        Posted transactions only. Balances at the end of the period: asset, liability and equity
+        accounts include everything before it, and income and expense accounts start from the
+        beginning of the financial year the period falls in. Earlier years&apos; profit or loss is
+        shown as retained earnings.
         {allTypes ? null : " The totals only balance when every account type is included."}
       </p>
       <div className="mt-2">

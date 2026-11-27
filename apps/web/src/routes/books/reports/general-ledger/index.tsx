@@ -44,11 +44,14 @@ function RouteComponent() {
 
   // What the table shows: null until the report is first run.
   const [applied, setApplied] = useState<AppliedFilters | null>(null)
-  const { data: lines = [], isLoading } = useQuery({
+  const { data, isLoading } = useQuery({
     ...generalLedgerQuery(toCriteria(applied?.range)),
     enabled: applied !== null,
   })
-  const ledger = useMemo(() => (applied ? buildLedger(lines, applied) : []), [lines, applied])
+  const ledger = useMemo(
+    () => (applied && data ? buildLedger(data.lines, data.openings, applied) : []),
+    [data, applied],
+  )
 
   const excelExport = useExcelExport(applied, exportGeneralLedgerToExcel)
 
@@ -68,7 +71,9 @@ function RouteComponent() {
         </p>
       ) : null}
       <p className="py-2 text-sm text-muted-foreground">
-        Posted transactions only. Balances start from nothing at the start of the period.
+        Posted transactions only. Each account starts from its opening balance: what it stood at
+        before the period. Income and expense accounts start from the beginning of the financial
+        year the period falls in.
       </p>
       <div className="mt-2">
         <Table>
@@ -108,6 +113,15 @@ function RouteComponent() {
                       </span>
                     </TableCell>
                   </TableRow>
+                  <TableRow className="text-muted-foreground">
+                    <TableCell />
+                    <TableCell>Opening balance</TableCell>
+                    <TableCell />
+                    <TableCell />
+                    <TableCell className="text-right tabular-nums">
+                      {formatBalance(section.opening)}
+                    </TableCell>
+                  </TableRow>
                   {section.entries.map((entry) => (
                     <TableRow key={entry.id}>
                       <TableCell>{formatDate(entry.date)}</TableCell>
@@ -124,7 +138,7 @@ function RouteComponent() {
                     </TableRow>
                   ))}
                   <TableRow className="font-medium">
-                    <TableCell colSpan={2}>Total {section.fullName}</TableCell>
+                    <TableCell colSpan={2}>Total {section.fullName} (closing balance)</TableCell>
                     <TableCell className="text-right tabular-nums">
                       {formatZar(section.debits)}
                     </TableCell>

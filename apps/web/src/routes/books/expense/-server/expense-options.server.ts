@@ -1,3 +1,4 @@
+import { sortByBankAccountOrder } from "#/lib/bank-account-order.server.ts"
 import { requireUser } from "#/lib/require-user.server.ts"
 import { account, accountType, bankAccount, db } from "@app/db/direct"
 import { createServerFn } from "@tanstack/react-start"
@@ -11,7 +12,7 @@ import { alias } from "drizzle-orm/pg-core"
 // can come out of, and the active Expense accounts it can be charged to (a
 // sub-account carries its parent's name).
 export const getExpenseOptions = createServerFn({ method: "GET" }).handler(async () => {
-  await requireUser()
+  const user = await requireUser()
   const parent = alias(account, "parent")
   const [bankAccounts, expenseAccounts] = await Promise.all([
     db
@@ -32,5 +33,8 @@ export const getExpenseOptions = createServerFn({ method: "GET" }).handler(async
   const path = (row: (typeof expenseAccounts)[number]) =>
     row.parentName ? `${row.parentName}\u0000${row.name}` : row.name
   expenseAccounts.sort((a, b) => path(a).localeCompare(path(b)))
-  return { bankAccounts, expenseAccounts }
+  return {
+    bankAccounts: await sortByBankAccountOrder(user.id, bankAccounts, (row) => row.id),
+    expenseAccounts,
+  }
 })

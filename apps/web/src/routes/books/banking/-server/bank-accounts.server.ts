@@ -1,6 +1,8 @@
+import { sortByBankAccountOrder } from "#/lib/bank-account-order.server.ts"
+import { requireUser } from "#/lib/require-user.server.ts"
 import { account, bank, bankAccount, db } from "@app/db/direct"
 import { createServerFn } from "@tanstack/react-start"
-import { eq, sql } from "drizzle-orm"
+import { asc, eq, sql } from "drizzle-orm"
 
 // Joins the ledger Account with its real-world bankAccount details (see
 // docs/Ledger Ubiquitous Language.md - "Account" is overloaded) into one
@@ -21,9 +23,13 @@ export type BankAccountDetails = Awaited<ReturnType<typeof getBankAccounts>>[num
 // Every bank account, archived ones included, so a page for an archived one
 // can still be opened. Lists and drop-downs use loadActiveBankAccounts.
 export const getBankAccounts = createServerFn({ method: "GET" }).handler(async () => {
-  return db
+  const { id: userId } = await requireUser()
+  const rows = await db
     .select(bankAccountColumns)
     .from(bankAccount)
     .innerJoin(account, eq(account.id, bankAccount.id))
     .leftJoin(bank, eq(bank.id, bankAccount.bankId))
+    .orderBy(asc(account.name))
+  // In the user's own order, so every list and drop-down built from this agrees.
+  return sortByBankAccountOrder(userId, rows, (row) => row.id)
 })

@@ -1,3 +1,4 @@
+import { formatZar } from "#/lib/currency.ts"
 import { formatDate } from "#/lib/dates.ts"
 import { Button } from "#/components/ui/button.tsx"
 import {
@@ -18,7 +19,11 @@ import {
 import { format, parseISO } from "date-fns"
 import { ArrowDownIcon, ArrowUpDownIcon, ArrowUpIcon } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
-import { listUnlinkedUploads, type UploadSummary } from "../-server/recon.server.ts"
+import {
+  listUnlinkedUploads,
+  type ReconHistoryItem,
+  type UploadSummary,
+} from "../-server/recon.server.ts"
 
 type SortKey = "description" | "statement" | "uploaded"
 type Sorting = { key: SortKey; direction: "asc" | "desc" } | null
@@ -65,11 +70,17 @@ export function UploadPickerDialog({
   open,
   onOpenChange,
   onSelect,
+  reconciliation,
 }: {
   bankAccountId: number
   open: boolean
   onOpenChange: (open: boolean) => void
   onSelect: (upload: UploadSummary) => void
+  /** The reconciliation being linked, shown so it can be told apart from the others. */
+  reconciliation?: Pick<
+    ReconHistoryItem,
+    "statementDate" | "openingBalance" | "closingBalance" | "balancedAt"
+  >
 }) {
   const [uploads, setUploads] = useState<Uploads>({ status: "loading" })
   const [sorting, setSorting] = useState<Sorting>(null)
@@ -126,6 +137,18 @@ export function UploadPickerDialog({
             Uploads for this account that aren't linked to a reconciliation yet.
           </DialogDescription>
         </DialogHeader>
+        {reconciliation ? (
+          <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 rounded-md border bg-muted/40 p-3 text-sm sm:grid-cols-[auto_1fr_auto_1fr]">
+            <dt className="text-muted-foreground">Statement date</dt>
+            <dd>{format(parseISO(reconciliation.statementDate), "d MMM yyyy")}</dd>
+            <dt className="text-muted-foreground">Balanced on</dt>
+            <dd>{formatDate(reconciliation.balancedAt)}</dd>
+            <dt className="text-muted-foreground">Opening balance</dt>
+            <dd className="tabular-nums">{formatZar(reconciliation.openingBalance)}</dd>
+            <dt className="text-muted-foreground">Closing balance</dt>
+            <dd className="tabular-nums">{formatZar(reconciliation.closingBalance)}</dd>
+          </dl>
+        ) : null}
         {uploads.status === "loading" ? (
           <p className="text-sm text-muted-foreground">Loading uploads...</p>
         ) : uploads.status === "error" ? (

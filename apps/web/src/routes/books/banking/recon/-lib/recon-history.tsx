@@ -1,3 +1,4 @@
+import { SearchInput } from "#/components/search-input.tsx"
 import { SortableHeader } from "#/components/sortable-header.tsx"
 import { ButtonGroup } from "#/components/ui/button-group.tsx"
 import { Button } from "#/components/ui/button.tsx"
@@ -25,7 +26,7 @@ import {
   type LegacyColumnDef,
 } from "@tanstack/react-table/legacy"
 import { ArrowLeft, ChevronDown } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { getBankUploadUrl } from "../../uploads/-server/uploads.server.ts"
 import { ReconTransactionsTable } from "./recon-transactions-table.tsx"
 import {
@@ -36,6 +37,7 @@ import {
   type ReconHistoryItem,
 } from "../-server/recon.server.ts"
 import { UploadPickerDialog } from "./upload-picker-dialog.tsx"
+import { UploadStatementDialog } from "./upload-statement-dialog.tsx"
 
 const formatDay = (day: string) => format(parseISO(day), "d MMM yyyy")
 
@@ -110,12 +112,34 @@ function HistoryList({
   const [state, setState] = useState<Loadable<ReconHistoryItem[]>>({ status: "loading" })
   // The reconciliation the upload picker is open for.
   const [linkingId, setLinkingId] = useState<number | null>(null)
+  // The reconciliation the upload-a-new-statement dialog is open for.
+  const [uploadingId, setUploadingId] = useState<number | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
   // Newest statement first until the user picks another column.
   const [sorting, setSorting] = useState<SortingState>([{ id: "statementDate", desc: true }])
 
+  const [search, setSearch] = useState("")
+  const items = state.status === "ready" ? state.data : NO_ITEMS
+  // Matches what the table shows (dates and amounts as formatted) plus the
+  // linked statement's description.
+  const shown = useMemo(() => {
+    const needle = search.trim().toLowerCase()
+    if (needle === "") {
+      return items
+    }
+    return items.filter((item) =>
+      [
+        formatDay(item.statementDate),
+        formatZar(item.openingBalance),
+        formatZar(item.closingBalance),
+        formatDate(item.balancedAt),
+        item.uploadDescription ?? "",
+      ].some((text) => text.toLowerCase().includes(needle)),
+    )
+  }, [items, search])
+
   const table = useLegacyTable({
-    data: state.status === "ready" ? state.data : NO_ITEMS,
+    data: shown,
     columns: historyColumns,
     getRowId: (row) => String(row.id),
     getSortedRowModel: getSortedRowModel(),
@@ -213,6 +237,13 @@ function HistoryList({
           {actionError}
         </p>
       ) : null}
+      <SearchInput
+        aria-label="Filter reconciliation history"
+        placeholder="Filter by date, balance or statement..."
+        value={search}
+        onValueChange={setSearch}
+        className="mb-3 w-xs"
+      />
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
@@ -228,6 +259,13 @@ function HistoryList({
           ))}
         </TableHeader>
         <TableBody>
+          {table.getRowModel().rows.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={historyColumns.length} className="text-muted-foreground">
+                No reconciliations match your filter.
+              </TableCell>
+            </TableRow>
+          ) : null}
           {table.getRowModel().rows.map((row) => {
             const item = row.original
             return (
@@ -300,9 +338,14 @@ function HistoryList({
                             </DropdownMenuItem>
                           </>
                         ) : (
-                          <DropdownMenuItem onSelect={() => setLinkingId(item.id)}>
-                            Link
-                          </DropdownMenuItem>
+                          <>
+                            <DropdownMenuItem onSelect={() => setLinkingId(item.id)}>
+                              Link
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => setUploadingId(item.id)}>
+                              Upload
+                            </DropdownMenuItem>
+                          </>
                         )}
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -313,8 +356,15 @@ function HistoryList({
           })}
         </TableBody>
       </Table>
+      <UploadStatementDialog
+        reconciliation={items.find((item) => item.id === uploadingId)}
+        open={uploadingId !== null}
+        onOpenChange={(open) => !open && setUploadingId(null)}
+        onUploaded={patchItem}
+      />
       <UploadPickerDialog
         bankAccountId={bankAccountId}
+        reconciliation={items.find((item) => item.id === linkingId)}
         open={linkingId !== null}
         onOpenChange={(open) => !open && setLinkingId(null)}
         onSelect={(upload) => linkingId !== null && link(linkingId, upload)}
@@ -369,7 +419,7 @@ function HistoryDetails({ reconId, onBack }: { reconId: number; onBack: () => vo
     <>
       {back}
       <dl className="grid max-w-sm grid-cols-2 gap-x-4 gap-y-1 text-sm">
-        <dt className="text-muted-foreground">Statement date</dt>
+        <dt className="text-muted-foreground">Statement ending date</dt>
         <dd>{formatDay(recon.statementDate)}</dd>
         <dt className="text-muted-foreground">Opening balance</dt>
         <dd className="tabular-nums">{formatZar(recon.openingBalance)}</dd>

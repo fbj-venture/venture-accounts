@@ -1,0 +1,1 @@
+ALTER TABLE "app_settings" ADD COLUMN "bank_account_order" integer[] DEFAULT '{}'::integer[] NOT NULL;

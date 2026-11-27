@@ -1,6 +1,5 @@
 import { AddExpenseCard } from "#/routes/books/-components/add-expense-card"
-import { BankAccountCard } from "#/routes/books/-components/bank-account-card"
-import { BankAccountMenu } from "#/routes/books/-components/bank-account-menu"
+import { SortableBankAccountCards } from "#/routes/books/-components/sortable-bank-account-cards"
 import { useSetBreadcrumbs } from "#/routes/books/-lib/breadcrumbs"
 import { getBankAccountBalances } from "#/routes/books/-server/bank-account-balances.server.ts"
 import { companySettingsQuery } from "#/routes/books/admin/company/-lib/company-queries.ts"
@@ -30,17 +29,7 @@ function RouteComponent() {
       <div className="flex w-full flex-col gap-5 pb-8 sm:flex-row sm:flex-wrap">
         <AddExpenseCard bankAccounts={bankAccounts} className="grow sm:max-w-md sm:basis-72" />
       </div>
-      {/* Stacked on mobile; from sm up the cards flow in rows and wrap. */}
-      <div className="flex w-full flex-col gap-5 sm:flex-row sm:flex-wrap">
-        {bankAccounts.map((bankAccount) => (
-          <BankAccountCard
-            key={bankAccount.id}
-            bankAccount={bankAccount}
-            className="grow transition-colors hover:border-primary **:data-[slot=card-title]:transition-colors hover:**:data-[slot=card-title]:text-primary sm:basis-72"
-            footer={<BankAccountMenu bankAccountId={bankAccount.id} />}
-          />
-        ))}
-      </div>
+      <SortableBankAccountCards bankAccounts={bankAccounts} />
     </>
   )
 }

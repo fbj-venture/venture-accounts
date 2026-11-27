@@ -1,4 +1,6 @@
 import type { AccountOptions } from "#/components/account-selector.tsx"
+import { sortByBankAccountOrder } from "#/lib/bank-account-order.server.ts"
+import { requireUser } from "#/lib/require-user.server.ts"
 import { account, accountType, bankAccount, db } from "@app/db/direct"
 import { createServerFn } from "@tanstack/react-start"
 import { and, asc, eq, isNull, or } from "drizzle-orm"
@@ -9,6 +11,7 @@ import { alias } from "drizzle-orm/pg-core"
 // every other Account is a Category. Archived Accounts are left out.
 export const getAccountOptions = createServerFn({ method: "GET" }).handler(
   async (): Promise<AccountOptions> => {
+    const user = await requireUser()
     const parent = alias(account, "parent")
     const rows = await db
       .select({
@@ -55,7 +58,14 @@ export const getAccountOptions = createServerFn({ method: "GET" }).handler(
     })
     return {
       categories: rows.filter((row) => row.bankAccountId === null).map(toOption),
-      banks: rows.filter((row) => row.bankAccountId !== null).map(toOption),
+      // The bank accounts in the user's own order, like every other selector of them.
+      banks: (
+        await sortByBankAccountOrder(
+          user.id,
+          rows.filter((row) => row.bankAccountId !== null),
+          (row) => row.id,
+        )
+      ).map(toOption),
     }
   },
 )

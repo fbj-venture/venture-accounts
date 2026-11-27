@@ -13,9 +13,9 @@
 * [ ] Commit changes to Git
 ** [ ] Git push all changes
 
-== 0.21.0
+== 0.22.0
 
-* [x]
+
 
 == Todo
 
